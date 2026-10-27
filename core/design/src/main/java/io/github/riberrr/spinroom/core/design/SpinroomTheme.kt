@@ -1,6 +1,8 @@
 package io.github.riberrr.spinroom.core.design
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.tv.material3.LocalContentColor
 import androidx.compose.ui.graphics.Color
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
@@ -30,8 +32,10 @@ private val SpinroomColorScheme = darkColorScheme(
     border = SpinroomColors.Outline,
 )
 
-/** App theme. Typography (Inter) is added in S7. */
+/** App theme: brand colors + Inter typography. */
 @Composable
 fun SpinroomTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = SpinroomColorScheme, content = content)
+    MaterialTheme(colorScheme = SpinroomColorScheme, typography = SpinroomTypography) {
+        CompositionLocalProvider(LocalContentColor provides SpinroomColors.TextPrimary, content = content)
+    }
 }

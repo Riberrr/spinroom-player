@@ -16,6 +16,7 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - 2026-10-27: Claude nie dostaje haseł ani tokenów MA w czacie; nagrania API robi skrypt uruchamiany przez użytkownika.
 - S00b: androidx versions pinned to what compileSdk 36 / AGP 9.0.1 accept (lifecycle 2.10.0, navigation-compose 2.9.8, hilt-navigation-compose 1.3.0); newer ones need compileSdk 37 + AGP 9.1.
 - S00b: details route is `details/{itemUri}` with the MA URI URL-encoded (`Routes.details(uri)`); `WithStubNav` button row in `:app` is temporary scaffolding, remove per screen.
+- S07: Inter bundled (4 static TTFs, OFL); icons as hand-copied Material vector paths (no icons-extended); menu expands on focus, left at content edge opens it; mini player state is placeholder until S08.
 - S01b: klient MA używa WS (`auth` z tokenem po server_info); login przez `POST /auth/login`, potem `auth/token/create` (1 rok) do DataStore; fixtures nagrywa `scripts/record-fixtures.sh` (Node 22+), ⚠️ w docs/MA-API.md = do potwierdzenia po nagraniu.
 - S01a: Spec Sendspin `main` wymaga Noise `KKpsk2` (TV = serwer WS 8928 + mDNS `_sendspin._tcp`); parowanie metodą Pairing PSK (token `SP:0…` + QR w Ustawieniach), `unpaired_access` domyślnie włączony; Noise: `org.signal.forks:noise-java:0.1.1` (do weryfikacji w S02), zestaw ChaChaPoly.
 - S01a: Role v1: player (flac > opus > pcm), metadata, artwork (1 kanał), controller; bez visualizer/color/source.
