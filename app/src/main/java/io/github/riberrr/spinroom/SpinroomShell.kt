@@ -22,24 +22,22 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import io.github.riberrr.spinroom.core.design.MiniPlayerBar
-import io.github.riberrr.spinroom.core.design.MiniPlayerState
 import io.github.riberrr.spinroom.core.design.SideMenu
 import io.github.riberrr.spinroom.core.design.SideMenuItem
 import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.design.SpinroomIcons
+import io.github.riberrr.spinroom.feature.nowplaying.NowPlayingMiniPlayer
 
 /**
  * App chrome: side menu on the left, [content] (the nav host) in the middle, mini player at the bottom.
  * D-pad left on the content's left edge opens the menu; Back inside the menu returns focus to the content.
- * Mini player state is a placeholder until S08 wires the real player.
+ * The mini player shows the shared now-playing state and hides itself when nothing is playing.
  */
 @Composable
 fun SpinroomShell(navController: NavHostController, content: @Composable () -> Unit) {
     val focusManager = LocalFocusManager.current
     val menuFocus = remember { FocusRequester() }
     var menuHasFocus by remember { mutableStateOf(false) }
-    var sample by remember { mutableStateOf(MiniPlayerState("Latarnie nad rzeką", "Lena Wiatr", true, 84_000, 221_000)) }
 
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
     val items = listOf(
@@ -82,13 +80,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         ) {
             Column(Modifier.weight(1f)) { content() }
             if (route != Routes.NOW_PLAYING) {
-                MiniPlayerBar(
-                    state = sample,
-                    onPrevious = {},
-                    onPlayPause = { sample = sample.copy(isPlaying = !sample.isPlaying) },
-                    onNext = {},
-                    onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } },
-                )
+                NowPlayingMiniPlayer(onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } })
             }
         }
     }

@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_stub_title">Start — wkrótce</string>
+    <string name="home_greeting">Dzień dobry</string>
+    <string name="home_continue">KONTYNUUJ SŁUCHANIE</string>
+    <string name="home_continue_track">%1$s · utwór %2$d z %3$d</string>
+    <string name="home_radio">Radio</string>
+    <string name="home_radio_count">Ulubione stacje: %1$d</string>
+    <string name="home_radio_empty">Stacje radiowe</string>
+    <string name="home_youtube">YouTube Music</string>
+    <string name="home_youtube_sub">Twoje miksy i playlisty</string>
+    <string name="home_recent">Ostatnio odtwarzane</string>
+    <string name="home_playlists">Twoje playlisty</string>
+    <string name="home_stations">Ulubione stacje</string>
+    <string name="home_recommended">Polecane z YouTube Music</string>
+    <string name="home_playlist_label">Playlista</string>
+    <string name="home_connected">Połączono z serwerem</string>
+    <string name="home_offline">Brak połączenia z serwerem</string>
+    <string name="home_error_title">Nie udało się wczytać ekranu</string>
+    <string name="home_error_message">Sprawdź, czy serwer Music Assistant jest włączony, i spróbuj ponownie.</string>
+    <string name="home_retry">Spróbuj ponownie</string>
+    <string name="home_empty_title">Tu będzie Twoja muzyka</string>
+    <string name="home_empty_message">Włącz coś w Music Assistant, a pojawi się tutaj.</string>
 </resources>
