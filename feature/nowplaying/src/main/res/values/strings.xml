@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="nowplaying_stub_title">Teraz gra — wkrótce</string>
+    <string name="nowplaying_label">Teraz odtwarzane</string>
+    <string name="nowplaying_up_next">Następne w kolejce</string>
+    <string name="nowplaying_show_queue">↓ pokaż całą kolejkę (%1$d)</string>
+    <string name="nowplaying_hide_queue">↑ zwiń kolejkę</string>
+    <string name="nowplaying_queue_title">Kolejka</string>
+    <string name="nowplaying_queue_empty">Kolejka jest pusta</string>
+    <string name="nowplaying_nothing_title">Nic nie gra</string>
+    <string name="nowplaying_nothing_message">Wybierz album, playlistę lub stację i naciśnij odtwarzaj.</string>
+    <string name="nowplaying_no_player_title">Nie wybrano odtwarzacza</string>
+    <string name="nowplaying_no_player_message">Odtwarzacz tego telewizora pojawi się, gdy aplikacja połączy się z serwerem.</string>
+    <string name="nowplaying_offline">Brak połączenia z serwerem</string>
+    <string name="nowplaying_pick_player">Wybierz odtwarzacz</string>
+    <string name="nowplaying_player_unavailable">niedostępny</string>
+    <string name="nowplaying_shuffle">Losowo</string>
+    <string name="nowplaying_previous">Poprzedni</string>
+    <string name="nowplaying_play">Odtwarzaj</string>
+    <string name="nowplaying_pause">Pauza</string>
+    <string name="nowplaying_next">Następny</string>
+    <string name="nowplaying_repeat">Powtarzanie</string>
+    <string name="nowplaying_favorite">Ulubione</string>
+    <string name="nowplaying_volume">Głośność</string>
 </resources>
