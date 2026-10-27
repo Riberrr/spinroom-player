@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="audio_debug_title">Test dźwięku</string>
+    <string name="audio_debug_play">Graj</string>
+    <string name="audio_debug_stop">Stop</string>
+    <string name="audio_debug_clear">Przewiń</string>
+    <string name="audio_debug_volume_down">Ciszej</string>
+    <string name="audio_debug_volume_up">Głośniej</string>
+    <string name="audio_debug_mute">Wycisz</string>
+    <string name="audio_debug_delay_down">Opóźnienie −10 ms</string>
+    <string name="audio_debug_delay_up">Opóźnienie +10 ms</string>
+</resources>
