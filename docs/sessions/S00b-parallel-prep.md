@@ -22,4 +22,6 @@ Raz zmienić wszystkie pliki wspólne, żeby późniejsze sesje równoległe dop
 Żadnej logiki ekranów, sieci ani audio.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Gotowe: 7 modułów `:feature:*` (stub `<Nazwa>Screen`, `DetailsScreen(itemUri)`), graf zależności, katalog wersji, Hilt+KSP w `:app`, `SpinroomNavHost` + `Routes`. `scripts/check.sh` zielony.
+- API: `Routes.details(uri)` koduje URI; start = `Routes.HOME`. Pasek przycisków `WithStubNav` w `:app` jest tymczasowy (D-pad między stubami) — nie sprawdzano na emulatorze ani testem Compose.
+- Pułapki: nowsze androidx (lifecycle 2.11, nav 2.10, hilt-nav 1.4) wymagają compileSdk 37 + AGP 9.1, więc przypięte do 2.10.0/2.9.8/1.3.0. Dodane do katalogu, ale jeszcze nieużywane: OkHttp 5.5.1, Ktor 3.6.0, serialization 1.12.0 (+plugin), Media3 1.11.1, Coil 3.6.3, DataStore 1.3.0, Paging 3.5.3. Hilt 2.60.1, KSP 2.3.12. Pliki wspólne edytowane tu zgodnie z zadaniem.

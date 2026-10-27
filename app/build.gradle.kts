@@ -3,6 +3,8 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 // Version comes from the release tag (v1.2.3), passed by CI as -PappVersion=1.2.3. Local builds use 0.0.0-dev.
@@ -65,6 +67,21 @@ android {
 
 dependencies {
     implementation(project(":core:design"))
+    implementation(project(":core:sendspin"))
+    implementation(project(":core:audio"))
+    implementation(project(":core:ma-api"))
+    implementation(project(":core:data"))
+    implementation(project(":feature:nowplaying"))
+    implementation(project(":feature:home"))
+    implementation(project(":feature:library"))
+    implementation(project(":feature:details"))
+    implementation(project(":feature:sources"))
+    implementation(project(":feature:search"))
+    implementation(project(":feature:settings"))
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
