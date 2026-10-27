@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon variant: record outline and house, tinted by the system -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:translateX="9"
+        android:translateY="9">
+        <path
+            android:pathData="M24,60 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="6" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M60,46 L73,58 V73 H47 V58 Z"
+            android:strokeColor="#FFFFFF"
+            android:strokeLineJoin="round"
+            android:strokeWidth="4" />
+    </group>
+</vector>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Spinroom</string>
+    <string name="app_full_name">Spinroom Player — for Music Assistant</string>
+    <string name="hello_subtitle">Szkielet aplikacji działa. Odtwarzacz pojawi się w Etapie 1.</string>
+    <string name="unofficial_note">Nieoficjalny klient Music Assistant.</string>
+</resources>
