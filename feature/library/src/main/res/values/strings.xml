@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="library_stub_title">Biblioteka — wkrótce</string>
+    <string name="library_title">Biblioteka</string>
+    <string name="library_tab_artists">Wykonawcy</string>
+    <string name="library_tab_albums">Albumy</string>
+    <string name="library_tab_tracks">Utwory</string>
+    <string name="library_tab_playlists">Playlisty</string>
+    <string name="library_empty_title">Nic tu jeszcze nie ma</string>
+    <string name="library_empty_message">Dodaj muzykę w Music Assistant, a pojawi się tutaj.</string>
+    <string name="library_error_message">Nie mogę pobrać biblioteki. Sprawdź połączenie z serwerem.</string>
+    <string name="library_retry">Spróbuj ponownie</string>
 </resources>

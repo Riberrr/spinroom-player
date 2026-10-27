@@ -31,3 +31,4 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S03: transport w `:core:sendspin/transport` (Ktor CIO serwer 8928 + `NsdManager`, OkHttp jako klient zapasowy 8927); `SessionBridge` jest jedynym kolektorem `outgoing`, drugie połączenie zamykane 1013 zamiast arbitrażu.
 - S03: tymczasowy start odtwarzacza tylko w `app/src/debug` (ContentProvider + broadcast), bez zmian w kodzie `main`; S05 go usuwa.
 - S03: MA 2.10.8 łączy się po mDNS i mówi Noise `KKpsk2` (Sentinel działa); bez zgody operatora/parowania aktywuje z pustym `activities`.
+- S10: library grid uses own CountedLibrarySource (placeholders on) instead of LibraryRepository.pager; letter jump = binary search over name-sorted items.
