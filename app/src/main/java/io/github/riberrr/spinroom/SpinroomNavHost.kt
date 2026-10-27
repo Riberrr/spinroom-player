@@ -35,7 +35,13 @@ object Routes {
 fun SpinroomNavHost(navController: NavHostController = rememberNavController()) {
     SpinroomShell(navController) {
         NavHost(navController, startDestination = Routes.HOME) {
-            composable(Routes.HOME) { HomeScreen() }
+            composable(Routes.HOME) {
+                HomeScreen(
+                    onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) },
+                    onOpenSources = { navController.navigate(Routes.SOURCES) },
+                    onOpenDetails = { uri -> navController.navigate(Routes.details(uri)) },
+                )
+            }
             composable(Routes.NOW_PLAYING) { NowPlayingScreen() }
             composable(Routes.LIBRARY) { LibraryScreen(onOpenItem = { navController.navigate(Routes.details(it)) }) }
             composable(Routes.SOURCES) { SourcesScreen() }
