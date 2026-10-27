@@ -24,4 +24,8 @@ Wszystkie komendy potwierdzone, fixtures nagrane, PR otwarty.
 Kodu klienta (to S06).
 
 ## Wynik
-_(uzupełnia sesja)_
+- `docs/MA-API.md` (MA 2.10.8, ~97 linii): transport WS, auth (login → token długoterminowy 1 rok → `auth` na WS), komendy z tabeli PROJECT.md potwierdzone w `/api-docs/commands.json` (nazwy, parametry, stronicowanie limit/offset), plus ulubione, recently_played_items, recommendations, browse, okładki (imageproxy).
+- `scripts/record-fixtures.sh` + `record-fixtures.mjs`: uruchamia użytkownik z `MA_TOKEN`, zapisuje zanonimizowane odpowiedzi i ~25 s zdarzeń do `core/ma-api/src/test/resources/fixtures/`.
+- **Niezrobione:** fixtures NIE są nagrane (wymagają tokenu użytkownika), nie było logowania. Pozycje ⚠️ w MA-API.md (kształt zdarzeń `player_updated`/`queue_updated`/`queue_items_updated`, mDNS `_mass._tcp`, URL imageproxy, `order_by`, `partial`) wynikają z wiedzy o kodzie MA i czekają na nagranie.
+- Pułapki: `base_url` w server_info ma spacje na początku; kody błędów 20 (brak auth) i 23 (zły token); `library_items` bywa `ItemMapping`.
+- Dalej: użytkownik odpala skrypt, commit fixtures, S06 poprawia ⚠️ w docs (SFix).
