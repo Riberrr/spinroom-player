@@ -14,3 +14,5 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - 2026-10-27: Zaślepki wszystkich `:feature:*`, katalog wersji, Hilt i nawigacja powstają z góry w S00b — żeby sesje równoległe nie edytowały wspólnych plików.
 - 2026-10-27: Kontrakty `AudioChunk`/`StreamFormat`/`ClockSource` pisze S01a, żeby S02 i S04 mogły iść równolegle.
 - 2026-10-27: Claude nie dostaje haseł ani tokenów MA w czacie; nagrania API robi skrypt uruchamiany przez użytkownika.
+- S00b: androidx versions pinned to what compileSdk 36 / AGP 9.0.1 accept (lifecycle 2.10.0, navigation-compose 2.9.8, hilt-navigation-compose 1.3.0); newer ones need compileSdk 37 + AGP 9.1.
+- S00b: details route is `details/{itemUri}` with the MA URI URL-encoded (`Routes.details(uri)`); `WithStubNav` button row in `:app` is temporary scaffolding, remove per screen.

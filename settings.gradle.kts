@@ -29,4 +29,7 @@ rootProject.name = "spinroom-player"
 
 include(":app")
 include(":core:design", ":core:sendspin", ":core:audio", ":core:ma-api", ":core:data")
-// Feature modules (:feature:nowplaying, :feature:library, ...) are added in the session that builds them.
+include(
+    ":feature:nowplaying", ":feature:home", ":feature:library", ":feature:details",
+    ":feature:sources", ":feature:search", ":feature:settings",
+)

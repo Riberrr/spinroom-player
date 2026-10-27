@@ -19,7 +19,7 @@ Sessions run in parallel (own worktree + branch each). Plan index: `docs/SESSION
 
 ## Stack
 Kotlin, AGP 9.0.1 with built-in Kotlin (do NOT apply `org.jetbrains.kotlin.android`), Kotlin 2.3.20, Gradle 9.1, JDK 17 target. minSdk 26, compile/targetSdk 36. Compose + `androidx.tv:tv-material` 1.1.0. Versions only in `gradle/libs.versions.toml`.
-Planned (add when the session needs it, not earlier): OkHttp WS, Ktor CIO server, NsdManager, noise-java, Media3 MediaSessionService, Coil, Hilt, DataStore, kotlinx.serialization.
+Version catalog already has (S00b): OkHttp(+mockwebserver), Ktor server CIO/websockets, kotlinx-serialization-json (+plugin), Media3 common/session, Coil 3, Hilt+KSP (in `:app`), DataStore, Paging, Navigation, ViewModel-compose. Noise lib: S01a picks it. Modules add `alias(libs.plugins...)`/deps themselves.
 
 ## Modules (read a module's README.md instead of its code)
 | Module | Owns |
@@ -30,7 +30,7 @@ Planned (add when the session needs it, not earlier): OkHttp WS, Ktor CIO server
 | `:core:audio` | FLAC/Opus decode, timed buffer, AudioTrack, MediaSessionService |
 | `:core:ma-api` | MA WebSocket API client, auth, models, events as Flow |
 | `:core:data` | repositories, DataStore, caching |
-| `:feature:*` | one per screen; create it in the session that builds the screen |
+| `:feature:nowplaying,home,library,details,sources,search,settings` | one per screen, stubs from S00b (`<Name>Screen`); `:app` `SpinroomNavHost` wires routes. Replace the stub body, keep the signature |
 
 Package root: `io.github.riberrr.spinroom`. Library modules copy `core/audio/build.gradle.kts` as a template.
 
