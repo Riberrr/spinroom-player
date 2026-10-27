@@ -1,31 +1,33 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S02, S04, S06 (27.10.2026)._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S03, S08 (27.10.2026)._
 
 ## Działa
-- Szkielet: `:app`, `:core:*`, `:feature:*` (zaślepki), Hilt, powłoka UI (menu, nawigacja, mini-odtwarzacz), komponenty TV w `:core:design`.
-- `:core:sendspin` (S02): pełny protokół bez sieci — handshake, Noise `KKpsk2` (własny na prymitywach noise-java), parowanie, ramki binarne, filtr zegara (< 1 ms). API: `SendspinSession`, `CredentialStore`. 61 testów.
-- `:core:audio` (S04): `SpinroomAudioEngine` — FLAC/Opus (MediaCodec), PCM, harmonogram z synchronizacją, AudioTrack, głośność. Emulator: 0 zgubionych ramek, ±90 µs. 31 testów.
-- `:core:ma-api` + `:core:data` (S06): `MaClient` (WS, reconnect), Library/Browse/PlayerQueue/Auth API, repozytoria (Paging), `SettingsStore` (DataStore). Ekran Ustawień: adres + logowanie.
-- Dokumentacja: `docs/SENDSPIN.md`, `docs/MA-API.md`. CI zielone.
+- Szkielet: `:app`, `:core:*`, `:feature:*`, Hilt, powłoka UI (menu, nawigacja, mini-odtwarzacz), komponenty TV w `:core:design`.
+- `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (S03): serwer Ktor `0.0.0.0:8928/sendspin`, mDNS `_sendspin._tcp`, klient zapasowy 8927.
+- **Na TV 10.0.0.6** („2020/2021 UHD Android TV”): MA 2.10.8 sam znajduje odtwarzacz, łączy się, handshake Noise przechodzi, zegar zbiega.
+- `:core:audio`: silnik FLAC/Opus/PCM z synchronizacją (emulator: 0 zgubionych ramek, ±90 µs).
+- `:core:ma-api` + `:core:data`: klient WS MA, repozytoria, DataStore; ekran Ustawień z logowaniem.
+- `:feature:nowplaying` (S08, wzorzec ekranów — README modułu): pełny ekran + mini-odtwarzacz na wspólnym VM; w debug wybór gracza MA.
+- CI zielone.
 
 ## Nie sprawdzone
-- Nic nie było uruchomione na prawdziwym TV ani na żywym serwerze MA.
-- Czy MA 2.10.8 mówi Noise. Dźwięk nie był słuchany (tylko statystyki).
-- Fixtures MA nie nagrane — pozycje ⚠️ w `docs/MA-API.md` (zdarzenia, imageproxy, partial).
+- Dźwięk z MA na TV — niesparowany odtwarzacz dostaje puste `activities` (potrzebna zgoda w MA albo token `SP:0…`).
+- Ekran „Teraz odtwarzane” z prawdziwymi danymi i sterowanie żywym serwerem.
+- Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione).
 
 ## W toku
-- S03 sieć + mDNS (Opus), S08 Teraz odtwarzane — ekran-wzorzec (Sonnet).
+- S05 usługa + pilot (Opus) → **v0.1.0**. S09 Start, S10 Biblioteka (Sonnet).
 
 ## Następne
-- S05 usługa + pilot ← S03, S04 → **v0.1.0** (przed nim: klucz podpisu w GitHub Secrets).
-- S09/S10/S12/S13 ← S08.
-- `ConnectionManager.start()` musi wołać aplikacja przy starcie (dziś tylko Ustawienia).
+- S12 Źródła, S13 Szukaj ← S08. S14a ← S05+S08, S14c ← S05, S11 ← S10.
+- Przed v0.1.0: klucz podpisu w GitHub Secrets (instrukcja z S05).
+- Do decyzji: brak pozycji „Teraz gra” w menu bocznym (wejście przez mini-odtwarzacz).
 
 ## Pułapki
-- `SendspinSession`: `events` i `outgoing` mają po jednym kolektorze; jedno połączenie naraz.
-- `ClockSource.localNowUs()` na bazie `System.nanoTime()`. FLAC systemowy od API 27.
-- OkHttp 5.1.0, lifecycle 2.10.0, nav 2.9.8, hilt-nav 1.3.0 — nowsze wymagają compileSdk 37.
-- `docs/DECISIONS.md` i `libs.versions.toml` dają konflikty przy równoległych PR — rozwiązywać sumą linii.
-- `Text` poza `Surface` jest czarny. Emulator: gęstość 480 → 1280 dp.
-- Bit wykonywalności `gradlew`/`scripts/*.sh` na Windowsie. AGP 9 ma wbudowany Kotlin.
+- `SessionBridge` jedynym kolektorem `session.outgoing`; drugie połączenie zamykane 1013. `SendspinServer.stop()` blokuje ~1 s.
+- `app/src/debug` ma tymczasowy start odtwarzacza (S05 usuwa).
+- `ConnectionManager.start()` woła `MaPlayerBackend` (mini-player tworzy VM zawsze).
+- Przypięte z powodu compileSdk 36: OkHttp 5.1.0, Coil 3.3.0, lifecycle 2.10.0, nav 2.9.8, hilt-nav 1.3.0.
+- `docs/DECISIONS.md`/`libs.versions.toml` — konflikty przy równoległych PR, rozwiązywać sumą linii.
+- `Text` poza `Surface` jest czarny. Emulator: gęstość 480 → 1280 dp. Bit +x dla `gradlew`/`scripts/*.sh`.
