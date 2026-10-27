@@ -20,4 +20,8 @@ Wspólne komponenty TV i powłoka aplikacji, z których korzystają wszystkie ek
 Danych, API, logiki odtwarzania.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Gotowe: Inter 400/500/600/700 + licencja OFL, typografia TV, ikony, komponenty w `:core:design` (CoverTile, SectionRow, StationTile, SideMenu, MiniPlayerBar, EmptyState, ErrorState, FocusSurface) z `@Preview`; API w `core/design/README.md`.
+- Powłoka w `:app` (`SpinroomShell`): menu boczne + `SpinroomNavHost` + mini-odtwarzacz (stan przykładowy, S08 podłącza prawdziwy; ukryty na „Teraz gra”). Lewo na krawędzi ekranu otwiera menu, Wstecz w menu wraca do treści. Tymczasowy pasek `WithStubNav` usunięty.
+- Sprawdzone: `check.sh` zielony; emulator TV 1080p (gęstość 480 → 1280 dp) wygląda jak makieta `1-start.png` (menu, mini-odtwarzacz); D-pad lewo/prawo działa.
+- Pułapki: `Text` poza `Surface` jest czarny — `SpinroomTheme` ustawia `LocalContentColor`. Przy starcie fokus ląduje w menu (stuby nie mają fokusowalnych elementów) — ekrany powinny same żądać fokusu. Emulator domyślnie ma 960 dp, nie 1280 dp. Ikony to ścieżki Material (Apache-2.0), bez biblioteki icons-extended.
+- Dalej: S08 podłącza stan mini-odtwarzacza; ekrany używają komponentów z README.

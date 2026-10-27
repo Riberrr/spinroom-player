@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_stub_title">Ustawienia — wkrótce</string>
+    <string name="settings_title">Ustawienia</string>
+    <string name="settings_address">Adres serwera Music Assistant</string>
+    <string name="settings_username">Login</string>
+    <string name="settings_password">Hasło</string>
+    <string name="settings_login">Zaloguj</string>
+    <string name="settings_logging_in">Logowanie…</string>
+    <string name="settings_logout">Wyloguj</string>
+    <string name="settings_connected">Połączono z Music Assistant %1$s</string>
+    <string name="settings_connecting">Łączenie…</string>
+    <string name="settings_disconnected">Nie połączono</string>
+    <string name="settings_session_expired">Logowanie wygasło — zaloguj się ponownie</string>
+    <string name="settings_wrong_credentials">Nieprawidłowy login lub hasło</string>
+    <string name="settings_unreachable">Nie widzę serwera Music Assistant w sieci</string>
+    <string name="settings_done">Zalogowano. Albumów w bibliotece: %1$d</string>
 </resources>

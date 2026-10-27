@@ -20,4 +20,9 @@ Testy zielone; na TV/emulatorze logowanie zapisuje token i lista albumów pobier
 Ekranów poza ustawieniami; nie loguj tokenu.
 
 ## Wynik
-_(uzupełnia sesja)_
+- `:core:ma-api`: `MaClient` (OkHttp WS, korelacja `message_id`, timeout 15 s, reconnect z backoffem 1→30 s, `state`/`events` jako Flow, scalanie `partial`, kod 23 = `Failed` bez ponawiania), grupy komend w osobnych plikach: `LibraryApi`, `BrowseApi`, `PlayerQueueApi`, `AuthApi` (login → token 1-roczny), `ImageUrls`; tolerancyjne modele w `MaModels.kt`. Szczegóły w README modułu.
+- `:core:data`: `SettingsStore` (DataStore: adres, token, id gracza), `ConnectionManager`, `AuthRepository`, `LibraryRepository` (Paging, 50/stronę), `PlayerRepository` (kolejka/gracze na żywo ze zdarzeń), `BrowseRepository`, `SearchRepository`, Hilt w `di/DataModule.kt`.
+- `:feature:settings`: ekran adresu i logowania (hasło tylko w pamięci, zapisywany token), status połączenia, po zalogowaniu pobiera liczbę albumów.
+- Testy: 11 w ma-api (MockWebServer: auth, korelacja, partial, błędy, zdarzenia, reconnect, login), 3 w data. `bash scripts/check.sh` zielone.
+- **Do potwierdzenia fixtures (⚠️):** kształt zdarzeń (`queue_updated` itd.) i wynik komendy `auth`, URL `imageproxy`, `order_by` (używam tylko `name`), prawdziwe `partial`, `players/all` vs `queue_id`. NIE testowano na żywym serwerze 10.0.1.50 (brak hasła/tokenu u sesji) — wymaga ręcznego sprawdzenia logowania na TV.
+- Uwagi: OkHttp obniżony do 5.1.0 (5.5.1 wymaga compileSdk 37). Dodano `androidx-paging-common` na końcu `libs.versions.toml`. `ConnectionManager.start()` wywołuje dziś tylko `SettingsViewModel` — app powinna wołać go przy starcie (SFix/S-app). Test SettingsStore używa DataStore w pamięci (plikowy nie przechodzi na Windows).
