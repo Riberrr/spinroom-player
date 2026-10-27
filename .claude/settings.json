@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./design/source/**)",
+      "Read(./**/build/intermediates/**)",
+      "Read(./**/build/generated/**)",
+      "Read(./**/build/tmp/**)",
+      "Read(./**/build/kotlin/**)",
+      "Read(./.gradle/**)",
+      "Read(./.kotlin/**)",
+      "Read(./keystore.properties)",
+      "Read(./**/*.jks)",
+      "Read(./**/*.keystore)"
+    ],
+    "allow": [
+      "Bash(bash scripts/check.sh)",
+      "Bash(./gradlew:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)"
+    ]
+  }
+}

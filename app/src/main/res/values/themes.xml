@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Spinroom" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/spinroom_bg</item>
+    </style>
+    <color name="spinroom_bg">#0B0D12</color>
+</resources>
