@@ -22,4 +22,8 @@ Cała logika protokołu w `:core:sendspin`, bez sieci i bez audio, w pełni prze
 Socketów, mDNS, MediaCodec, AudioTrack. Nie zmieniaj typów w `api/` bez wpisu w „Wynik” (S04 z nich korzysta).
 
 ## Wynik
-_(uzupełnia sesja)_
+**Co działa:** cały protokół w `:core:sendspin` bez sieci: handshake `client/init`→Noise→`client/hello`→`server/activate`, Noise `KKpsk2` (własna implementacja na prymitywach noise-java — biblioteka nie ma `psk2`; zgodna z wektorem cacophony), wybór PSK (lt/pr/sn + Sentinel fallback), re-handshake w locie, parowanie Pairing PSK, `server/unpair`, reguły dopuszczalności `server/activate`, ramki binarne + fragmentacja, filtr Kalmana zegara (błąd < 1 ms przy jitterze 0,5–15 ms i dryfie 40 ppm), metadane/okładki planowane na `timestamp`. 61 testów JVM zielonych.
+**Publiczne API:** `SendspinSession` (`onOpen/onText/onBinary/onClosed`, `outgoing: Flow<OutgoingFrame>`, `state`, `notices`, `clock`) implementuje `PlayerStream`, `PlayerStateReporter`, `SendspinSessionState`; `CredentialStore` + `InMemoryCredentialStore`; `PairingToken.encode`. Szczegóły w `core/sendspin/README.md`.
+**Kontrakty `api/`:** bez zmian. Zamiast osobnego `Flow<AudioChunk>` audio idzie jako `PlayerEvent.Chunk` w `events` (jeden kolektor — S04).
+**Dalej:** S03 — Ktor CIO na 8928 + mDNS, podpiąć `onOpen/onText/onBinary/onClosed` i zbierać `outgoing`; `receivedAtUs` brać zaraz po odebraniu. S05 — `CredentialStore` na DataStore/Keystore (klucz i pairing PSK generowane raz), ekran tokenu `SP:0…`.
+**Pułapki:** `events` i `outgoing` mają po jednym kolektorze (Channel). Tylko jedno połączenie naraz — arbitraż wielu serwerów (`another_server`) nie jest zrobiony, S03 musi odrzucić drugie połączenie. Zegar resetuje się przy każdym nowym połączeniu. Nadal niesprawdzone na żywo: czy MA 2.10.8 mówi Noise (pytanie otwarte 1 z S01a).
