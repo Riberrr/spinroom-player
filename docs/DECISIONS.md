@@ -31,3 +31,4 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S03: transport w `:core:sendspin/transport` (Ktor CIO serwer 8928 + `NsdManager`, OkHttp jako klient zapasowy 8927); `SessionBridge` jest jedynym kolektorem `outgoing`, drugie połączenie zamykane 1013 zamiast arbitrażu.
 - S03: tymczasowy start odtwarzacza tylko w `app/src/debug` (ContentProvider + broadcast), bez zmian w kodzie `main`; S05 go usuwa.
 - S03: MA 2.10.8 łączy się po mDNS i mówi Noise `KKpsk2` (Sentinel działa); bez zgody operatora/parowania aktywuje z pustym `activities`.
+- S09: home rows via a HomeBackend seam; YouTube row = recommendation folders with provider containing `ytmusic` (hidden otherwise); station tiles play directly with play_media(replace) on settings.playerId; NavHost got only the three HomeScreen callbacks.
