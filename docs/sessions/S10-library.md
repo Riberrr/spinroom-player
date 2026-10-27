@@ -17,4 +17,9 @@ Płynne przewijanie przy 2000+ albumów (sprawdź na emulatorze z profilem GPU).
 Zmian w innych modułach `:feature:*`.
 
 ## Wynik
-_(uzupełnia sesja)_
+- `:feature:library`: ekran „Biblioteka” (zakładki Wykonawcy/Albumy/Utwory/Playlisty, siatka okładek 148 dp, miniatury 200 px, pasek skoku `# A D G K N R T Z`, stany pusty/błąd, README modułu). Struktura jak `:feature:nowplaying` (State/Backend/ViewModel/Screen).
+- API: `LibraryScreen(modifier, onOpenItem: (String) -> Unit = {})`; `onOpenItem` dostaje URI MA. W `:app` jedna linia w `SpinroomNavHost`: `navController.navigate(Routes.details(uri))` (poza zakresem modułu, konieczna do nawigacji).
+- Własne źródło stron `CountedLibrarySource` (z placeholderami, bo `LibraryRepository.pager` ma je wyłączone i nie da się skoczyć do indeksu); skok po literze = wyszukiwanie binarne po `itemAt` (~log2 n zapytań po 1 element).
+- Testy: 6 testów VM/źródła na fake backendzie (liczniki, skok do litery, mapowanie wiersza, placeholdery). `check.sh` zielone.
+- NIE sprawdzone: wygląd i płynność przy 2000+ albumów na emulatorze/TV (brak tokenu MA w sesji — nie proszę o hasło), zrzut vs makieta; URL `imageproxy` nadal niepotwierdzony.
+- Pułapki: sortowanie liter po kodzie znaku (Ł/Ś po Z); brak zakładki „Ulubione”, sortowania i filtra źródeł z makiety; wiersz utworu pokazuje wykonawcę, nie album.
