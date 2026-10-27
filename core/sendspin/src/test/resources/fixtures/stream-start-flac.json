@@ -1,0 +1,1 @@
+{"type":"stream/start","payload":{"server_transmitted":5001000,"player":{"codec":"flac","sample_rate":44100,"channels":2,"bit_depth":16,"codec_header":"ZkxhQ4AAACIQABAAAAAAAAAACsRC8AAAAAAAAAAAAAAAAAAAAAAAAAAA"},"artwork":{"channels":[{"source":"album","format":"jpeg","width":600,"height":600}]}}}
