@@ -18,3 +18,6 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S00b: details route is `details/{itemUri}` with the MA URI URL-encoded (`Routes.details(uri)`); `WithStubNav` button row in `:app` is temporary scaffolding, remove per screen.
 - S01a: Spec Sendspin `main` wymaga Noise `KKpsk2` (TV = serwer WS 8928 + mDNS `_sendspin._tcp`); parowanie metodą Pairing PSK (token `SP:0…` + QR w Ustawieniach), `unpaired_access` domyślnie włączony; Noise: `org.signal.forks:noise-java:0.1.1` (do weryfikacji w S02), zestaw ChaChaPoly.
 - S01a: Role v1: player (flac > opus > pcm), metadata, artwork (1 kanał), controller; bez visualizer/color/source.
+- S02: noise-java 0.1.1 nie obsługuje modyfikatora `psk2` (tylko stary `NoisePSK_`) — `KKpsk2` napisany sam na jej prymitywach (X25519, ChaChaPoly) + HKDF z JCA; zgodny z wektorem cacophony.
+- S02: `SendspinSession` jest jedna na aplikację i obsługuje jedno połączenie naraz; arbitraż wielu serwerów zostaje dla S03 (odrzucić drugie połączenie).
+- S02: zegar: serie po 8 `client/time`, co 100 ms do zbiegnięcia (≥ 3 próbki, σ ≤ 2 ms), potem co 5 s; filtr resetowany przy każdym nowym połączeniu.
