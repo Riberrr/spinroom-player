@@ -18,3 +18,6 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S00b: details route is `details/{itemUri}` with the MA URI URL-encoded (`Routes.details(uri)`); `WithStubNav` button row in `:app` is temporary scaffolding, remove per screen.
 - S01a: Spec Sendspin `main` wymaga Noise `KKpsk2` (TV = serwer WS 8928 + mDNS `_sendspin._tcp`); parowanie metodą Pairing PSK (token `SP:0…` + QR w Ustawieniach), `unpaired_access` domyślnie włączony; Noise: `org.signal.forks:noise-java:0.1.1` (do weryfikacji w S02), zestaw ChaChaPoly.
 - S01a: Role v1: player (flac > opus > pcm), metadata, artwork (1 kanał), controller; bez visualizer/color/source.
+- S04: Wyjście audio zawsze PCM16; PCM dekodowany w Kotlinie (bez MediaCodec), FLAC/Opus przez synchroniczny MediaCodec z PTS = czas serwera; FLAC dzielony na pojedyncze ramki (CRC-8 + CRC-16).
+- S04: Synchronizacja: dokładne wyrównanie ciszą/gubieniem na starcie i po dziurze, potem ±1 ramka na 200 (≤0,5 %), strefa martwa 100 µs, resync >10 ms; pozycja wyjścia z `getTimestamp` tylko gdy zgadza się z `playbackHeadPosition`.
+- S04: FLAC ogłaszany tylko gdy jest systemowy dekoder (API 27+); bez własnego dekodera FLAC na API 26.
