@@ -4,4 +4,9 @@
     <string name="app_full_name">Spinroom Player — for Music Assistant</string>
     <string name="hello_subtitle">Szkielet aplikacji działa. Odtwarzacz pojawi się w Etapie 1.</string>
     <string name="unofficial_note">Nieoficjalny klient Music Assistant.</string>
+    <string name="menu_home">Start</string>
+    <string name="menu_library">Biblioteka</string>
+    <string name="menu_sources">Źródła</string>
+    <string name="menu_search">Szukaj</string>
+    <string name="menu_settings">Ustawienia</string>
 </resources>
