@@ -1,6 +1,6 @@
 # Spinroom Player — roadmapa
 
-Etapy, sesje i wdrożenie. Sesja czyta tylko swój wiersz z sekcji 2. Zasady pracy: `CLAUDE.md`. Branding: `docs/BRAND.md`. Założenia aplikacji: `docs/PROJECT.md`.
+Etapy, sesje i wdrożenie. Sesje robocze tego pliku nie czytają — mają własne pliki w `docs/sessions/`. Zasady pracy: `CLAUDE.md`. Branding: `docs/BRAND.md`. Założenia aplikacji: `docs/PROJECT.md`.
 
 ---
 
@@ -22,54 +22,9 @@ Blokują Etap 1 — bez nich sesje będą zgadywać i palić tokeny.
 
 ## 2. Etapy i sesje
 
-Każdy etap kończy się APK do testu na TV i tagiem wersji. Szacunek: **~16 sesji**.
+Pełna lista sesji, fale pracy równoległej i prompt koordynatora: [`docs/SESSIONS.md`](SESSIONS.md). Szczegóły każdej sesji: `docs/sessions/<ID>-*.md`.
 
-### Etap 0 — przygotowanie (bez kodu aplikacji)
-
-| Sesja | Zadanie | Gotowe, gdy |
-| --- | --- | --- |
-| **S0** Bootstrap repo ✅ | Repo, szkielet Gradle (`:app` + `:core:*`), `CLAUDE.md`, `docs/*`, `.claude/settings.json`, `scripts/check.sh`, CI + release, zrzuty makiet w `design/screens/`, ikona i banner | Lokalnie i w CI buduje się APK „Hello Spinroom” |
-| **S1** Streszczenia | Przeczytać spec Sendspin 1.0 → `docs/SENDSPIN.md`. Pobrać `api-docs` z serwera → `docs/MA-API.md` (potwierdzić komendy z tabeli w projekcie). Rozstrzygnąć kwestię Noise KK | Oba pliki ≤ 250 linii, wszystkie komendy potwierdzone |
-
-### Etap 1 — odtwarzacz Sendspin → **v0.1.0**
-
-| Sesja | Zadanie | Gotowe, gdy |
-| --- | --- | --- |
-| **S2** Protokół | `:core:sendspin`: modele wiadomości (kotlinx.serialization), maszyna stanów połączenia, Noise, sync zegara. Testy JVM na nagranych przykładach | Testy przechodzą bez urządzenia |
-| **S3** Sieć | Serwer Ktor `/sendspin` na 8928, ogłoszenie mDNS `_sendspin._tcp`, zapasowe połączenie do `:8927` | TV widoczny w MA jako „Salon TV” |
-| **S4** Dźwięk | `:core:audio`: dekodery FLAC/Opus (MediaCodec), bufor wg znaczników czasu, AudioTrack, kompensacja opóźnienia | Muzyka puszczona z telefonu gra z TV, równo z innym głośnikiem |
-| **S5** Usługa i pilot | `MediaSessionService`, powiadomienie, przyciski multimedialne, autoodnowienie połączenia | Gra przy wygaszonym ekranie, Play/⏭ działają → **tag v0.1.0** |
-
-### Etap 2 — API MA i Teraz odtwarzane → **v0.2.0**
-
-| Sesja | Zadanie | Gotowe, gdy |
-| --- | --- | --- |
-| **S6** Klient API | `:core:ma-api`: WebSocket `:8095/ws`, logowanie → token długoterminowy w DataStore, zdarzenia `player_updated`/`queue_updated` jako Flow | Testy z nagranymi odpowiedziami serwera |
-| **S7** Motyw i szkielet UI | `:core:design` (kolory już są w `SpinroomColors`; dodać typografię Inter i wspólne kafelki), menu boczne, mini-odtwarzacz, ekran logowania/wyboru serwera | Nawigacja pilotem między pustymi ekranami |
-| **S8** Teraz odtwarzane | Pełny ekran: okładka, rozmyte tło, postęp, sterowanie, kolejka, losowo/powtarzanie | Wzorcowy ekran → **tag v0.2.0** |
-
-### Etap 3 — Biblioteka i Szczegóły → **v0.3.0**
-
-| Sesja | Zadanie | Gotowe, gdy |
-| --- | --- | --- |
-| **S9** Start | Wiersze kafelków (ostatnio odtwarzane, playlisty, radio) | Działa na danych z serwera |
-| **S10** Biblioteka | Zakładki, siatka z stronicowaniem (Paging 3), skok po literze, małe miniatury | Płynnie przy 2000+ albumów |
-| **S11** Szczegóły | Album / wykonawca, Odtwórz / Losowo / Do kolejki, menu kontekstowe (długie OK) | → **tag v0.3.0** |
-
-### Etap 4 — Źródła i Szukaj → **v0.4.0**
-
-| Sesja | Zadanie | Gotowe, gdy |
-| --- | --- | --- |
-| **S12** Źródła | `music/browse` — drzewo providerów (radio, YouTube Music), odtwarzanie stacji | Wtyczki widoczne bez osobnego kodu |
-| **S13** Szukaj | Klawiatura ekranowa, wyniki wg typu i źródła, wyszukiwanie głosowe (`RecognizerIntent`) | → **tag v0.4.0** |
-
-### Etap 5 — szlif i wydanie → **v1.0.0**
-
-| Sesja | Zadanie | Gotowe, gdy |
-| --- | --- | --- |
-| **S14** Szlif | Wygaszacz po 60 s, ulubione, kalibracja opóźnienia dźwięku, autostart po włączeniu TV, banner w launcherze | Wszystkie punkty zakresu z projektu |
-| **S15** Wydajność | Profil na najsłabszym urządzeniu, baseline profile, R8 | Brak przycięć w siatkach |
-| **S16** Wydanie | Podpisywanie, workflow wydań, README z instrukcją instalacji, zrzuty ekranu, CHANGELOG | → **tag v1.0.0** na GitHub Releases |
+Wersje: **v0.1.0** TV gra jako odtwarzacz (S05) · **v0.2.0** wszystkie ekrany (S08–S13) · **v0.3.0** szlif (S14a–c) · **v1.0.0** wydanie (S16).
 
 ---
 
@@ -77,7 +32,7 @@ Każdy etap kończy się APK do testu na TV i tagiem wersji. Szacunek: **~16 ses
 
 ### Gałęzie i wersje
 
-- `main` zawsze buduje się zielono. Każda sesja pracuje na gałęzi `s<nr>-<krótki-opis>` → PR → merge. Moduły `:feature:*` zakłada sesja, która buduje dany ekran.
+- `main` zawsze buduje się zielono. Każda sesja pracuje w osobnym worktree na gałęzi `s<nr>-<krótki-opis>` → PR → koordynator scala (squash) po zgodzie użytkownika. Moduły `:feature:*` zakłada S00b jako zaślepki.
 - Wersje SemVer; `versionCode` liczony z tagu (`v0.2.1` → `201`), więc nie trzeba go ręcznie podbijać.
 - `CHANGELOG.md` aktualizowany przy każdym tagu.
 
@@ -106,4 +61,5 @@ Klucz podpisu generujesz Ty, lokalnie (`keytool`), i wklejasz do Secrets jako ba
 | Sync dźwięku na TV z soundbarem | Opóźnienie po stronie MA + kalibracja w aplikacji (S14) |
 | Słabe przystawki | Paging, miniatury 200 px, test na najsłabszym urządzeniu w S15 |
 | Zmiany w API MA między wersjami | Komendy tylko w `:core:ma-api`, potwierdzone w `docs/MA-API.md` z numerem wersji serwera |
-| Sesje „gubią” kontekst | `STATUS.md` + `DECISIONS.md` aktualizowane na koniec każdej sesji |
+| Sesje „gubią” kontekst | Sekcja „Wynik” w pliku sesji + `DECISIONS.md`; `STATUS.md` prowadzi koordynator |
+| Konflikty przy pracy równoległej | S00b raz zmienia pliki wspólne; potem sesje dopisują nowe pliki; maks. 3 sesje naraz |

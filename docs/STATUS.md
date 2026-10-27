@@ -1,6 +1,6 @@
 # Status
 
-_Nadpisywany na koniec każdej sesji. Ostatnia: S0 (27.10.2026)._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S00 (27.10.2026)._
 
 ## Działa
 - Szkielet Gradle: `:app` + `:core:{design,sendspin,audio,ma-api,data}` (moduły core są puste, mają README).
@@ -13,10 +13,9 @@ _Nadpisywany na koniec każdej sesji. Ostatnia: S0 (27.10.2026)._
 ## Nie sprawdzone
 - APK nie był jeszcze uruchomiony na TV ani emulatorze.
 
-## Następna sesja: S1 (streszczenia)
-- Spec Sendspin 1.0 → `docs/SENDSPIN.md`; `http://<serwer>:8095/api-docs` → `docs/MA-API.md`.
-- Rozstrzygnąć: Noise `KKpsk2` wymaga znanych kluczy — jak spec rozwiązuje parowanie?
-- Potrzebne od użytkownika: adres serwera MA, wersja MA (cel ≥ 2.10.7), dane logowania do testów.
+## Następne
+- Plan sesji: `docs/SESSIONS.md` (prowadzi koordynator). Teraz: **S00b** (sama), potem fala 1: S01a, S01b, S07.
+- Od użytkownika przed S01b: adres i wersja serwera MA (cel ≥ 2.10.7).
 
 ## Pułapki
 - `local.properties`: `sdk.dir` z ukośnikami `/` (backslashe psują ścieżkę).
