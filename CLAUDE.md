@@ -3,9 +3,11 @@
 Android TV client for Music Assistant (unofficial). TV acts as its own MA player via Sendspin, browses the library via the MA WebSocket API. User-facing text and docs are in Polish; code, comments and commits in English.
 
 ## Start / end of every session
-- **Start:** read `docs/STATUS.md` and only your session's row in `docs/ROADMAP.md` (section 2). Nothing else up front.
-- **End:** overwrite `docs/STATUS.md` (≤ 40 lines), append one-line decisions to `docs/DECISIONS.md`, update the README of any module you changed, commit on branch `s<nr>-<topic>`, open a PR.
-- One session = one roadmap row. Don't start the next row in the same conversation.
+Sessions run in parallel (own worktree + branch each). Plan index: `docs/SESSIONS.md` (only the coordinator reads it).
+- **Start:** read only your file `docs/sessions/<ID>-*.md` and the "Wynik" section of the sessions it depends on. Nothing else up front.
+- **Work:** write only inside your session's scope. New API commands/repositories go in new files. Shared files (`settings.gradle.kts`, `libs.versions.toml`, `app/build.gradle.kts`, `docs/STATUS.md`, `docs/SESSIONS.md`) belong to the coordinator; if you must add a library, append it at the end of its section and say so in the PR.
+- **End:** fill "Wynik" in your session file (5–10 lines: what works, public API, what's next, pitfalls), append one-line decisions to `docs/DECISIONS.md`, update the README of modules you changed, commit on `s<nr>-<topic>`, push, open a PR. Don't merge — the coordinator does.
+- One session = one session file. Fixes after merge go to a new SFix session, not back into the old conversation.
 
 ## Commands
 - Build + unit tests (errors only): `bash scripts/check.sh`
