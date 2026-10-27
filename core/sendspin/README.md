@@ -1,6 +1,6 @@
 # :core:sendspin
 
-Sendspin 1.0 client protocol (spec `main`, Noise `KKpsk2`): handshake, pairing, messages, binary frames, clock sync. Roles: player, metadata, artwork (1 channel), controller. Pure logic, no sockets, no audio; JVM unit tests only. Spec digest: `docs/SENDSPIN.md`.
+Sendspin 1.0 client protocol (spec `main`, Noise `KKpsk2`): handshake, pairing, messages, binary frames, clock sync. Roles: player, metadata, artwork (1 channel), controller. Protocol logic is pure (no sockets, no audio); the `transport` package adds the WebSocket server/client and mDNS. JVM unit tests only. Spec digest: `docs/SENDSPIN.md`.
 
 ## Public API (for S03 transport, S04 audio, S05 service/UI)
 
@@ -36,6 +36,19 @@ val session = SendspinSession(config, credentials, scope /* lives as long as the
 - `noise.KKpsk2Handshake`, `NoiseTransport`, `Psk` (`SENTINEL`, `id()`), `StaticKeyPair`, `Base64Url` — own `KKpsk2` on noise-java primitives (noise-java has no `psk2` modifier); verified with the cacophony vector.
 - `protocol.MessageCodec` (envelope), `Messages.kt` (kotlinx.serialization payloads), `BinaryFrames` + `FragmentAssembler`.
 - `clock.TimeFilter` (Kalman filter port of Sendspin/time-filter), `SendspinClock`.
+
+### `transport` (S03) — sockets and mDNS
+The only Android/network code in the module (Ktor CIO server, OkHttp client, `NsdManager`); the manifest adds `INTERNET`.
+- `SendspinNetwork(context, session, scope, log)` — what the S05 service should own. Exactly one mode at a time:
+  - `startServer(name, port = 8928)` — server-initiated (default): WS server on `0.0.0.0:8928/sendspin` + mDNS `_sendspin._tcp` with TXT `path=/sendspin`, `name=<name>`.
+  - `startClient(host)` — fallback: connect to `ws://<host>:8927/sendspin` (`SendspinClient.urlFor` accepts `10.0.1.50`, `host:port`, IPv6, full `ws://` URL), exponential backoff 1 → 30 s.
+  - `stop()` (call `session.disconnect()` first for a goodbye), `shutdown()` (also stops the outgoing collector; not restartable).
+  - `bridge.receivedBinaryFrames/receivedBinaryBytes`, `bridge.isConnected` for diagnostics.
+- `NsdAdvertiser.deviceName(context)` — `Settings.Global.DEVICE_NAME`, else `Build.MODEL` (default player name).
+- Building blocks: `SessionBridge` (owns the single `outgoing` collector for the session's lifetime, one `WsLink` at a time, takes `receivedAtUs` on arrival), `SendspinServer`, `SendspinClient`, `NsdAdvertiser`, `truncateUtf8`.
+- Server rules: `Origin` header → 403; a second connection while one is up → closed with 1013 `busy` (no multi-server arbitration); WS ping every 15 s, max frame 4 MiB.
+
+Debug builds start the player at process start (`app/src/debug`, temporary until S05); see `SendspinDebug` KDoc for the `adb` start/stop broadcasts.
 
 ## Behaviour notes
 - Bursts of 8 `client/time`; fast bursts (100 ms apart) until converged (≥ 3 samples, σ ≤ 2 ms), then every 5 s.

@@ -10,10 +10,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    // Engine tests touch android.util.Log / Process; stubs return defaults instead of throwing.
+    testOptions.unitTests.isReturnDefaultValues = true
 }
 
 dependencies {
-    implementation(project(":core:sendspin"))
+    api(project(":core:sendspin")) // public API uses StreamFormat, AudioChunk, PlayerState
     implementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

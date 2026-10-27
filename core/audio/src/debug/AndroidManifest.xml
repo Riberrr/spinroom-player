@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: adb shell am start -n io.github.riberrr.spinroom.debug/io.github.riberrr.spinroom.core.audio.debug.AudioDebugActivity -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity
+            android:name="io.github.riberrr.spinroom.core.audio.debug.AudioDebugActivity"
+            android:exported="true"
+            android:label="@string/audio_debug_title"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+    </application>
+</manifest>

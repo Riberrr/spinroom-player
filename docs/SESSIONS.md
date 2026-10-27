@@ -38,9 +38,9 @@ Fala 7  S15 wydajność ──► S16 wydanie  ══► tag v1.0.0
 | ✅ | S01a Streszczenie Sendspin 1.0 | `S01a-sendspin-digest.md` | S00b | Sonnet | — |
 | ✅ | S01b Streszczenie API MA | `S01b-ma-api-digest.md` | S00b, serwer MA | Sonnet | — |
 | ✅ | S07 Motyw, Inter, nawigacja, mini-odtwarzacz | `S07-ui-shell.md` | S00b | Sonnet | — |
-| ⬜ | S02 Protokół Sendspin | `S02-protocol.md` | S01a | **Opus** | — |
-| ⬜ | S04 Silnik audio | `S04-audio.md` | S01a | **Opus** | — |
-| ⬜ | S06 Klient API MA + dane | `S06-ma-api.md` | S01b | Sonnet | — |
+| ✅ | S02 Protokół Sendspin | `S02-protocol.md` | S01a | **Opus** | — |
+| ✅ | S04 Silnik audio | `S04-audio.md` | S01a | **Opus** | — |
+| ✅ | S06 Klient API MA + dane | `S06-ma-api.md` | S01b | Sonnet | — |
 | ⬜ | S03 Sieć i wykrywanie | `S03-network.md` | S02 | **Opus** | — |
 | ⬜ | S08 Teraz odtwarzane (ekran-wzorzec) | `S08-now-playing.md` | S06, S07 | Sonnet | — |
 | ⬜ | S05 Usługa odtwarzania i pilot | `S05-service.md` | S03, S04 | **Opus** | **v0.1.0** |

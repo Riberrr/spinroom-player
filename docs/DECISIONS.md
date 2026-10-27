@@ -20,8 +20,14 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S01b: klient MA używa WS (`auth` z tokenem po server_info); login przez `POST /auth/login`, potem `auth/token/create` (1 rok) do DataStore; fixtures nagrywa `scripts/record-fixtures.sh` (Node 22+), ⚠️ w docs/MA-API.md = do potwierdzenia po nagraniu.
 - S01a: Spec Sendspin `main` wymaga Noise `KKpsk2` (TV = serwer WS 8928 + mDNS `_sendspin._tcp`); parowanie metodą Pairing PSK (token `SP:0…` + QR w Ustawieniach), `unpaired_access` domyślnie włączony; Noise: `org.signal.forks:noise-java:0.1.1` (do weryfikacji w S02), zestaw ChaChaPoly.
 - S01a: Role v1: player (flac > opus > pcm), metadata, artwork (1 kanał), controller; bez visualizer/color/source.
+- S04: Wyjście audio zawsze PCM16; PCM dekodowany w Kotlinie (bez MediaCodec), FLAC/Opus przez synchroniczny MediaCodec z PTS = czas serwera; FLAC dzielony na pojedyncze ramki (CRC-8 + CRC-16).
+- S04: Synchronizacja: dokładne wyrównanie ciszą/gubieniem na starcie i po dziurze, potem ±1 ramka na 200 (≤0,5 %), strefa martwa 100 µs, resync >10 ms; pozycja wyjścia z `getTimestamp` tylko gdy zgadza się z `playbackHeadPosition`.
+- S04: FLAC ogłaszany tylko gdy jest systemowy dekoder (API 27+); bez własnego dekodera FLAC na API 26.
 - S06: OkHttp przypięty do 5.1.0 (5.5.x wymaga compileSdk 37, AGP 9.0.1 wspiera 36); `ConnectionManager.start()` musi wywołać aplikacja; modele MA są jedną tolerancyjną klasą `MediaItem` (ItemMapping + pełne obiekty); `MaClient` niczego nie loguje.
 - S02: noise-java 0.1.1 nie obsługuje modyfikatora `psk2` (tylko stary `NoisePSK_`) — `KKpsk2` napisany sam na jej prymitywach (X25519, ChaChaPoly) + HKDF z JCA; zgodny z wektorem cacophony.
 - S02: `SendspinSession` jest jedna na aplikację i obsługuje jedno połączenie naraz; arbitraż wielu serwerów zostaje dla S03 (odrzucić drugie połączenie).
 - S02: zegar: serie po 8 `client/time`, co 100 ms do zbiegnięcia (≥ 3 próbki, σ ≤ 2 ms), potem co 5 s; filtr resetowany przy każdym nowym połączeniu.
 - S08: one activity-scoped NowPlayingViewModel shared by the screen and the shell mini player; VM talks to a small PlayerBackend interface (fakeable); Coil pinned to 3.3.0 (3.6.3 needs compileSdk 37).
+- S03: transport w `:core:sendspin/transport` (Ktor CIO serwer 8928 + `NsdManager`, OkHttp jako klient zapasowy 8927); `SessionBridge` jest jedynym kolektorem `outgoing`, drugie połączenie zamykane 1013 zamiast arbitrażu.
+- S03: tymczasowy start odtwarzacza tylko w `app/src/debug` (ContentProvider + broadcast), bez zmian w kodzie `main`; S05 go usuwa.
+- S03: MA 2.10.8 łączy się po mDNS i mówi Noise `KKpsk2` (Sentinel działa); bez zgody operatora/parowania aktywuje z pustym `activities`.
