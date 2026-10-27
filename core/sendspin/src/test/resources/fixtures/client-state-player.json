@@ -1,0 +1,1 @@
+{"type":"client/state","payload":{"available":true,"player":{"volume":40,"muted":false,"output_delay_ms":0,"required_lead_time_ms":300,"min_buffer_ms":500,"supported_commands":["volume","mute","set_output_delay"]},"artwork":{"channels":[{"source":"album","format":"jpeg","width":600,"height":600}]}}}
