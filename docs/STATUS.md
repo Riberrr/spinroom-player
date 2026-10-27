@@ -1,22 +1,31 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S00 (27.10.2026)._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S00b (27.10.2026)._
 
 ## Działa
-- Szkielet Gradle: `:app` + `:core:{design,sendspin,audio,ma-api,data}` (moduły core są puste, mają README).
-- `assembleDebug` przechodzi lokalnie i w CI; ekran „Hello Spinroom” z ikoną, nazwą i wersją.
-- Ikona adaptacyjna (koncepcja nr 10) + monochromatyczna, banner TV 320×180 (`design/banner.html` → `drawable-xhdpi/banner.png`).
-- `SpinroomColors` / `SpinroomTheme` w `:core:design`.
+- Szkielet Gradle: `:app` + `:core:{design,sendspin,audio,ma-api,data}` (core puste, z README).
+- 7 modułów `:feature:*` jako zaślepki (`<Nazwa>Screen`, `DetailsScreen(itemUri)`).
+- Nawigacja: `SpinroomNavHost` + `Routes` (start = `Routes.HOME`, `Routes.details(uri)` koduje URI).
+- Hilt + KSP w `:app`.
+- Katalog wersji ma już biblioteki dla kolejnych sesji: OkHttp, Ktor, kotlinx.serialization, Media3, Coil, DataStore, Paging.
+- `assembleDebug` + testy przechodzą lokalnie i w CI. Ikona, banner TV, `SpinroomColors`/`SpinroomTheme`.
 - Wersja z tagu: CI przekazuje `-PappVersion=1.2.3` → versionCode 10203. Lokalnie `0.0.0-dev`.
-- Workflow `release.yml` podpisuje APK kluczem z Secrets; dopóki go nie ma, kluczem debug (każde wydanie trzeba wtedy instalować po odinstalowaniu poprzedniego).
+- `release.yml` podpisuje APK kluczem z Secrets (na razie kluczem debug).
 
 ## Nie sprawdzone
-- APK nie był jeszcze uruchomiony na TV ani emulatorze.
+- APK nie był uruchomiony na TV ani emulatorze.
+- Tymczasowy pasek przycisków między zaślepkami (`WithStubNav`) nie był sprawdzony pilotem.
+
+## W toku
+- Fala 1: S01a (streszczenie Sendspin), S01b (streszczenie API MA), S07 (motyw, nawigacja, mini-odtwarzacz).
+- Serwer MA do testów: `http://10.0.1.50:8095/`, wersja 2.10.8.
 
 ## Następne
-- Plan sesji: `docs/SESSIONS.md` (prowadzi koordynator). Teraz: **S00b** (sama), potem fala 1: S01a, S01b, S07.
-- Od użytkownika przed S01b: adres i wersja serwera MA (cel ≥ 2.10.7).
+- Fala 2 po S01a/S01b: S02, S04 (← S01a), S06 (← S01b).
+- Od użytkownika przed S03: IP i model TV, debugowanie sieciowe włączone.
 
 ## Pułapki
-- `local.properties`: `sdk.dir` z ukośnikami `/` (backslashe psują ścieżkę).
+- `local.properties`: `sdk.dir` z ukośnikami `/`.
 - AGP 9 ma wbudowany Kotlin — nie dodawać pluginu `kotlin-android`.
+- Nowsze androidx (lifecycle 2.11, nav 2.10, hilt-nav 1.4) wymagają compileSdk 37 + AGP 9.1 — przypięte do 2.10.0 / 2.9.8 / 1.3.0.
+- Na Windowsie pilnować bitu wykonywalności `gradlew` i `scripts/*.sh` (`git update-index --chmod=+x`).

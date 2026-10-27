@@ -34,7 +34,7 @@ Fala 7  S15 wydajność ──► S16 wydanie  ══► tag v1.0.0
 | ✓ | Sesja | Plik | Zależy od | Model | Wersja po scaleniu |
 | --- | --- | --- | --- | --- | --- |
 | ✅ | S00 Bootstrap | — | — | — | — |
-| ⬜ | S00b Przygotowanie do pracy równoległej | `S00b-parallel-prep.md` | S00 | Sonnet | — |
+| ✅ | S00b Przygotowanie do pracy równoległej | `S00b-parallel-prep.md` | S00 | Sonnet | — |
 | ⬜ | S01a Streszczenie Sendspin 1.0 | `S01a-sendspin-digest.md` | S00b | Sonnet | — |
 | ⬜ | S01b Streszczenie API MA | `S01b-ma-api-digest.md` | S00b, serwer MA | Sonnet | — |
 | ⬜ | S07 Motyw, Inter, nawigacja, mini-odtwarzacz | `S07-ui-shell.md` | S00b | Sonnet | — |
