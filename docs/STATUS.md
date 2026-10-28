@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14b (28.10.2026). Wydanie **v0.3.0**._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S15 (28.10.2026). Wydanie **v0.3.1** (v0.3.0 wysypuje się przy starcie — nie używać)._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -11,7 +11,8 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14b (28.10.2026). 
 - Wygaszacz po 60 s bezczynności i autostart po włączeniu TV (`BootReceiver`, przełącznik w Ustawieniach; sprawdzone rebootem).
 - Kalibracja opóźnienia dźwięku w Ustawieniach (−500…+500 ms, na żywo; sprawdzone na TV) + sygnał testowy dla grup MA.
 - Menu pod przytrzymaniem OK (Odtwórz następny, Do kolejki, Ulubione) na Start, Bibliotece, Szczegółach, Szukaj, Źródłach; wiersz „Ulubione” na Start (`FavoritesApi`).
-- CI zielone, buduje debug i release (R8).
+- Release z R8 uruchomiony na TV: startuje, łączy się z MA. Coil z pamięcią podręczną, baseline profile.
+- CI zielone: debug, release (R8), lint.
 
 ## Nie sprawdzone
 - Granie z telefonu na TV, wygaszony ekran, pilot — wymaga zgody na „Telewizor” w MA (Odtwarzacze → Telewizor → Pairing → Setup).
@@ -19,10 +20,10 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14b (28.10.2026). 
 - Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione spoza biblioteki, `start_item`).
 
 ## W toku
-- S15 wydajność (Sonnet).
+- —
 
 ## Następne
-- S16 wydanie 1.0 ← S15. Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
+- S16 wydanie 1.0 (wymaga klucza podpisu w GitHub Secrets). Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
 - Braki względem makiet: Biblioteka (Ulubione, sortowanie, filtr źródeł, Ł/Ś po Z), Szczegóły (wiersz „Źródło”, podświetlenie grającego), Źródła (chipy-filtry).
 - Ekran tokenu parowania `SP:0…`, nazwa odtwarzacza. Do decyzji: „Teraz gra” w menu bocznym.
 
@@ -33,6 +34,6 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14b (28.10.2026). 
 - `docs/DECISIONS.md` — konflikty przy każdym równoległym PR, rozwiązywać sumą linii.
 - `Text` poza `Surface` jest czarny. Emulator: gęstość 480 → 1280 dp. Bit +x dla `gradlew`/`scripts/*.sh`.
 - Autostart wymaga jednego ręcznego uruchomienia po instalacji; Android 15+ blokuje start usługi z BOOT_COMPLETED.
-- Release z R8 nie był uruchomiony na TV — możliwe brakujące keep rules (serializacja, Hilt).
+- Debug i release naraz na jednym TV: oba biorą port 8928 → BindException (kandydat na SFix).
 - Sygnał testowy kalibracji przez MA niesprawdzony (TV nie był zalogowany).
 - Przytrzymanie OK na pilocie i usuwanie ulubionych spoza biblioteki niesprawdzone.

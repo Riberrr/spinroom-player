@@ -52,7 +52,7 @@ Fala 7  S15 wydajność ──► S16 wydanie  ══► tag v1.0.0
 | ✅ | S14a Wygaszacz i autostart | `S14a-screensaver.md` | S05, S08 | Sonnet | — |
 | ✅ | S14b Ulubione i menu kontekstowe | `S14b-favorites.md` | S09–S13 | Sonnet | — |
 | ✅ | S14c Kalibracja opóźnienia dźwięku | `S14c-latency.md` | S05 | **Opus** | **v0.3.0** (razem z S14a, S14b) |
-| ⬜ | S15 Wydajność | `S15-performance.md` | wszystkie ekrany | Sonnet | — |
+| ✅ | S15 Wydajność | `S15-performance.md` | wszystkie ekrany | Sonnet | — |
 | ⬜ | S16 Wydanie 1.0 | `S16-release.md` | S15 | Sonnet | **v1.0.0** |
 | — | SFix Poprawki z testów na TV | `SFix-template.md` | dowolna | Sonnet | patch `x.y.z` |
 
