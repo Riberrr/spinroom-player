@@ -16,7 +16,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -68,8 +68,9 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         Column(
             Modifier
                 .weight(1f)
-                .onPreviewKeyEvent { event ->
-                    // Left with nowhere to go inside the screen -> open the menu.
+                .onKeyEvent { event ->
+                    // Left with nowhere to go inside the screen -> open the menu. Bubble phase, so a
+                    // focused control that uses Left itself (e.g. the latency slider) handles it first.
                     if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
                         if (focusManager.moveFocus(FocusDirection.Left)) true else {
                             menuFocus.requestFocus()

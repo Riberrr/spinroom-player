@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="latency_entry">Opóźnienie dźwięku</string>
+    <string name="latency_title">Opóźnienie dźwięku</string>
+    <string name="latency_intro">Gdy telewizor gra razem z innym głośnikiem, dźwięk może się rozjeżdżać, np. przez soundbar. Przesuwaj strzałkami, aż oba zagrają równo.</string>
+    <string name="latency_value_zero">0 ms</string>
+    <string name="latency_value_earlier">+%1$d ms · telewizor gra wcześniej</string>
+    <string name="latency_value_later">−%1$d ms · telewizor gra później</string>
+    <string name="latency_left">później</string>
+    <string name="latency_right">wcześniej</string>
+    <string name="latency_reset">Wyzeruj</string>
+    <string name="latency_play">Graj sygnał testowy</string>
+    <string name="latency_starting">Włączam sygnał…</string>
+    <string name="latency_stop">Zatrzymaj sygnał</string>
+    <string name="latency_failed">Nie udało się włączyć sygnału. Sprawdź połączenie z serwerem.</string>
+    <string name="latency_no_group">Najpierw połącz w aplikacji Music Assistant ten telewizor w grupę z innym głośnikiem.</string>
+    <string name="latency_group">Gra razem z: %1$s</string>
+    <string name="latency_hint">Co sekundę piknięcie, co czwarte wyższe. Telewizor spóźniony? Strzałka w prawo. Telewizor pierwszy? Strzałka w lewo.</string>
+</resources>

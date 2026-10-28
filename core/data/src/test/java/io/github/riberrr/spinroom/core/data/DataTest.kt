@@ -30,6 +30,15 @@ class DataTest {
         assertEquals("tv1", after.playerId)
     }
 
+    @Test fun latencyStoreClampsAndDefaultsToZero() = runBlocking {
+        val s = LatencyStore(InMemoryPrefs())
+        assertEquals(0, s.calibrationMs.first())
+        s.setCalibrationMs(-120)
+        assertEquals(-120, s.calibrationMs.first())
+        s.setCalibrationMs(900)
+        assertEquals(500, s.calibrationMs.first())
+    }
+
     private fun items(n: Int, from: Int) = List(n) { MediaItem(itemId = "${from + it}", name = "Album ${from + it}") }
 
     @Test fun pagingSourceStopsOnShortPage() = runBlocking {
