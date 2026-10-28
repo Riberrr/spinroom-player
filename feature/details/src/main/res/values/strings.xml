@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="details_stub_title">Szczegóły — wkrótce</string>
+    <string name="details_play">Odtwórz</string>
+    <string name="details_shuffle">Losowo</string>
+    <string name="details_add_to_queue">Dodaj do kolejki</string>
+    <string name="details_favorite">Ulubione</string>
+    <string name="details_kind_album">ALBUM</string>
+    <string name="details_kind_artist">WYKONAWCA</string>
+    <string name="details_kind_playlist">PLAYLISTA</string>
+    <string name="details_tracks_count">%1$d utworów</string>
+    <string name="details_minutes">%1$d min</string>
+    <string name="details_top_tracks">Popularne utwory</string>
+    <string name="details_albums">Albumy</string>
+    <string name="details_loading">Wczytuję…</string>
+    <string name="details_error_message">Nie udało się wczytać tych danych</string>
+    <string name="details_retry">Spróbuj ponownie</string>
+    <string name="details_empty_title">Brak utworów</string>
+    <string name="details_empty_message">Nic tu jeszcze nie ma.</string>
+    <string name="details_msg_playing">Odtwarzam</string>
+    <string name="details_msg_queued">Dodano do kolejki</string>
+    <string name="details_msg_no_player">Najpierw wybierz odtwarzacz</string>
+    <string name="details_msg_failed">Nie udało się. Spróbuj ponownie</string>
 </resources>
