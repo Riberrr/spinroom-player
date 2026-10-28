@@ -33,3 +33,4 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S03: MA 2.10.8 łączy się po mDNS i mówi Noise `KKpsk2` (Sentinel działa); bez zgody operatora/parowania aktywuje z pustym `activities`.
 - S10: library grid uses own CountedLibrarySource (placeholders on) instead of LibraryRepository.pager; letter jump = binary search over name-sorted items.
 - S09: home rows via a HomeBackend seam; YouTube row = recommendation folders with provider containing `ytmusic` (hidden otherwise); station tiles play directly with play_media(replace) on settings.playerId; NavHost got only the three HomeScreen callbacks.
+- S11: details screen plays albums/playlists by item URI and artists/track-start by track list + start_item; selected player from settings, toast when none.
