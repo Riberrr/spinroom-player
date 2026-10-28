@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="sources_stub_title">Źródła — wkrótce</string>
+    <string name="sources_title">Źródła</string>
+    <string name="sources_subtitle">Wtyczki zainstalowane na serwerze</string>
+    <string name="sources_loading">Wczytuję…</string>
+    <string name="sources_count">%1$d pozycji</string>
+    <string name="sources_hint">OK — odtwórz lub otwórz folder · Wstecz — folder wyżej</string>
+    <string name="sources_playing">Odtwarzam: %1$s</string>
+    <string name="sources_no_player">Najpierw wybierz odtwarzacz w ustawieniach</string>
+    <string name="sources_play_failed">Nie udało się odtworzyć</string>
+    <string name="sources_error_title">Coś poszło nie tak</string>
+    <string name="sources_error">Nie mogę pobrać źródeł z serwera Music Assistant</string>
+    <string name="sources_items_error">Nie mogę otworzyć tego folderu</string>
+    <string name="sources_retry">Spróbuj ponownie</string>
+    <string name="sources_empty_title">Brak źródeł</string>
+    <string name="sources_empty_message">Dodaj wtyczki muzyczne w ustawieniach serwera</string>
+    <string name="sources_folder_empty">Ten folder jest pusty</string>
 </resources>

@@ -17,4 +17,8 @@ Radio i YouTube Music widoczne bez osobnego kodu dla każdej wtyczki. Zrzut z em
 Zmian w innych modułach `:feature:*`.
 
 ## Wynik
-_(uzupełnia sesja)_
+- `SourcesScreen()` (sygnatura bez zmian, NavHost nietknięty): lista providerów z `music/browse` (korzeń) po lewej, drzewo wybranego providera po prawej z okruszkami; zero kodu per wtyczka.
+- Folder (`media_type=folder`) otwiera się; element grywalny → `play_media(replace)` na `settings.playerId`; serduszko = ulubione (optymistycznie, z cofnięciem).
+- Back wychodzi folder wyżej, w korzeniu providera opuszcza ekran. Struktura jak w `:feature:nowplaying` (`SourcesBackend`, `SourcesViewModelTest` – 8 testów).
+- Nowych komend API nie było trzeba (`BrowseApi.browse`, `PlayerQueueApi.playMedia` już są).
+- Uwaga: brak zrzutu z emulatora i weryfikacji na żywym serwerze MA (kształt `music/browse` wzięty z docs/MA-API.md: `is_playable`, `path`, `media_type`); chipy-filtry z makiety pominięte (to zwykłe foldery w drzewie); format strumienia (AAC 128) pominięty — API go nie daje.
