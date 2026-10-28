@@ -1,0 +1,3 @@
+Nieoficjalny klient Music Assistant dla Android TV. Telewizor jest osobnym odtwarzaczem (Sendspin), a bibliotekę, radio i źródła przeglądasz pilotem.
+
+Projekt nie jest powiązany z Music Assistant ani z Open Home Foundation.

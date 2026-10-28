@@ -43,6 +43,11 @@ import io.github.riberrr.spinroom.feature.settings.latency.LatencyScreen
 fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
     val ui by viewModel.state.collectAsStateWithLifecycle()
     var showLatency by rememberSaveable { mutableStateOf(false) }
+    var showAbout by rememberSaveable { mutableStateOf(false) }
+    if (showAbout) {
+        AboutScreen(onBack = { showAbout = false }, modifier = modifier)
+        return
+    }
     if (showLatency) {
         LatencyScreen(onBack = { showLatency = false }, modifier = modifier)
         return
@@ -73,6 +78,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
         Text(stringResource(R.string.settings_autostart_hint), color = SpinroomColors.TextSecondary)
         statusText(ui.status)?.let { Text(it, color = if (ui.status is LoginStatus.Done) SpinroomColors.Success else SpinroomColors.TextPrimary) }
         Button(stringResource(R.string.latency_entry), onClick = { showLatency = true })
+        Button(stringResource(R.string.about_entry), onClick = { showAbout = true })
     }
 }
 

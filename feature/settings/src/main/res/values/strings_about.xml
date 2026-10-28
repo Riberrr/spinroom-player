@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_entry">O aplikacji</string>
+    <string name="about_title">O aplikacji</string>
+    <string name="about_version">Spinroom Player, wersja %1$s</string>
+    <string name="about_unofficial">To nieoficjalny klient dla Music Assistant. Projekt nie jest powiązany z Music Assistant ani z Open Home Foundation.</string>
+    <string name="about_licenses_title">Licencje</string>
+    <string name="about_licenses">Spinroom Player: licencja MIT.\nCzcionka Inter: SIL Open Font License 1.1.\nBiblioteki (Apache 2.0): AndroidX i Jetpack Compose, Media3, OkHttp, Ktor, Coil, Dagger Hilt, kotlinx.coroutines, kotlinx.serialization.</string>
+    <string name="about_back">Wróć</string>
+</resources>

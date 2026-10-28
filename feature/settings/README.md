@@ -6,3 +6,4 @@ Screen "Ustawienia" (`SettingsScreen`, signature unchanged; ViewModel via Hilt).
 
 Not done yet: Sendspin pairing/QR (S01a design), TV player name, discovery via mDNS. Add them as new sections in this screen.
 Depends on `:core:design`, `:core:data` (Hilt).
+Sub-screen "O aplikacji" (S16, `AboutScreen`): wersja, notka o nieoficjalnym kliencie, licencje. Opened from a button at the bottom, same in-screen pattern as latency.

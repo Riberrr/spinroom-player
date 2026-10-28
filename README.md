@@ -4,7 +4,7 @@ Aplikacja Android TV, która zamienia telewizor w osobny odtwarzacz [Music Assis
 
 > Nieoficjalny klient Music Assistant. Projekt nie jest powiązany z Music Assistant ani z Open Home Foundation.
 
-**Status:** wczesny rozwój. Szkielet aplikacji jest gotowy, odtwarzacz Sendspin powstaje w Etapie 1. Plan: [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** wersja 1.0. Zmiany: [CHANGELOG.md](CHANGELOG.md). Plan: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Wymagania
 - Music Assistant 2.10.7 lub nowszy (Sendspin 1.0)
@@ -17,7 +17,13 @@ Aplikacja Android TV, która zamienia telewizor w osobny odtwarzacz [Music Assis
    adb connect <IP-telewizora>
    adb install -r spinroom-vX.Y.Z.apk
    ```
-3. Do automatycznych aktualizacji możesz użyć [Obtainium](https://github.com/ImranR98/Obtainium) z adresem tego repozytorium.
+3. Do automatycznych aktualizacji dodaj repozytorium w [Obtainium](https://github.com/ImranR98/Obtainium) (źródło: GitHub, adres `https://github.com/Riberrr/spinroom-player`). Kolejne wersje instalują się na poprzednie bez odinstalowania, bo są podpisane tym samym kluczem.
+
+## Wygląd
+Makiety ekranów (zrzuty z urządzenia dojdą po wydaniu): [Start](design/screens/1-start.png), [Biblioteka](design/screens/2-biblioteka.png), [Źródła](design/screens/3-zrodla.png), [Szczegóły](design/screens/4-szczegoly.png), [Szukaj](design/screens/5-szukaj.png), [Teraz odtwarzane](design/screens/6-teraz-odtwarzane.png).
+
+## Pierwsze uruchomienie
+W Ustawieniach wpisz adres serwera Music Assistant i zaloguj się. W Music Assistant zatwierdź odtwarzacz „Telewizor” (Odtwarzacze, Telewizor, Pairing). „O aplikacji” w Ustawieniach pokazuje wersję i licencje.
 
 ## Budowanie
 JDK 17+ i Android SDK 36:
