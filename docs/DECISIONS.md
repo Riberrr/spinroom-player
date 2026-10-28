@@ -32,3 +32,4 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S03: tymczasowy start odtwarzacza tylko w `app/src/debug` (ContentProvider + broadcast), bez zmian w kodzie `main`; S05 go usuwa.
 - S03: MA 2.10.8 łączy się po mDNS i mówi Noise `KKpsk2` (Sentinel działa); bez zgody operatora/parowania aktywuje z pustym `activities`.
 - S09: home rows via a HomeBackend seam; YouTube row = recommendation folders with provider containing `ytmusic` (hidden otherwise); station tiles play directly with play_media(replace) on settings.playerId; NavHost got only the three HomeScreen callbacks.
+- S12: sources screen is generic over music/browse (providers = root items, folders open, playable items play_media replace); NavHost untouched; favorite heart is a separate focus stop since FocusSurface has no long-press.
