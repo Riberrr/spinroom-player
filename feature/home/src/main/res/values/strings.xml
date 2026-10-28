@@ -9,6 +9,7 @@
     <string name="home_youtube">YouTube Music</string>
     <string name="home_youtube_sub">Twoje miksy i playlisty</string>
     <string name="home_recent">Ostatnio odtwarzane</string>
+    <string name="home_favorites">Ulubione</string>
     <string name="home_playlists">Twoje playlisty</string>
     <string name="home_stations">Ulubione stacje</string>
     <string name="home_recommended">Polecane z YouTube Music</string>

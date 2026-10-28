@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="menu_play_next">Odtwórz następny</string>
+    <string name="menu_add_to_queue">Do kolejki</string>
+    <string name="menu_favorite_add">Dodaj do ulubionych</string>
+    <string name="menu_favorite_remove">Usuń z ulubionych</string>
+</resources>

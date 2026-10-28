@@ -50,6 +50,8 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+import io.github.riberrr.spinroom.core.design.ItemMenuHost
+import io.github.riberrr.spinroom.core.design.LocalItemMenu
 import io.github.riberrr.spinroom.core.design.EmptyState
 import io.github.riberrr.spinroom.core.design.ErrorState
 import io.github.riberrr.spinroom.core.design.FocusSurface
@@ -119,7 +121,7 @@ fun SearchScreen(
     }
 
     val actions = SearchActions.of(viewModel, onOpenDetails, startVoice)
-    SearchContent(
+    ItemMenuHost { SearchContent(
         state = state,
         actions = actions,
         onNoticeShown = viewModel::onNoticeShown,
@@ -132,7 +134,7 @@ fun SearchScreen(
                 false
             }
         },
-    )
+    ) }
 }
 
 /** Stateless UI. Left: query, mic, keyboard. Right: filter chips and grouped results. */
@@ -322,7 +324,8 @@ private fun kindLabel(row: SearchRow): String = when (row.kind) {
 
 @Composable
 private fun BestCard(row: SearchRow, onClick: () -> Unit) {
-    FocusSurface(onClick, Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), focusedScale = 1.02f) {
+    val menu = LocalItemMenu.current
+    FocusSurface(onClick, Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), focusedScale = 1.02f, onLongClick = { menu(row.uri, row.title) }) {
         Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
             Cover(row, 72, round = row.kind == ResultKind.ARTIST)
             Column(Modifier.weight(1f)) {
@@ -337,7 +340,8 @@ private fun BestCard(row: SearchRow, onClick: () -> Unit) {
 
 @Composable
 private fun ResultRow(row: SearchRow, onClick: () -> Unit) {
-    FocusSurface(onClick, Modifier.fillMaxWidth(), shape = RoundedCornerShape(10.dp), focusedScale = 1.02f) {
+    val menu = LocalItemMenu.current
+    FocusSurface(onClick, Modifier.fillMaxWidth(), shape = RoundedCornerShape(10.dp), focusedScale = 1.02f, onLongClick = { menu(row.uri, row.title) }) {
         Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Cover(row, 36, round = row.kind == ResultKind.ARTIST)
             Column(Modifier.weight(1f)) {

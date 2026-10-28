@@ -39,6 +39,8 @@ import androidx.tv.material3.Text
 import coil3.compose.SubcomposeAsyncImage
 import io.github.riberrr.spinroom.core.design.CoverPlaceholder
 import io.github.riberrr.spinroom.core.design.CoverTile
+import io.github.riberrr.spinroom.core.design.ItemMenuHost
+import io.github.riberrr.spinroom.core.design.LocalItemMenu
 import io.github.riberrr.spinroom.core.design.EmptyState
 import io.github.riberrr.spinroom.core.design.ErrorState
 import io.github.riberrr.spinroom.core.design.FocusSurface
@@ -72,7 +74,7 @@ fun HomeScreen(
     val actions = remember(viewModel, onOpenNowPlaying, onOpenSources, onOpenDetails) {
         HomeActions(onOpenNowPlaying, onOpenSources, onOpenDetails, viewModel::onPlayStation, viewModel::onRetry)
     }
-    HomeContent(ui, actions, modifier)
+    ItemMenuHost { HomeContent(ui, actions, modifier) }
 }
 
 /** Stateless screen: everything comes from [state], everything goes out through [actions]. */
@@ -110,13 +112,17 @@ private fun Rows(state: HomeUiState, actions: HomeActions) {
         if (state.recent.isNotEmpty()) item {
             SectionRow(stringResource(R.string.home_recent)) { items(state.recent, key = { it.key }) { Tile(it, actions) } }
         }
+        if (state.favorites.isNotEmpty()) item {
+            SectionRow(stringResource(R.string.home_favorites)) { items(state.favorites, key = { it.key }) { Tile(it, actions) } }
+        }
         if (state.playlists.isNotEmpty()) item {
             SectionRow(stringResource(R.string.home_playlists)) { items(state.playlists, key = { it.key }) { Tile(it, actions) } }
         }
         if (state.stations.isNotEmpty()) item {
             SectionRow(stringResource(R.string.home_stations)) {
                 items(state.stations, key = { it.key }) { s ->
-                    StationTile(s.name, s.provider, s.initials, onClick = { actions.onPlayStation(s) })
+                    val menu = LocalItemMenu.current
+                    StationTile(s.name, s.provider, s.initials, onClick = { actions.onPlayStation(s) }, onLongClick = s.uri?.let { u -> { menu(u, s.name) } })
                 }
             }
         }
@@ -202,10 +208,12 @@ private fun LinkCard(title: String, subtitle: String, onClick: () -> Unit, modif
 
 @Composable
 private fun Tile(tile: HomeTile, actions: HomeActions) {
+    val menu = LocalItemMenu.current
     val subtitle = tile.subtitle.ifBlank { if (tile.isPlaylist) stringResource(R.string.home_playlist_label) else "" }
     CoverTile(
         title = tile.title, subtitle = subtitle,
         onClick = { tile.uri?.let(actions.onOpenDetails) },
+        onLongClick = tile.uri?.let { u -> { menu(u, tile.title) } },
         cover = { Cover(tile.coverUrl, Modifier.fillMaxSize()) },
     )
 }

@@ -15,3 +15,6 @@ All components are stateless; texts are passed in (Polish, from `strings.xml` of
 
 Type scale (TV, min 14 sp): display 48/40/32, headline 32/28/24, title 22/18/16, body 18/16/14, label 16/14/14.
 Layout assumes a 1280×720 dp screen; components use weights so they also hold at 960 dp.
+
+## Context menu (S14b)
+`FocusSurface/CoverTile/StationTile(onLongClick)` = hold OK. `ItemMenuHost { screen }` (wrap once per screen) provides `LocalItemMenu` — tiles call `LocalItemMenu.current(uri, title)` — and shows `ContextMenu` (Odtwórz następny / Do kolejki / Ulubione). Logic: `ItemMenuViewModel` in `:core:data` (plays on `settings.playerId`; favorite flag via `music/item_by_uri`). Menu strings live in this module.

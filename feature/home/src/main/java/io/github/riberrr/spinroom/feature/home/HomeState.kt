@@ -37,6 +37,7 @@ data class HomeUiState(
     val failed: Boolean = false,
     val continueCard: ContinueCard? = null,
     val recent: List<HomeTile> = emptyList(),
+    val favorites: List<HomeTile> = emptyList(),
     val playlists: List<HomeTile> = emptyList(),
     val stations: List<StationTileState> = emptyList(),
     val recommended: List<HomeTile> = emptyList(),
@@ -44,7 +45,7 @@ data class HomeUiState(
 ) {
     val isConnected: Boolean get() = connection is MaConnectionState.Connected
     val hasContent: Boolean
-        get() = continueCard != null || recent.isNotEmpty() || playlists.isNotEmpty() || stations.isNotEmpty() || recommended.isNotEmpty()
+        get() = continueCard != null || recent.isNotEmpty() || favorites.isNotEmpty() || playlists.isNotEmpty() || stations.isNotEmpty() || recommended.isNotEmpty()
 
     /** Only when the YouTube Music provider is installed and returned recommendations. */
     val showYoutube: Boolean get() = recommended.isNotEmpty()

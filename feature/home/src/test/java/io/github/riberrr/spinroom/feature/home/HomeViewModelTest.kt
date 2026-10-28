@@ -35,6 +35,7 @@ private class FakeBackend : HomeBackend {
     var recent: List<MediaItem> = emptyList()
     var playlistItems: List<MediaItem> = emptyList()
     var radios: List<MediaItem> = emptyList()
+    var favs: List<MediaItem> = emptyList()
     var recs: List<RecommendationFolder> = emptyList()
     var failAll = false
     val played = mutableListOf<Pair<String, String>>()
@@ -48,6 +49,7 @@ private class FakeBackend : HomeBackend {
     override suspend fun recentlyPlayed() = guard(recent)
     override suspend fun playlists() = guard(playlistItems)
     override suspend fun favoriteRadios() = guard(radios)
+    override suspend fun favorites() = guard(favs)
     override suspend fun recommendations() = guard(recs)
     override suspend fun play(queueId: String, uri: String) { played += queueId to uri }
 }
@@ -87,6 +89,15 @@ class HomeViewModelTest {
         assertTrue(s.playlists.single().isPlaylist)
         assertEquals("JJ", s.stations.single().initials)
         assertFalse(s.showYoutube)
+        vm.viewModelScopeCancel()
+    }
+
+    @Test fun `favorites row filled from favorite items`() = runTest(dispatcher) {
+        val b = FakeBackend().apply { favs = listOf(album("7", "Port 14", "Kwartet Północ")) }
+        val vm = HomeViewModel(b)
+        b.connectionState.value = connected()
+        runCurrent()
+        assertEquals("Port 14", vm.state.value.favorites.single().title)
         vm.viewModelScopeCancel()
     }
 

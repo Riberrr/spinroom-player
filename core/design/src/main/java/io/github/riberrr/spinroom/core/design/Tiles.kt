@@ -39,10 +39,12 @@ fun FocusSurface(
     containerColor: Color = SpinroomColors.Surface,
     focusedContainerColor: Color = SpinroomColors.SurfaceHigh,
     focusedScale: Float = 1.05f,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Surface(
         onClick = onClick,
+        onLongClick = onLongClick,
         modifier = modifier,
         shape = ClickableSurfaceDefaults.shape(shape),
         colors = ClickableSurfaceDefaults.colors(
@@ -78,10 +80,11 @@ fun CoverTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 148.dp,
+    onLongClick: (() -> Unit)? = null,
     cover: @Composable () -> Unit = { CoverPlaceholder(Modifier.fillMaxSize()) },
 ) {
     Column(modifier.width(size)) {
-        FocusSurface(onClick, Modifier.size(size), focusedScale = 1.08f) { cover() }
+        FocusSurface(onClick, Modifier.size(size), focusedScale = 1.08f, onLongClick = onLongClick) { cover() }
         Text(title, Modifier.padding(top = 10.dp), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(subtitle, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -113,8 +116,9 @@ fun StationTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     badgeColor: Color = Color(0xFF7D3F4A),
+    onLongClick: (() -> Unit)? = null,
 ) {
-    FocusSurface(onClick, modifier.width(206.dp), shape = RoundedCornerShape(10.dp), focusedScale = 1.06f) {
+    FocusSurface(onClick, modifier.width(206.dp), shape = RoundedCornerShape(10.dp), focusedScale = 1.06f, onLongClick = onLongClick) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.size(40.dp).background(badgeColor, RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
                 Text(initials, style = MaterialTheme.typography.labelMedium, color = SpinroomColors.TextPrimary)
