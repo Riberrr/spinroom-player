@@ -49,7 +49,7 @@ Fala 7  S15 wydajność ──► S16 wydanie  ══► tag v1.0.0
 | ✅ | S12 Źródła (wtyczki) | `S12-sources.md` | S08 | Sonnet | — |
 | ✅ | S13 Szukaj | `S13-search.md` | S08 | Sonnet | — |
 | ✅ | S11 Szczegóły albumu/wykonawcy | `S11-details.md` | S10 | Sonnet | **v0.2.0** (gdy S08–S13 scalone) |
-| ⬜ | S14a Wygaszacz i autostart | `S14a-screensaver.md` | S05, S08 | Sonnet | — |
+| ✅ | S14a Wygaszacz i autostart | `S14a-screensaver.md` | S05, S08 | Sonnet | — |
 | ⬜ | S14b Ulubione i menu kontekstowe | `S14b-favorites.md` | S09–S13 | Sonnet | — |
 | ⬜ | S14c Kalibracja opóźnienia dźwięku | `S14c-latency.md` | S05 | **Opus** | **v0.3.0** (razem z S14a, S14b) |
 | ⬜ | S15 Wydajność | `S15-performance.md` | wszystkie ekrany | Sonnet | — |
