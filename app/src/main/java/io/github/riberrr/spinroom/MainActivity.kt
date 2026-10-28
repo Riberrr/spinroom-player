@@ -1,5 +1,6 @@
 package io.github.riberrr.spinroom
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -34,6 +35,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Any key restarts the idle timer; the key that wakes the screensaver is consumed (it only wakes). */
+    @SuppressLint("RestrictedApi") // false positive: overriding androidx.core ComponentActivity.dispatchKeyEvent
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         inputTick++
         if (screensaver) {

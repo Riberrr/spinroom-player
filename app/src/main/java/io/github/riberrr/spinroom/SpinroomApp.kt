@@ -2,7 +2,13 @@ package io.github.riberrr.spinroom
 
 import android.app.Application
 import android.util.Log
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
 import dagger.hilt.android.HiltAndroidApp
+import okio.Path.Companion.toOkioPath
 import io.github.riberrr.spinroom.core.audio.service.PlaybackHost
 import io.github.riberrr.spinroom.core.data.LatencyStore
 import io.github.riberrr.spinroom.core.data.SettingsStore
@@ -16,11 +22,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @HiltAndroidApp
-class SpinroomApp : Application(), PlaybackHost {
+class SpinroomApp : Application(), PlaybackHost, SingletonImageLoader.Factory {
     @Inject lateinit var credentials: SendspinCredentials
     @Inject lateinit var settings: SettingsStore
     @Inject @AppScope lateinit var appScope: CoroutineScope
     @Inject lateinit var latency: LatencyStore
+
+    /** Covers are small server-resized thumbnails: 20% memory cache + 100 MB disk cache keep grid scrolling off the network. */
+    override fun newImageLoader(context: PlatformContext): ImageLoader =
+        ImageLoader.Builder(context)
+            .memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.2).build() }
+            .diskCache { DiskCache.Builder().directory(cacheDir.resolve("covers").toOkioPath()).maxSizeBytes(100L * 1024 * 1024).build() }
+            .build()
 
     override suspend fun sendspinCredentials(): CredentialStore = credentials.get()
 
