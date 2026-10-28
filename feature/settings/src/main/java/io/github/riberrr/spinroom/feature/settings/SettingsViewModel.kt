@@ -31,6 +31,7 @@ data class SettingsUiState(
     val username: String = "",
     val password: String = "",
     val loggedIn: Boolean = false,
+    val autostart: Boolean = true,
     val status: LoginStatus = LoginStatus.Idle,
     val connection: MaConnectionState = MaConnectionState.Disconnected,
 )
@@ -52,12 +53,19 @@ class SettingsViewModel @Inject constructor(
             val s = settings.settings.first()
             _state.update { it.copy(address = s.serverAddress, loggedIn = s.isConfigured) }
         }
+        viewModelScope.launch { settings.settings.collect { s -> _state.update { it.copy(autostart = s.autostart) } } }
         viewModelScope.launch { connection.state.collect { c -> _state.update { it.copy(connection = c) } } }
     }
 
     fun onAddress(v: String) = _state.update { it.copy(address = v) }
     fun onUsername(v: String) = _state.update { it.copy(username = v) }
     fun onPassword(v: String) = _state.update { it.copy(password = v) }
+
+    fun onAutostart() {
+        val next = !_state.value.autostart
+        _state.update { it.copy(autostart = next) }
+        viewModelScope.launch { settings.setAutostart(next) }
+    }
 
     fun login() {
         val s = _state.value

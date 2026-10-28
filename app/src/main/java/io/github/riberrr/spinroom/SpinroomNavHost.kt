@@ -52,7 +52,7 @@ fun SpinroomNavHost(navController: NavHostController = rememberNavController()) 
                 arguments = listOf(navArgument(Routes.DETAILS_ARG) { type = NavType.StringType }),
             ) { entry ->
                 val itemUri = entry.arguments?.getString(Routes.DETAILS_ARG).orEmpty()
-                DetailsScreen(itemUri = itemUri)
+                DetailsScreen(itemUri = itemUri, onOpenItem = { navController.navigate(Routes.details(it)) })
             }
         }
     }
