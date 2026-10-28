@@ -31,5 +31,9 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S03: transport w `:core:sendspin/transport` (Ktor CIO serwer 8928 + `NsdManager`, OkHttp jako klient zapasowy 8927); `SessionBridge` jest jedynym kolektorem `outgoing`, drugie połączenie zamykane 1013 zamiast arbitrażu.
 - S03: tymczasowy start odtwarzacza tylko w `app/src/debug` (ContentProvider + broadcast), bez zmian w kodzie `main`; S05 go usuwa.
 - S03: MA 2.10.8 łączy się po mDNS i mówi Noise `KKpsk2` (Sentinel działa); bez zgody operatora/parowania aktywuje z pustym `activities`.
+- S05: usługa odtwarzania w `:core:audio/service` (moduł właściciel `MediaSessionService`); aplikacja daje zależności przez `PlaybackHost` na `Application`, bez Hilt w `:core:audio`.
+- S05: własne powiadomienie pierwszoplanowe zamiast Media3 (`onUpdateNotification` puste) — odbiornik Sendspin musi być osiągalny także bez grania.
+- S05: sekrety Sendspin w osobnym pliku DataStore `sendspin_credentials` (prywatne dla aplikacji, `allowBackup=false`), bez Keystore; `:core:data` ma teraz `api(:core:sendspin)`.
+- S05: odtwarzacz Media3 ma jeden element (bieżący utwór); ⏭/⏮ zawsze idą do MA (kolejka jest po stronie serwera).
 - S10: library grid uses own CountedLibrarySource (placeholders on) instead of LibraryRepository.pager; letter jump = binary search over name-sorted items.
 - S09: home rows via a HomeBackend seam; YouTube row = recommendation folders with provider containing `ytmusic` (hidden otherwise); station tiles play directly with play_media(replace) on settings.playerId; NavHost got only the three HomeScreen callbacks.

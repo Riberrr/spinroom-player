@@ -8,6 +8,7 @@ Repositories over `:core:ma-api`, settings in DataStore, Hilt wiring (`di/DataMo
 - `LibraryRepository.pager(type, favorite?, search?, orderBy)` → `Flow<PagingData<MediaItem>>` (50/page, end = short page); plus count, album/artist/playlist details and tracks, favorites.
 - `PlayerRepository` — `queue(id)`, `queueItems(id)`, `players()` as live Flows (snapshot + events); transport via `.api` (`PlayerQueueApi`).
 - `BrowseRepository` (recently played, recommendations, browse), `SearchRepository`.
+- `SendspinCredentialStore` (S05) — Sendspin identity key, pairing PSK and pairing records (LRU, 8) in their own DataStore file `sendspin_credentials`; load via `di.SendspinCredentials.get()` (once per process). Implements `CredentialStore` from `:core:sendspin` (now an `api` dependency). Never log the values.
 - New repositories: add a new file and a `@Provides` in a new Hilt module file.
 
 Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (the file-backed one fails its rename on Windows JVMs).
