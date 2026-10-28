@@ -63,8 +63,14 @@ interface AudioEngine {
 
     fun setMuted(muted: Boolean)
 
-    /** Fixed device delay to compensate (calibration in S14c), 0–5000 ms. */
+    /** Sendspin `output_delay_ms` (set by MA via `set_output_delay`, reported back), 0–5000 ms. */
     fun setOutputDelayMs(delayMs: Int)
+
+    /**
+     * Local calibration on top of [setOutputDelayMs], −500…+500 ms (S14c). Positive = audio leaves earlier
+     * (slow soundbar), negative = later. Not reported to the server. Applies at once (realigns playback).
+     */
+    fun setCalibrationMs(offsetMs: Int)
 
     /** Stops and frees the threads; the engine cannot be used afterwards. */
     fun release()

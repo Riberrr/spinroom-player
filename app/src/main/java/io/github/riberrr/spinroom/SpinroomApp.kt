@@ -4,12 +4,14 @@ import android.app.Application
 import android.util.Log
 import dagger.hilt.android.HiltAndroidApp
 import io.github.riberrr.spinroom.core.audio.service.PlaybackHost
+import io.github.riberrr.spinroom.core.data.LatencyStore
 import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.data.di.AppScope
 import io.github.riberrr.spinroom.core.data.di.SendspinCredentials
 import io.github.riberrr.spinroom.core.sendspin.session.CredentialStore
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -18,12 +20,15 @@ class SpinroomApp : Application(), PlaybackHost {
     @Inject lateinit var credentials: SendspinCredentials
     @Inject lateinit var settings: SettingsStore
     @Inject @AppScope lateinit var appScope: CoroutineScope
+    @Inject lateinit var latency: LatencyStore
 
     override suspend fun sendspinCredentials(): CredentialStore = credentials.get()
 
     override val softwareVersion: String get() = BuildConfig.VERSION_NAME
 
     override val notificationIcon: Int get() = R.drawable.ic_launcher_monochrome
+
+    override val audioCalibrationMs: Flow<Int> get() = latency.calibrationMs
 
     /**
      * MA registers a Sendspin player under its client id: make it the app's player

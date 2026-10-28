@@ -98,6 +98,10 @@ data class Player(
     @SerialName("volume_level") val volumeLevel: Int? = null,
     @SerialName("volume_muted") val volumeMuted: Boolean? = null,
     @SerialName("current_media") val currentMedia: PlayerMedia? = null,
+    /** Leader's player id when this player is synced to another one (S14c). */
+    @SerialName("synced_to") val syncedTo: String? = null,
+    /** Members when this player leads a sync group or is a group player (S14c). */
+    @SerialName("group_members") val groupMembers: List<String> = emptyList(),
 )
 
 @Serializable

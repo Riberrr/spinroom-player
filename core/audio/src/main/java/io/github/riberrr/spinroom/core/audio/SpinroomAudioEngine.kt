@@ -53,6 +53,8 @@ class SpinroomAudioEngine(
     private var loop: OutputLoop? = null
 
     @Volatile private var outputFormat: PcmFormat? = null
+    @Volatile private var calibrationMs = 0
+    @Volatile private var outputLeadMs = DEFAULT_LEAD_TIME_MS
     @Volatile private var resetOutput = false
 
     private val _state = MutableStateFlow<AudioEngineState>(AudioEngineState.Idle)
@@ -120,7 +122,30 @@ class SpinroomAudioEngine(
     override fun setOutputDelayMs(delayMs: Int) {
         val ms = delayMs.coerceIn(0, MAX_OUTPUT_DELAY_MS)
         _playerState.update { it.copy(outputDelayMs = ms) }
-        synchronized(lock) { scheduler.outputDelayUs = ms * 1000L }
+        applyDelay()
+    }
+
+    override fun setCalibrationMs(offsetMs: Int) {
+        calibrationMs = offsetMs.coerceIn(-MAX_CALIBRATION_MS, MAX_CALIBRATION_MS)
+        applyDelay()
+    }
+
+    /** Scheduler delay = protocol delay + local calibration; a change realigns at once instead of drifting. */
+    private fun applyDelay() {
+        val totalUs = (_playerState.value.outputDelayMs + calibrationMs) * 1000L
+        synchronized(lock) {
+            if (scheduler.outputDelayUs != totalUs) {
+                scheduler.outputDelayUs = totalUs
+                scheduler.unlock()
+            }
+        }
+        updateLeadTime()
+    }
+
+    /** Playing earlier (positive calibration) needs that much more lead time from the server. */
+    private fun updateLeadTime() {
+        val lead = maxOf(DEFAULT_LEAD_TIME_MS, outputLeadMs) + maxOf(0, calibrationMs)
+        _playerState.update { if (it.requiredLeadTimeMs == lead) it else it.copy(requiredLeadTimeMs = lead) }
     }
 
     override fun release() {
@@ -177,8 +202,8 @@ class SpinroomAudioEngine(
                         written = 0
                         appliedAmp = -1f
                         synchronized(lock) { scheduler.unlock() }
-                        val leadMs = ((output.bufferDurationUs + LEAD_MARGIN_US) / 1000).toInt()
-                        _playerState.update { it.copy(requiredLeadTimeMs = maxOf(DEFAULT_LEAD_TIME_MS, leadMs)) }
+                        outputLeadMs = ((output.bufferDurationUs + LEAD_MARGIN_US) / 1000).toInt()
+                        updateLeadTime()
                     }
                     val ps = _playerState.value
                     val amp = Volume.amplitude(ps.volume, ps.muted)
@@ -234,6 +259,7 @@ class SpinroomAudioEngine(
         private const val DEFAULT_LEAD_TIME_MS = 300
         private const val MIN_BUFFER_MS = 200
         private const val MAX_OUTPUT_DELAY_MS = 5000
+        const val MAX_CALIBRATION_MS = 500
 
         /** Decode time + startup until the first AudioTrack timestamp (silence is written meanwhile). */
         private const val LEAD_MARGIN_US = 250_000L

@@ -22,10 +22,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -47,6 +49,8 @@ class SendspinReceiver(
     private val log: (String) -> Unit,
     /** Called on every `server/activate` with this TV's Sendspin client id. */
     private val onConnected: (clientId: String, serverName: String?) -> Unit = { _, _ -> },
+    /** Local latency calibration (S14c), applied live. */
+    private val calibrationMs: Flow<Int> = emptyFlow(),
 ) {
     private val app = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -115,6 +119,12 @@ class SendspinReceiver(
     fun start() {
         scope.launch { session.events.collect(engine::handle) } // the session's single PlayerStream collector
         scope.launch { engine.playerState.collect(session::report) }
+        scope.launch {
+            calibrationMs.distinctUntilChanged().collect {
+                engine.setCalibrationMs(it)
+                log("calibration: $it ms")
+            }
+        }
         scope.launch { session.state.collect { log("state: $it") } }
         scope.launch { session.notices.collect { log("notice: $it") } }
         scope.launch {

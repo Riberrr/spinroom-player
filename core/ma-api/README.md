@@ -8,7 +8,7 @@ Typed Music Assistant WebSocket client (`ws://<host>:8095/ws`). Pure Kotlin + Ok
   - `command(name, args)` waits for the connection, merges `partial` chunks, throws `MaException(code)` (20 = auth required, 23 = bad token).
   - `MaClient.normalizeBaseUrl("10.0.1.50")` → `http://10.0.1.50:8095`.
 - One file per command group — **add new groups as new files**, don't edit others: `LibraryApi` (library_items, count, get, album/artist/playlist tracks, favorites), `BrowseApi` (recently played, recommendations, browse, search), `PlayerQueueApi` (play_media, transport, shuffle/repeat, queue items, volume, players), `AuthApi` (login → long-lived token), `ImageUrls` (imageproxy URL).
-- `MaModels.kt`: `MediaItem` (one tolerant class for all media types and ItemMapping), `Player`, `PlayerQueue`, `QueueItem`, `SearchResults`, `RecommendationFolder`, `MaEvent` (`asPlayer()`, `asQueue()`), `MaJson` (ignores unknown keys).
+- `MaModels.kt`: `MediaItem` (one tolerant class for all media types and ItemMapping), `Player` (incl. `syncedTo`, `groupMembers` — S14c), `PlayerQueue`, `QueueItem`, `SearchResults`, `RecommendationFolder`, `MaEvent` (`asPlayer()`, `asQueue()`), `MaJson` (ignores unknown keys).
 - `args(...)` / `decode()` / `decodeList()` (internal, `ApiSupport.kt`) — lists skip items that don't parse.
 
 ## Pitfalls

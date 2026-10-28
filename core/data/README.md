@@ -2,6 +2,7 @@
 
 Repositories over `:core:ma-api`, settings in DataStore, Hilt wiring (`di/DataModule.kt`, singletons). Package `io.github.riberrr.spinroom.core.data`.
 
+- `LatencyStore` (S14c) — `calibrationMs: Flow<Int>` / `setCalibrationMs`, −500…+500, in the shared `settings` DataStore (`di/LatencyModule.kt`).
 - `SettingsStore` — `settings: Flow<AppSettings>` (`serverAddress`, `token`, `playerId`, `isConfigured`); `saveLogin`, `setPlayerId`, `clearToken`. Password is never stored.
 - `ConnectionManager.start()` — idempotent; connects/disconnects the shared `MaClient` whenever settings change. **Someone must inject it and call `start()` early** (currently only `SettingsViewModel` does; the app should call it from `SpinroomApp`/`MainActivity`).
 - `AuthRepository.login(address, user, password)` — login, creates a 1-year token, saves it. Throws `AuthApi.LoginFailed` or network exceptions.

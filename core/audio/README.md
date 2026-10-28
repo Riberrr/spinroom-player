@@ -11,7 +11,9 @@ engine.playerState.collect(reporter::report)            // client/state player o
 val caps: PlayerCapabilities = AudioCapabilities.probe() // client/hello player@v1_support
 ```
 - `AudioEngine.start(format)`, `submit(AudioChunk)`, `clear()`, `stop()`, `release()` — non-blocking, run in call order.
-- `setVolume(0..100)` (amplitude `(v/100)^1.5`), `setMuted`, `setOutputDelayMs(0..5000)` (S14c calibration).
+- `setVolume(0..100)` (amplitude `(v/100)^1.5`), `setMuted`, `setOutputDelayMs(0..5000)` (Sendspin `output_delay_ms`, = MA "Static playback delay"),
+  `setCalibrationMs(-500..500)` (S14c local offset, added to the delay, not reported; a change realigns at once,
+  positive values also raise `required_lead_time_ms`). `PlaybackHost.audioCalibrationMs` feeds it live.
 - `state: StateFlow<AudioEngineState>` — `Idle`, `Buffering(format)`, `Playing(format)`, `Error(msg)`.
 - `stats: StateFlow<AudioStats>` — buffered ms, output latency, sync error µs, dropped/corrected frames, resyncs, underruns.
 - `playerState: StateFlow<PlayerState>` — volume, muted, output delay, required lead time, min buffer.

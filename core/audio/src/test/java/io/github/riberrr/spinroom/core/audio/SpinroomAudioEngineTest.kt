@@ -80,6 +80,30 @@ class SpinroomAudioEngineTest {
     }
 
     @Test
+    fun calibrationAddsToOutputDelayWithoutReportingIt() {
+        engine.setOutputDelayMs(100)
+        engine.setCalibrationMs(-200) // net −100 ms: play 100 ms later
+        engine.start(pcm)
+        engine.submit(chunk(clock.offsetUs + 500_000, 4800, first = 1))
+        waitFor { outputs.firstOrNull()?.let { it.frames() > 35_000 } == true }
+        val out = outputs.first().bytes()
+        fun s(i: Int) = ((out[2 * i + 1].toInt() shl 8) or (out[2 * i].toInt() and 0xFF)).toShort().toInt()
+        assertEquals(0, s(28_799))
+        assertEquals(1, s(28_800))
+        assertEquals(100, engine.playerState.value.outputDelayMs)
+    }
+
+    @Test
+    fun positiveCalibrationRaisesLeadTimeAndIsClamped() {
+        val base = engine.playerState.value.requiredLeadTimeMs
+        engine.setCalibrationMs(9999)
+        assertEquals(base + 500, engine.playerState.value.requiredLeadTimeMs)
+        engine.setCalibrationMs(-300)
+        assertEquals(base, engine.playerState.value.requiredLeadTimeMs)
+        assertEquals(0, engine.playerState.value.outputDelayMs)
+    }
+
+    @Test
     fun volumeAndCommandsReachOutputAndPlayerState() {
         engine.start(pcm)
         engine.handle(PlayerEvent.Command(PlayerCommand.SetVolume(50)))

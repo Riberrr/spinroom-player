@@ -74,6 +74,7 @@ class SpinroomPlaybackService : MediaSessionService() {
                     ),
                     log = ::log,
                     onConnected = host::onSendspinConnected,
+                    calibrationMs = host.audioCalibrationMs,
                 ).also {
                     receiver = it
                     it.start()
