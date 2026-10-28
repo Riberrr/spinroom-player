@@ -40,4 +40,5 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S11: details screen plays albums/playlists by item URI and artists/track-start by track list + start_item; selected player from settings, toast when none.
 - S12: sources screen is generic over music/browse (providers = root items, folders open, playable items play_media replace); NavHost untouched; favorite heart is a separate focus stop since FocusSurface has no long-press.
 - S13: search = one music/search call (limit 12), best result = first artist/album/track; track/radio tap plays immediately, artist/album/playlist opens details; voice via RecognizerIntent, failure shows notice (no manifest <queries> change).
+- SFix01: ui-tooling-preview jako implementation w :feature:*; CI buduje też assembleRelease; R8 -dontwarn dla java.lang.management (Ktor).
 - S14a: autostart via BOOT_COMPLETED receiver in :app (default on, switch in settings); screensaver is a Compose overlay in MainActivity (60 s idle, drift), no Android DreamService; home-screen channel skipped.
