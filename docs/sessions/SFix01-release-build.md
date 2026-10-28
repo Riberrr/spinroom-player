@@ -12,4 +12,8 @@ Workflow Release dla tagu v0.2.0 (run 40714938288) pada na `:feature:{details,ho
 `./gradlew assembleRelease` przechodzi lokalnie, CI w PR zielone.
 
 ## Wynik
-_(uzupełnia sesja)_
+- `ui-tooling-preview` jako `implementation` w `:feature:{details,home,library,nowplaying,search,sources}` (`:core:design` i `:app` już miały).
+- Drugi błąd release: R8 `Missing class java.lang.management.*` (Ktor) → `-dontwarn` w `app/proguard-rules.pro`.
+- CI i `scripts/check.sh` budują teraz też `assembleRelease` (klucz debug, bez sekretów).
+- `./gradlew assembleRelease` lokalnie: BUILD SUCCESSFUL. Nie uruchamiano zminimalizowanego APK na TV (R8 może wymagać keep rules dla serializacji/Hilt — sprawdzić przy teście v0.2.1).
+- Edytowane pliki współdzielone: `.github/workflows/ci.yml`, `scripts/check.sh`.
