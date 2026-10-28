@@ -32,3 +32,6 @@ How to test a VM (`src/test`): implement the backend interface as a fake with `M
 build the VM with the internal constructor and `{ testScheduler.currentTime }` as clock; drive with `runCurrent()` / `advanceTimeBy()`.
 A VM with an endless ticker must have its `viewModelScope` cancelled at the end of the test (see `vmTest` helper) or `runTest` never finishes.
 Tests build models by hand; replace with recorded fixtures once they exist.
+
+## Screensaver (S14a)
+`ScreensaverLayer(inputTick, visible, onIdle)` is stacked over the nav host in `MainActivity`: after `SCREENSAVER_IDLE_MS` (60 s) without a key and with a known track it shows `ScreensaverContent` (cover + title + artist on black, slow Lissajous drift via `driftOffset`, 85% alpha). `MainActivity.dispatchKeyEvent` bumps `inputTick` and consumes the key that wakes it.
