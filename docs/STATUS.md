@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14a (28.10.2026). Tag **v0.2.0** wypchnięty, ale wydanie padło (release nie kompiluje `@Preview`) — SFix01 w toku, potem przesunąć tag._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix01, S14c (28.10.2026). Wydanie **v0.2.1** (v0.2.0 bez APK — release nie kompilował się)._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -9,7 +9,8 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14a (28.10.2026). 
 - `:core:ma-api` + `:core:data`: klient WS MA, repozytoria, DataStore; Ustawienia z logowaniem.
 - Ekrany: Teraz odtwarzane (wzorzec), Start, Biblioteka, Szczegóły (album/wykonawca/playlista), Źródła (drzewo `music/browse`), Szukaj (klawiatura, filtry, głos). Powłoka: menu, mini-odtwarzacz.
 - Wygaszacz po 60 s bezczynności i autostart po włączeniu TV (`BootReceiver`, przełącznik w Ustawieniach; sprawdzone rebootem).
-- CI zielone (tylko debug — release naprawia SFix01).
+- Kalibracja opóźnienia dźwięku w Ustawieniach (−500…+500 ms, na żywo; sprawdzone na TV) + sygnał testowy dla grup MA.
+- CI zielone, buduje debug i release (R8).
 
 ## Nie sprawdzone
 - Granie z telefonu na TV, wygaszony ekran, pilot — wymaga zgody na „Telewizor” w MA (Odtwarzacze → Telewizor → Pairing → Setup).
@@ -17,10 +18,10 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14a (28.10.2026). 
 - Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione spoza biblioteki, `start_item`).
 
 ## W toku
-- S14c kalibracja opóźnienia (Opus), SFix01 build release (Sonnet).
+- S14b ulubione + menu OK (Sonnet, sama).
 
 ## Następne
-- S14b ulubione + menu OK ← S09–S13 (sama) → **v0.3.0** razem z S14c.
+- Po S14b → **v0.3.0**, potem S15 wydajność, S16 wydanie 1.0.
 - Braki względem makiet: Biblioteka (Ulubione, sortowanie, filtr źródeł, Ł/Ś po Z), Szczegóły (wiersz „Źródło”, podświetlenie grającego), Źródła (chipy-filtry).
 - Ekran tokenu parowania `SP:0…`, nazwa odtwarzacza. Do decyzji: „Teraz gra” w menu bocznym.
 
@@ -31,3 +32,5 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S14a (28.10.2026). 
 - `docs/DECISIONS.md` — konflikty przy każdym równoległym PR, rozwiązywać sumą linii.
 - `Text` poza `Surface` jest czarny. Emulator: gęstość 480 → 1280 dp. Bit +x dla `gradlew`/`scripts/*.sh`.
 - Autostart wymaga jednego ręcznego uruchomienia po instalacji; Android 15+ blokuje start usługi z BOOT_COMPLETED.
+- Release z R8 nie był uruchomiony na TV — możliwe brakujące keep rules (serializacja, Hilt).
+- Sygnał testowy kalibracji przez MA niesprawdzony (TV nie był zalogowany).
