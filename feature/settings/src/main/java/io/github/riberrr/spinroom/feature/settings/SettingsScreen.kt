@@ -56,6 +56,11 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
         } else {
             Button(stringResource(R.string.settings_logout), onClick = viewModel::logout)
         }
+        Button(
+            stringResource(if (ui.autostart) R.string.settings_autostart_on else R.string.settings_autostart_off),
+            onClick = viewModel::onAutostart,
+        )
+        Text(stringResource(R.string.settings_autostart_hint), color = SpinroomColors.TextSecondary)
         statusText(ui.status)?.let { Text(it, color = if (ui.status is LoginStatus.Done) SpinroomColors.Success else SpinroomColors.TextPrimary) }
     }
 }

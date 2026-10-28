@@ -369,7 +369,7 @@ private fun PlayerPicker(state: NowPlayingUiState, actions: NowPlayingActions) {
 }
 
 @Composable
-private fun Cover(url: String?, modifier: Modifier) {
+internal fun Cover(url: String?, modifier: Modifier) {
     if (url == null) {
         CoverPlaceholder(modifier)
     } else {

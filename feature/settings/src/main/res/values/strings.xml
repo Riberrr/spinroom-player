@@ -14,4 +14,7 @@
     <string name="settings_wrong_credentials">Nieprawidłowy login lub hasło</string>
     <string name="settings_unreachable">Nie widzę serwera Music Assistant w sieci</string>
     <string name="settings_done">Zalogowano. Albumów w bibliotece: %1$d</string>
+    <string name="settings_autostart_on">Start z telewizorem: włączony</string>
+    <string name="settings_autostart_off">Start z telewizorem: wyłączony</string>
+    <string name="settings_autostart_hint">Po włączeniu TV odtwarzacz sam pojawi się w Music Assistant.</string>
 </resources>
