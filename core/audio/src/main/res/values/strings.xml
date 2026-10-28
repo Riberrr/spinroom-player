@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spinroom_playback_channel">Odtwarzanie</string>
+    <string name="spinroom_playback_idle_title">Spinroom</string>
+    <string name="spinroom_playback_waiting">Czekam na serwer Music Assistant</string>
+    <string name="spinroom_playback_connected">Połączono z serwerem %1$s</string>
+    <string name="spinroom_playback_connected_unnamed">Połączono z serwerem</string>
+    <string name="spinroom_playback_needs_approval">Zezwól na ten telewizor w Music Assistant</string>
+    <string name="spinroom_playback_unknown_title">Teraz gra</string>
+    <string name="spinroom_action_previous">Poprzedni</string>
+    <string name="spinroom_action_play">Odtwórz</string>
+    <string name="spinroom_action_pause">Pauza</string>
+    <string name="spinroom_action_next">Następny</string>
+</resources>

@@ -48,7 +48,7 @@ The only Android/network code in the module (Ktor CIO server, OkHttp client, `Ns
 - Building blocks: `SessionBridge` (owns the single `outgoing` collector for the session's lifetime, one `WsLink` at a time, takes `receivedAtUs` on arrival), `SendspinServer`, `SendspinClient`, `NsdAdvertiser`, `truncateUtf8`.
 - Server rules: `Origin` header → 403; a second connection while one is up → closed with 1013 `busy` (no multi-server arbitration); WS ping every 15 s, max frame 4 MiB.
 
-Debug builds start the player at process start (`app/src/debug`, temporary until S05); see `SendspinDebug` KDoc for the `adb` start/stop broadcasts.
+The owner in the app is `SendspinReceiver`, run by `SpinroomPlaybackService` (`:core:audio`, S05).
 
 ## Behaviour notes
 - Bursts of 8 `client/time`; fast bursts (100 ms apart) until converged (≥ 3 samples, σ ≤ 2 ms), then every 5 s.

@@ -17,6 +17,7 @@ android {
 dependencies {
     api(project(":core:ma-api"))
     api(libs.androidx.paging.common)
+    api(project(":core:sendspin")) // SendspinCredentialStore implements its CredentialStore
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.hilt.android)

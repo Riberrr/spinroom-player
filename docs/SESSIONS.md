@@ -43,9 +43,9 @@ Fala 7  S15 wydajność ──► S16 wydanie  ══► tag v1.0.0
 | ✅ | S06 Klient API MA + dane | `S06-ma-api.md` | S01b | Sonnet | — |
 | ✅ | S03 Sieć i wykrywanie | `S03-network.md` | S02 | **Opus** | — |
 | ✅ | S08 Teraz odtwarzane (ekran-wzorzec) | `S08-now-playing.md` | S06, S07 | Sonnet | — |
-| ⬜ | S05 Usługa odtwarzania i pilot | `S05-service.md` | S03, S04 | **Opus** | **v0.1.0** |
-| ⬜ | S09 Ekran Start | `S09-home.md` | S08 | Sonnet | — |
-| ⬜ | S10 Biblioteka | `S10-library.md` | S08 | Sonnet | — |
+| ✅ | S05 Usługa odtwarzania i pilot | `S05-service.md` | S03, S04 | **Opus** | **v0.1.0** |
+| ✅ | S09 Ekran Start | `S09-home.md` | S08 | Sonnet | — |
+| ✅ | S10 Biblioteka | `S10-library.md` | S08 | Sonnet | — |
 | ⬜ | S12 Źródła (wtyczki) | `S12-sources.md` | S08 | Sonnet | — |
 | ⬜ | S13 Szukaj | `S13-search.md` | S08 | Sonnet | — |
 | ⬜ | S11 Szczegóły albumu/wykonawcy | `S11-details.md` | S10 | Sonnet | **v0.2.0** (gdy S08–S13 scalone) |

@@ -17,4 +17,7 @@ Wyniki ze wszystkich providerów; głos działa na TV z mikrofonem w pilocie. Zr
 Zmian w innych modułach `:feature:*`.
 
 ## Wynik
-_(uzupełnia sesja)_
+Ekran gotowy: klawiatura ekranowa, debounce 400 ms, jedno `music/search` dla wszystkich providerów, wyniki grupowane wg typu z plakietką źródła, zakładki filtrów, „najlepszy wynik”, głos (`RecognizerIntent` + `Key.Search`).
+API: `SearchScreen(onOpenDetails)`; `SpinroomNavHost` zmieniony tylko o callback do details. Utwór/radio odtwarza się od razu na wybranym odtwarzaczu (`playMedia`).
+Testy VM na fake backendzie (6), `check.sh` zielony. **Nie zweryfikowano**: zrzut z emulatora vs makieta i głos na prawdziwym TV (brak emulatora w tej sesji).
+Pułapki: źródło = domena `provider` (np. `ytmusic--id`), wyniki biblioteki mają provider `library` → „Biblioteka”; klawiatura ma dodatkowe q,v,x względem makiety. Dalej: ewentualnie przycisk „Odtwórz” obok otwarcia albumu.

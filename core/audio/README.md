@@ -1,7 +1,7 @@
 # :core:audio
 
 Plays timestamped Sendspin audio (S04): decode → timed buffer → AudioTrack, with device delay compensation.
-MediaSessionService comes in S05. Its build.gradle.kts is the template for new library modules.
+Plus the playback service (S05, below). Its build.gradle.kts is the template for new library modules (drop the media3 lines).
 
 ## Public API
 ```kotlin
@@ -36,3 +36,24 @@ clear, stop, volume, mute, output delay; live stats. The asset is written by `Fl
 - Platform FLAC decoder exists only from API 27; on API 26 `AudioCapabilities` offers Opus + PCM only.
 - The platform FLAC decoder goes silent after a frame-number jump; `MediaCodecDecoder` flushes the codec when it sees one.
 - A format change with a different sample rate/channels recreates the AudioTrack (short cut of ~150 ms of old audio).
+
+## Playback service (`service/`, S05)
+The TV as a Sendspin player, running as a foreground `mediaPlayback` service from app start until the process dies.
+```kotlin
+class App : Application(), PlaybackHost { ... }      // credentials, version, notification icon, onSendspinConnected
+SpinroomPlaybackService.start(activity)               // from a visible activity (FGS start rules)
+```
+- `SpinroomPlaybackService` (`MediaSessionService`): owns `SendspinReceiver`, a Media3 `MediaSession` and its **own**
+  notification (Media3's drops the foreground while idle; a receiver must stay reachable). `onTaskRemoved` keeps running.
+  Notification buttons send `io.github.riberrr.spinroom.action.PLAY|PAUSE|NEXT|PREVIOUS` to the service.
+- `SendspinReceiver`: `SendspinSession` + `SpinroomAudioEngine` + `SendspinNetwork.startServer(deviceName)`;
+  `events → engine.handle`, `engine.playerState → report`, `setAvailable(true)`; Wi-Fi lock (high-perf, + low-latency on
+  API 29+) while running, partial wake lock while audio plays; restarts server + mDNS when the default network changes.
+  `snapshot: StateFlow<PlaybackSnapshot>`, `send(ControllerCommand)`, `serverNowUs()`. `start`/`stop` block (off main).
+- `SendspinMediaPlayer` (`SimpleBasePlayer`): one item = current track (title/artist/album/cover, extrapolated position);
+  play/pause → `Play`/`Pause`, next/previous → `Next`/`Previous` (also with a single item: `BasePlayer` routes them to
+  `handleSeek`), seek → `Seek`. Commands offered = server's `supported_commands`.
+- `PlaybackMapper`: the pure mapping (JVM tests in `PlaybackMapperTest`).
+
+Pitfalls: Android sends media keys to the app that last played audio — our session takes over only once our
+AudioTrack plays. Start the service only from the foreground (Android 12+ forbids FGS starts from the background).
