@@ -13,3 +13,4 @@ Repositories over `:core:ma-api`, settings in DataStore, Hilt wiring (`di/DataMo
 - New repositories: add a new file and a `@Provides` in a new Hilt module file.
 
 Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (the file-backed one fails its rename on Windows JVMs).
+- `ItemMenuViewModel` (S14b): state + actions of the long-press menu (play next = `play_media option=next`, queue = `add`, favorite via `FavoritesApi`). Removal of items from other providers needs the library id — best effort via `item_by_uri`.

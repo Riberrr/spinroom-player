@@ -76,11 +76,13 @@ class HomeViewModel @Inject constructor(private val backend: HomeBackend) : View
             val recent = async { runCatching { backend.recentlyPlayed() } }
             val playlists = async { runCatching { backend.playlists() } }
             val radios = async { runCatching { backend.favoriteRadios() } }
+            val favs = async { runCatching { backend.favorites() } }
             val recs = async { runCatching { backend.recommendations() } }
             val r = recent.await()
             val p = playlists.await()
             val s = radios.await()
             val y = recs.await()
+            val f = favs.await()
             val youtube = y.getOrNull().orEmpty()
                 .filter { it.provider.contains(YOUTUBE_PROVIDER) }
                 .flatMap { it.items }
@@ -90,6 +92,7 @@ class HomeViewModel @Inject constructor(private val backend: HomeBackend) : View
                     loading = false,
                     failed = listOf(r, p, s, y).all { res -> res.isFailure },
                     recent = r.getOrNull().orEmpty().mapNotNull { m -> m.toTile() }.take(ROW_MAX),
+                    favorites = f.getOrNull().orEmpty().mapNotNull { m -> m.toTile() }.take(ROW_MAX),
                     playlists = p.getOrNull().orEmpty().mapNotNull { m -> m.toTile() }.take(ROW_MAX),
                     stations = s.getOrNull().orEmpty().map { m -> m.toStation() },
                     recommended = youtube.mapNotNull { m -> m.toTile() }.take(ROW_MAX),

@@ -45,6 +45,8 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Size
+import io.github.riberrr.spinroom.core.design.ItemMenuHost
+import io.github.riberrr.spinroom.core.design.LocalItemMenu
 import io.github.riberrr.spinroom.core.design.CoverPlaceholder
 import io.github.riberrr.spinroom.core.design.CoverTile
 import io.github.riberrr.spinroom.core.design.ErrorState
@@ -86,7 +88,7 @@ fun DetailsScreen(
         }
     }
 
-    DetailsContent(
+    ItemMenuHost { DetailsContent(
         state = state,
         actions = DetailsActions(
             onPlay = { viewModel.onPlay() },
@@ -98,7 +100,7 @@ fun DetailsScreen(
             onRetry = viewModel::retry,
         ),
         modifier = modifier,
-    )
+    ) }
 }
 
 private val DetailsMessage.labelRes: Int
@@ -173,6 +175,7 @@ private fun Loaded(state: DetailsUiState, actions: DetailsActions) {
 
 @Composable
 private fun Lists(state: DetailsUiState, actions: DetailsActions) {
+    val menu = LocalItemMenu.current
     LazyColumn(Modifier.fillMaxSize().padding(top = 16.dp), contentPadding = PaddingValues(bottom = 32.dp)) {
         if (state.kind == DetailsKind.Artist && state.albums.isNotEmpty()) {
             item {
@@ -183,6 +186,7 @@ private fun Lists(state: DetailsUiState, actions: DetailsActions) {
                             title = album.title,
                             subtitle = album.subtitle,
                             onClick = { actions.onOpenAlbum(album) },
+                            onLongClick = { menu(album.uri, album.title) },
                             cover = { Cover(album.coverUrl, TILE_PX, Modifier.fillMaxSize()) },
                         )
                     }
@@ -192,7 +196,7 @@ private fun Lists(state: DetailsUiState, actions: DetailsActions) {
         if (state.kind == DetailsKind.Artist && state.tracks.isNotEmpty()) {
             item { SectionTitle(stringResource(R.string.details_top_tracks)) }
         }
-        items(state.tracks, key = { it.number }) { track -> TrackLine(track, state.kind, actions.onPlayTrack) }
+        items(state.tracks, key = { it.number }) { track -> TrackLine(track, state.kind, actions.onPlayTrack) { menu(track.uri, track.title) } }
         if (state.tracks.isEmpty() && state.albums.isEmpty()) {
             item { Text(stringResource(R.string.details_empty_message), Modifier.padding(top = 24.dp), color = SpinroomColors.TextSecondary) }
         }
@@ -205,9 +209,10 @@ private fun SectionTitle(text: String) {
 }
 
 @Composable
-private fun TrackLine(track: TrackRow, kind: DetailsKind, onClick: (TrackRow) -> Unit) {
+private fun TrackLine(track: TrackRow, kind: DetailsKind, onClick: (TrackRow) -> Unit, onLongClick: () -> Unit) {
     FocusSurface(
         onClick = { onClick(track) },
+        onLongClick = onLongClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
         shape = RoundedCornerShape(10.dp),
         containerColor = SpinroomColors.Bg,

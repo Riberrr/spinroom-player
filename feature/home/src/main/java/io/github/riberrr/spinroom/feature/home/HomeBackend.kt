@@ -16,6 +16,8 @@ import io.github.riberrr.spinroom.core.maapi.PlayerQueue
 import io.github.riberrr.spinroom.core.maapi.RecommendationFolder
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -32,6 +34,9 @@ interface HomeBackend {
     suspend fun recentlyPlayed(): List<MediaItem>
     suspend fun playlists(): List<MediaItem>
     suspend fun favoriteRadios(): List<MediaItem>
+
+    /** Favorite albums, artists and playlists (not radio). */
+    suspend fun favorites(): List<MediaItem> = emptyList()
     suspend fun recommendations(): List<RecommendationFolder>
     suspend fun play(queueId: String, uri: String)
 }
@@ -55,6 +60,11 @@ class MaHomeBackend @Inject constructor(
     override suspend fun recentlyPlayed() = browse.recentlyPlayed(ROW_LIMIT)
     override suspend fun playlists() = library.items(MediaTypes.PLAYLISTS, limit = ROW_LIMIT, orderBy = "name")
     override suspend fun favoriteRadios() = library.items(MediaTypes.RADIOS, limit = ROW_LIMIT, favorite = true, orderBy = "name")
+    override suspend fun favorites(): List<MediaItem> = coroutineScope {
+        listOf(MediaTypes.ALBUMS, MediaTypes.ARTISTS, MediaTypes.PLAYLISTS)
+            .map { type -> async { runCatching { library.items(type, limit = ROW_LIMIT, favorite = true, orderBy = "name") }.getOrDefault(emptyList()) } }
+            .flatMap { it.await() }
+    }
     override suspend fun recommendations() = browse.recommendations()
     override suspend fun play(queueId: String, uri: String) = players.api.playMedia(queueId, listOf(uri), option = "replace")
 

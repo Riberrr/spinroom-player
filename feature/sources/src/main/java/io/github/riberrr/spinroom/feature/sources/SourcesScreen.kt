@@ -39,6 +39,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.SubcomposeAsyncImage
+import io.github.riberrr.spinroom.core.design.ItemMenuHost
+import io.github.riberrr.spinroom.core.design.LocalItemMenu
 import io.github.riberrr.spinroom.core.design.EmptyState
 import io.github.riberrr.spinroom.core.design.ErrorState
 import io.github.riberrr.spinroom.core.design.FocusSurface
@@ -67,7 +69,7 @@ data class SourcesActions(
 @Composable
 fun SourcesScreen(modifier: Modifier = Modifier, viewModel: SourcesViewModel = hiltViewModel()) {
     val ui by viewModel.state.collectAsStateWithLifecycle()
-    SourcesContent(ui, SourcesActions.of(viewModel), modifier)
+    ItemMenuHost { SourcesContent(ui, SourcesActions.of(viewModel), modifier) }
 }
 
 @Composable
@@ -175,8 +177,12 @@ private fun Breadcrumbs(trail: List<Crumb>, onCrumb: (Int) -> Unit, modifier: Mo
 
 @Composable
 private fun ItemRow(row: SourceRow, actions: SourcesActions) {
+    val menu = LocalItemMenu.current
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FocusSurface({ actions.onItemClick(row) }, Modifier.weight(1f), shape = RoundedCornerShape(10.dp), focusedScale = 1.01f) {
+        FocusSurface(
+            { actions.onItemClick(row) }, Modifier.weight(1f), shape = RoundedCornerShape(10.dp), focusedScale = 1.01f,
+            onLongClick = if (row.canFavorite) ({ row.item.uri?.let { menu(it, row.name) } }) else null,
+        ) {
             Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Badge(row, 42)
                 Column(Modifier.weight(1f)) {

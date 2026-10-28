@@ -38,6 +38,8 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Size
+import io.github.riberrr.spinroom.core.design.ItemMenuHost
+import io.github.riberrr.spinroom.core.design.LocalItemMenu
 import io.github.riberrr.spinroom.core.design.CoverPlaceholder
 import io.github.riberrr.spinroom.core.design.CoverTile
 import io.github.riberrr.spinroom.core.design.EmptyState
@@ -79,7 +81,7 @@ fun LibraryScreen(
         else -> LibraryStatus.Content
     }
 
-    LibraryContent(
+    ItemMenuHost { LibraryContent(
         state = state,
         status = status,
         itemCount = items.itemCount,
@@ -92,7 +94,7 @@ fun LibraryScreen(
         ),
         modifier = modifier,
         gridState = gridState,
-    )
+    ) }
 }
 
 @Composable
@@ -172,6 +174,7 @@ private fun CoverGrid(
     gridState: LazyGridState,
     modifier: Modifier = Modifier,
 ) {
+    val menu = LocalItemMenu.current
     LazyVerticalGrid(
         columns = GridCells.Adaptive(148.dp),
         state = gridState,
@@ -189,6 +192,7 @@ private fun CoverGrid(
                     title = row.title,
                     subtitle = row.subtitle,
                     onClick = { onOpen(row) },
+                    onLongClick = { menu(row.uri, row.title) },
                     cover = { Cover(row.coverUrl) },
                 )
             }

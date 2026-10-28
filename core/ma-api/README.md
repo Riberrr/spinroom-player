@@ -15,3 +15,4 @@ Typed Music Assistant WebSocket client (`ws://<host>:8095/ws`). Pure Kotlin + Ok
 - The client never logs; keep it that way (args carry tokens/passwords).
 - Unconfirmed until fixtures are recorded (⚠️ in MA-API.md): event shapes, imageproxy URL, `order_by` values, `partial` behaviour, shape of the `auth` result. Models are tolerant, so mismatches show up as empty fields, not crashes.
 - OkHttp is pinned to 5.1.0: 5.5.x requires compileSdk 37 (AGP 9.0.1 supports 36).
+- `FavoritesApi` (S14b): `add(uri)`, `remove(mediaType, libraryItemId)`, `resolve(uri)`, `set(uri, favorite)`; `parseMediaUri`.
