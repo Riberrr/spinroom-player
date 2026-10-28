@@ -1,0 +1,18 @@
+# Hand-written baseline profile (no macrobenchmark module yet): hot startup and grid-scrolling paths.
+Lio/github/riberrr/spinroom/MainActivity;
+Lio/github/riberrr/spinroom/SpinroomApp;
+Lio/github/riberrr/spinroom/SpinroomNavHostKt;
+Lio/github/riberrr/spinroom/SpinroomShellKt;
+HSPLio/github/riberrr/spinroom/MainActivity;->**(**)**
+HSPLio/github/riberrr/spinroom/SpinroomApp;->**(**)**
+HSPLio/github/riberrr/spinroom/SpinroomNavHostKt;->**(**)**
+HSPLio/github/riberrr/spinroom/SpinroomShellKt;->**(**)**
+HSPLio/github/riberrr/spinroom/core/design/**;->**(**)**
+HSPLio/github/riberrr/spinroom/feature/library/**;->**(**)**
+HSPLio/github/riberrr/spinroom/feature/home/**;->**(**)**
+HSPLio/github/riberrr/spinroom/core/data/**;->**(**)**
+HSPLio/github/riberrr/spinroom/core/maapi/**;->**(**)**
+HSPLandroidx/compose/foundation/lazy/grid/**;->**(**)**
+HSPLandroidx/compose/foundation/lazy/layout/**;->**(**)**
+HSPLandroidx/tv/material3/**;->**(**)**
+HSPLcoil3/**;->**(**)**

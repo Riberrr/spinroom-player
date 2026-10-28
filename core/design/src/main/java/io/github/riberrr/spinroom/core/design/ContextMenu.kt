@@ -12,7 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import io.github.riberrr.spinroom.core.data.ItemMenuViewModel
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -74,10 +74,10 @@ val LocalItemMenu = staticCompositionLocalOf<(String, String) -> Unit> { { _, _ 
 
 /**
  * Wrap a screen's content once: provides [LocalItemMenu] and shows the shared [ContextMenu] for the held item.
- * The default `viewModel()` resolves to the Hilt factory of the activity.
+ * `hiltViewModel()` is required: a plain `viewModel()` under a nav back stack entry has no Hilt factory and crashes.
  */
 @Composable
-fun ItemMenuHost(menu: ItemMenuViewModel = viewModel(), content: @Composable () -> Unit) {
+fun ItemMenuHost(menu: ItemMenuViewModel = hiltViewModel(), content: @Composable () -> Unit) {
     val target by menu.target.collectAsStateWithLifecycle()
     CompositionLocalProvider(LocalItemMenu provides { uri, title -> menu.open(uri, title) }) { content() }
     target?.let {
