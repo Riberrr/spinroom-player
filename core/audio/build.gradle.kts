@@ -17,6 +17,9 @@ android {
 dependencies {
     api(project(":core:sendspin")) // public API uses StreamFormat, AudioChunk, PlayerState
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.androidx.core.ktx)
+    api(libs.androidx.media3.common) // service package: Player state for the MediaSession
+    api(libs.androidx.media3.session)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

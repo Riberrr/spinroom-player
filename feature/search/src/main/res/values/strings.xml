@@ -1,4 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="search_stub_title">Szukaj — wkrótce</string>
+    <string name="search_title">Szukaj</string>
+    <string name="search_hint">Wpisz, czego szukasz</string>
+    <string name="search_voice">Szukaj głosem</string>
+    <string name="search_voice_prompt">Powiedz, czego szukasz</string>
+    <string name="search_space">Spacja</string>
+    <string name="search_delete">Usuń</string>
+    <string name="search_symbols">123</string>
+    <string name="search_letters">abc</string>
+    <string name="search_filter_all">Wszystko</string>
+    <string name="search_filter_artists">Wykonawcy</string>
+    <string name="search_filter_albums">Albumy</string>
+    <string name="search_filter_tracks">Utwory</string>
+    <string name="search_filter_radio">Radio</string>
+    <string name="search_section_best">Najlepszy wynik</string>
+    <string name="search_section_artists">Wykonawcy</string>
+    <string name="search_section_albums">Albumy</string>
+    <string name="search_section_playlists">Playlisty</string>
+    <string name="search_section_tracks">Utwory</string>
+    <string name="search_section_radio">Radio</string>
+    <string name="search_kind_artist">Wykonawca</string>
+    <string name="search_kind_album">Album</string>
+    <string name="search_kind_playlist">Playlista</string>
+    <string name="search_kind_radio">Stacja radiowa</string>
+    <string name="search_idle_title">Zacznij pisać</string>
+    <string name="search_idle_message">Wyniki pojawią się tutaj, ze wszystkich źródeł naraz.</string>
+    <string name="search_empty_title">Nic nie znalazłem</string>
+    <string name="search_empty_message">Spróbuj innego słowa albo krótszej frazy.</string>
+    <string name="search_loading">Szukam…</string>
+    <string name="search_error">Nie udało się wyszukać. Sprawdź połączenie z serwerem.</string>
+    <string name="search_notice_no_voice">Ten telewizor nie ma wyszukiwania głosowego.</string>
+    <string name="search_notice_no_player">Wybierz najpierw odtwarzacz w ustawieniach.</string>
+    <string name="search_notice_play_failed">Nie udało się odtworzyć.</string>
 </resources>
