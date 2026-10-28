@@ -45,7 +45,7 @@ fun SpinroomNavHost(navController: NavHostController = rememberNavController()) 
             composable(Routes.NOW_PLAYING) { NowPlayingScreen() }
             composable(Routes.LIBRARY) { LibraryScreen() }
             composable(Routes.SOURCES) { SourcesScreen() }
-            composable(Routes.SEARCH) { SearchScreen() }
+            composable(Routes.SEARCH) { SearchScreen(onOpenDetails = { uri -> navController.navigate(Routes.details(uri)) }) }
             composable(Routes.SETTINGS) { SettingsScreen() }
             composable(
                 Routes.DETAILS,
