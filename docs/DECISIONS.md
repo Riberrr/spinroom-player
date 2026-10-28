@@ -37,4 +37,5 @@ Jedna linia na decyzję, najnowsze na dole. Format: `RRRR-MM-DD: decyzja — pow
 - S05: odtwarzacz Media3 ma jeden element (bieżący utwór); ⏭/⏮ zawsze idą do MA (kolejka jest po stronie serwera).
 - S10: library grid uses own CountedLibrarySource (placeholders on) instead of LibraryRepository.pager; letter jump = binary search over name-sorted items.
 - S09: home rows via a HomeBackend seam; YouTube row = recommendation folders with provider containing `ytmusic` (hidden otherwise); station tiles play directly with play_media(replace) on settings.playerId; NavHost got only the three HomeScreen callbacks.
+- S12: sources screen is generic over music/browse (providers = root items, folders open, playable items play_media replace); NavHost untouched; favorite heart is a separate focus stop since FocusSurface has no long-press.
 - S13: search = one music/search call (limit 12), best result = first artist/album/track; track/radio tap plays immediately, artist/album/playlist opens details; voice via RecognizerIntent, failure shows notice (no manifest <queries> change).
