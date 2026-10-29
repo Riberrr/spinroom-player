@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S15 (28.10.2026). Wydanie **v0.3.1** (v0.3.0 wysypuje się przy starcie — nie używać)._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S16 (29.10.2026). Wydanie **v0.3.1** (v0.3.0 wysypuje się przy starcie — nie używać)._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -10,6 +10,7 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S15 (28.10.2026). W
 - Ekrany: Teraz odtwarzane (wzorzec), Start, Biblioteka, Szczegóły (album/wykonawca/playlista), Źródła (drzewo `music/browse`), Szukaj (klawiatura, filtry, głos). Powłoka: menu, mini-odtwarzacz.
 - Wygaszacz po 60 s bezczynności i autostart po włączeniu TV (`BootReceiver`, przełącznik w Ustawieniach; sprawdzone rebootem).
 - Kalibracja opóźnienia dźwięku w Ustawieniach (−500…+500 ms, na żywo; sprawdzone na TV) + sygnał testowy dla grup MA.
+- Ekran „O aplikacji”, CHANGELOG, README (Obtainium), metadane fastlane pl/en.
 - Menu pod przytrzymaniem OK (Odtwórz następny, Do kolejki, Ulubione) na Start, Bibliotece, Szczegółach, Szukaj, Źródłach; wiersz „Ulubione” na Start (`FavoritesApi`).
 - Release z R8 uruchomiony na TV: startuje, łączy się z MA. Coil z pamięcią podręczną, baseline profile.
 - CI zielone: debug, release (R8), lint.
@@ -23,7 +24,7 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: S15 (28.10.2026). W
 - —
 
 ## Następne
-- S16 wydanie 1.0 (wymaga klucza podpisu w GitHub Secrets). Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
+- Tag v1.0.0 — czeka na 4 sekrety SIGNING_* w GitHub (bez nich release.yml kończy się błędem). Przed instalacją v1.0 odinstalować v0.x z TV. Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
 - Braki względem makiet: Biblioteka (Ulubione, sortowanie, filtr źródeł, Ł/Ś po Z), Szczegóły (wiersz „Źródło”, podświetlenie grającego), Źródła (chipy-filtry).
 - Ekran tokenu parowania `SP:0…`, nazwa odtwarzacza. Do decyzji: „Teraz gra” w menu bocznym.
 
