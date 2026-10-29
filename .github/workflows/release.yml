@@ -29,7 +29,10 @@ jobs:
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
             echo "SIGNING_STORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
           else
-            echo "::warning::No signing key in secrets, the APK is signed with a throwaway debug key"
+            case "$GITHUB_REF_NAME" in
+              v0.*) echo "::warning::No signing key in secrets, the APK is signed with a throwaway debug key" ;;
+              *) echo "::error::No signing key in secrets; refusing to publish ${GITHUB_REF_NAME} with a debug key (updates would not install)"; exit 1 ;;
+            esac
           fi
       - name: Build release APK
         env:

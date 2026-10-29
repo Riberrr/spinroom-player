@@ -1,0 +1,3 @@
+Unofficial Music Assistant client for Android TV. The TV is its own player (Sendspin); browse the library, radio and sources with the remote.
+
+Not affiliated with Music Assistant or the Open Home Foundation.
