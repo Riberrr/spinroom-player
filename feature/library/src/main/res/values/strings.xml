@@ -9,4 +9,8 @@
     <string name="library_empty_message">Dodaj muzykę w Music Assistant, a pojawi się tutaj.</string>
     <string name="library_error_message">Nie mogę pobrać biblioteki. Sprawdź połączenie z serwerem.</string>
     <string name="library_retry">Spróbuj ponownie</string>
+    <string name="library_no_server_title">Połącz się z serwerem</string>
+    <string name="library_no_server_message">Wpisz adres serwera w Ustawieniach.</string>
+    <string name="library_connecting">Łączę z serwerem…</string>
+    <string name="library_loading">Wczytuję…</string>
 </resources>

@@ -1,10 +1,13 @@
 package io.github.riberrr.spinroom.feature.library
 
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
+import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.MediaItemImage
+import io.github.riberrr.spinroom.core.maapi.ServerInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -30,11 +34,15 @@ private fun album(name: String, artist: String = "Odcienie", image: String? = nu
     image = image?.let { MediaItemImage(type = "thumb", path = it, provider = "library") },
 )
 
-private class FakeBackend(val names: List<String>) : LibraryBackend {
+private val READY = MaConnectionState.Connected(ServerInfo(), authenticated = true)
+
+private class FakeBackend(val names: List<String>, initial: MaConnectionState = READY) : LibraryBackend {
     val address = MutableStateFlow("10.0.1.50:8095")
+    val connectionState = MutableStateFlow(initial)
     val itemCalls = mutableListOf<Int>()
     val pagerTabs = mutableListOf<LibraryTab>()
     override val serverAddress: Flow<String> = address
+    override val connection: Flow<MaConnectionState> = connectionState
     override fun pager(tab: LibraryTab): Flow<PagingData<MediaItem>> { pagerTabs += tab; return emptyFlow() }
     override suspend fun count(tab: LibraryTab) = if (tab == LibraryTab.Albums) names.size else 7
     override suspend fun itemAt(tab: LibraryTab, offset: Int): MediaItem? {
@@ -96,6 +104,55 @@ class LibraryViewModelTest {
         assertTrue(row.coverUrl!!.contains("size=${ImageUrls.proxySize(THUMB_PX)}"))
         assertNull(album("X").toRow("10.0.1.50:8095").coverUrl)
         assertNull(album("X", image = "a").toRow("").coverUrl)
+    }
+
+    @Test fun `offline - no grid is loaded and no counts are shown until the server is ready`() = runTest {
+        val backend = FakeBackend(names, initial = MaConnectionState.Disconnected)
+        val vm = LibraryViewModel(backend)
+        backgroundScope.launch { vm.items.collect {} }
+        runCurrent()
+        assertEquals(MaConnectionState.Disconnected, vm.state.value.connection)
+        assertNull(vm.state.value.count)
+        assertTrue(backend.pagerTabs.isEmpty())
+
+        backend.connectionState.value = READY
+        runCurrent()
+        assertEquals(9, vm.state.value.count)
+        assertEquals(7, vm.state.value.counts[LibraryTab.Artists])
+        assertEquals(listOf(LibraryTab.Albums), backend.pagerTabs)
+    }
+
+    @Test fun `unauthenticated connection counts as not ready`() = runTest {
+        val backend = FakeBackend(names, initial = MaConnectionState.Connected(ServerInfo(), authenticated = false))
+        val vm = LibraryViewModel(backend)
+        backgroundScope.launch { vm.items.collect {} }
+        runCurrent()
+        assertNull(vm.state.value.count)
+        assertTrue(backend.pagerTabs.isEmpty())
+    }
+
+    @Test fun `empty tab reports count zero and the empty status`() = runTest {
+        val vm = LibraryViewModel(FakeBackend(emptyList()))
+        runCurrent()
+        assertEquals(0, vm.state.value.count)
+        assertEquals(
+            LibraryStatus.Empty,
+            libraryStatus(vm.state.value.connection, LoadState.NotLoading(endOfPaginationReached = true), itemCount = 0),
+        )
+    }
+
+    @Test fun `status is chosen by connection first, then by list state`() {
+        val ok = READY
+        val reconnecting = MaConnectionState.Reconnecting(1, null)
+        assertEquals(LibraryStatus.NoServer, libraryStatus(MaConnectionState.Disconnected, LoadState.Loading, 0))
+        assertEquals(LibraryStatus.NoServer, libraryStatus(MaConnectionState.Connected(ServerInfo(), false), LoadState.Loading, 0))
+        assertEquals(LibraryStatus.Connecting, libraryStatus(MaConnectionState.Connecting, LoadState.Loading, 0))
+        assertEquals(LibraryStatus.Connecting, libraryStatus(reconnecting, LoadState.NotLoading(false), 0))
+        assertEquals(LibraryStatus.Content, libraryStatus(reconnecting, LoadState.NotLoading(false), 40))
+        assertEquals(LibraryStatus.Error, libraryStatus(MaConnectionState.Failed(23, "token"), LoadState.NotLoading(false), 40))
+        assertEquals(LibraryStatus.Loading, libraryStatus(ok, LoadState.Loading, 0))
+        assertEquals(LibraryStatus.Error, libraryStatus(ok, LoadState.Error(Exception()), 0))
+        assertEquals(LibraryStatus.Content, libraryStatus(ok, LoadState.Loading, 40))
     }
 
     @Test fun `counted source reports placeholders around the loaded page`() = runTest {

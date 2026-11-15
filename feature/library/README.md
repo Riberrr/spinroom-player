@@ -6,7 +6,7 @@ Package `io.github.riberrr.spinroom.feature.library`. Structure follows "Wzorzec
 ## Public API
 - `LibraryScreen(modifier, onOpenItem: (String) -> Unit = {})` — stateful; `onOpenItem` gets an MA URI (`library://album/12`), `:app` routes it to `Routes.details(uri)`.
 - `LibraryContent(state, status, itemCount, itemAt, actions)` — stateless, has `@Preview`s.
-- `LibraryBackend` — seam for tests: `pager(tab)`, `count(tab)`, `itemAt(tab, offset)`, `serverAddress`.
+- `LibraryBackend` — seam for tests: `pager(tab)`, `count(tab)`, `itemAt(tab, offset)`, `serverAddress`, `connection`.
 
 ## Behaviour
 - Lists come from `music/<type>/library_items` sorted by name through `CountedLibrarySource`: the total is fetched first, so Paging runs with
@@ -14,4 +14,7 @@ Package `io.github.riberrr.spinroom.feature.library`. Structure follows "Wzorzec
 - Letter jump (`#`, A D G K N R T Z): binary search with `itemAt` (1-item requests, ~log2(n) calls) for the first name >= letter, then scroll.
   Accented letters (Ł, Ś…) are compared by code point, so they land after Z — approximate.
 - Thumbnails are requested at 200×200 px (Coil `size`). Item count shows in the selected tab's label.
+- Connection gates the screen (`libraryStatus`): no server or not logged in → „Połącz się z serwerem”; connecting/reconnecting with an empty grid → „Łączę z serwerem…”; failed → error state. A list already on screen stays while reconnecting.
+- Pager and counts run only once the server is connected and authenticated; counts for all tabs reload each time that happens (they fail silently while offline).
+- Letter rail is shown only when the grid has items.
 - Not yet: "Ulubione" tab, sort/source filters from the mockup (not in S10 scope).
