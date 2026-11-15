@@ -15,4 +15,6 @@ adb: `C:/Users/lukas/AppData/Local/Android/Sdk/platform-tools/adb.exe`. Emulator
 `bash scripts/check.sh` czyste (lint może paść na `local.properties` — to środowisko), PR otwarty, nie scalony.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Błąd 2: `buildPlayerRows` (PlayerRows.kt, testy JVM): własny odtwarzacz (id = klucz Sendspin z `SendspinCredentials`) pierwszy z etykietą „To urządzenie”, dostępne po nazwie, niedostępne ukryte (chyba że własny/wybrany). Druga linia z SFix03g bez zmian (zależy od `device_info` z MA — nie sprawdzone na żywo).
+- Błąd 1: hipoteza — → z dolnej pozycji menu trafia geometrycznie w mini-odtwarzacz; w `SpinroomShell` `focusRestorer(screenFocus)` z fallbackiem na treść ekranu. NIE zweryfikowane na emulatorze (brak przydziału).
+- Pułapki: zmiana dotyka :app (SpinroomShell, wspólny plik fokusu wszystkich ekranów); `scripts/check.sh`: tylko lint na local.properties.
