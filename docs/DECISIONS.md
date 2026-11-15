@@ -59,3 +59,5 @@ SFix04a: player list built by pure `buildPlayerRows` (this TV = Sendspin client 
 SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upcoming` is non-empty (the count used `queue.size`, which includes the current track, so it contradicted "Kolejka jest pusta"); Details add-to-queue label shortened to "Dodaj do" (fits the button at 1280×720); station logo missing for RMF is not a client bug: the tile uses `bestImage` for every station, so no image from MA means the note icon.
 
 - SFix04d: ANR przy starcie debug i BindException 8928 nie odtwarzają się na `main` (fallback na 8929 działa); bez zmian w kodzie, tylko opis.
+
+- SFix05: Back w menu bocznym działa, bo handler powłoki jest komponowany tylko przy fokusie menu (najnowszy handler wygrywa z NavHostem); "Albumy · 0" to puste dane serwera, nie błąd klienta — chip pokazuje 0 po zakończonym pustym ładowaniu.
