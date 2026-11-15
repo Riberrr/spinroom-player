@@ -2,6 +2,7 @@ package io.github.riberrr.spinroom.feature.library
 
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
+import io.github.riberrr.spinroom.core.maapi.ImageUrls
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.MediaItemImage
 import kotlinx.coroutines.Dispatchers
@@ -92,7 +93,7 @@ class LibraryViewModelTest {
         val row = album("Horyzont", "Marta Las", image = "covers/h.jpg").toRow("10.0.1.50:8095")
         assertEquals("library://album/Horyzont", row.uri)
         assertEquals("Marta Las", row.subtitle)
-        assertTrue(row.coverUrl!!.contains("size=$THUMB_PX"))
+        assertTrue(row.coverUrl!!.contains("size=${ImageUrls.proxySize(THUMB_PX)}"))
         assertNull(album("X").toRow("10.0.1.50:8095").coverUrl)
         assertNull(album("X", image = "a").toRow("").coverUrl)
     }

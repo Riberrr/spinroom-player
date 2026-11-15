@@ -84,6 +84,7 @@ Zwraca tablicę pełnych obiektów (lub `ItemMapping` — zawsze obsłuż oba). 
 
 ## 6. Okładki
 - Obiekt: `metadata.images[]` = `MediaItemImage{type(thumb|landscape|fanart|logo|…), path, provider, remotely_accessible, proxy_id}` ✅; w `ItemMapping`/`QueueItem` pole `image` (pojedyncze). `PlayerMedia.image_url` ⚠️ gotowy URL.
+- **Image proxy (sprawdzone na MA 2.10.11, SFix02):** `GET /imageproxy/<proxy_id>?size=<256|512|1024|0>` — inne rozmiary i stara forma `?path=&provider=` zwracają 400; bez nagłówka auth. Starsza notatka poniżej.
 - **Image proxy** ✅ endpoint istnieje (`GET /imageproxy` → 400 bez parametrów): ⚠️ `GET http://<host>:8095/imageproxy?path=<urlencoded path>&provider=<provider>&size=<px>` (+ opcjonalnie `fmt=jpeg`). Bierz `path` i `provider` wprost z `MediaItemImage`. Dla `remotely_accessible:true` można użyć `path` jako bezpośredniego URL-a, ale proxy daje skalowanie — **używaj proxy z `size=` zbliżonym do kafelka** (np. 300 siatka, 1080 Teraz odtwarzane). Nowsze wersje ⚠️ mogą używać `proxy_id` — jeśli ustawione, preferuj je (zob. fixtures). Obrazy nie wymagają nagłówka auth ⚠️ (Coil: zwykły URL).
 - Paleta kolorów: `metadata/get_image_palette` ✅ (spec Sendspin color@v1) — przydatne do rozmytego tła.
 
