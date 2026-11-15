@@ -9,7 +9,7 @@ Depends on `:core:design`, `:core:data` (+ Coil 3 for covers). Route wiring live
 - `activityNowPlayingViewModel()` — the single activity-scoped `NowPlayingViewModel` (screen + mini player share it).
 - `NowPlayingContent(state, actions, debuggable)` — stateless UI, has `@Preview`s.
 
-Behaviour: queue/player come live from MA events; progress is `elapsed_time` of the last event + local 1 s ticker (frozen when paused,
+Behaviour: the "pokaż całą kolejkę" link under "Następne w kolejce" shows only when something is upcoming. queue/player come live from MA events; progress is `elapsed_time` of the last event + local 1 s ticker (frozen when paused,
 clamped to duration, re-synced on every event); play/pause, shuffle, repeat and favorite update optimistically. Player = `settings.playerId`;
 in debuggable builds the top-right chip opens a list of MA players (choice saved to `SettingsStore`).
 Blur backdrop on API 31+, stronger scrim below.

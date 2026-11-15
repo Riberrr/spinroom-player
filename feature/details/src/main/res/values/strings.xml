@@ -2,7 +2,7 @@
 <resources>
     <string name="details_play">Odtwórz</string>
     <string name="details_shuffle">Losowo</string>
-    <string name="details_add_to_queue">Dodaj do kolejki</string>
+    <string name="details_add_to_queue">Dodaj do</string>
     <string name="details_favorite">Ulubione</string>
     <string name="details_kind_album">ALBUM</string>
     <string name="details_kind_artist">WYKONAWCA</string>
