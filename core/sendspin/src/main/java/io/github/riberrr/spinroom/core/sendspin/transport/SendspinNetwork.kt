@@ -24,9 +24,17 @@ class SendspinNetwork(
     @Synchronized
     fun startServer(name: String, port: Int = SendspinServer.DEFAULT_PORT) {
         stop()
-        server = SendspinServer(bridge, port, log = log).also { it.start() }
-        advertiser.register(name, port)
+        val srv = SendspinServer(bridge, port, log = log)
+        val bound = srv.start()
+        server = srv
+        serverError = srv.error
+        if (bound > 0) advertiser.register(name, bound)
     }
+
+    /** Why the server could not start (null when it runs); UI/service may surface it. */
+    @Volatile
+    var serverError: String? = null
+        private set
 
     /** Connect to a Sendspin server ourselves; [host] as typed (`10.0.1.50`, `host:8927`, `ws://…`). */
     @Synchronized

@@ -95,6 +95,20 @@ class TransportTest {
     }
 
     @Test
+    fun busyPortFallsBackToAnotherPort() {
+        java.net.ServerSocket(0).use { busy ->
+            val server = SendspinServer(bridge, port = busy.localPort)
+            val bound = server.start()
+            cleanups += { server.stop() }
+            assertTrue("bound=$bound", bound > 0 && bound != busy.localPort)
+            assertEquals(bound, server.boundPort())
+            assertEquals(null, server.error)
+            val (_, probe) = connect(bound)
+            assertTrue(probe.texts.poll(5, TimeUnit.SECONDS) != null)
+        }
+    }
+
+    @Test
     fun serverSendsClientInitOnConnect() {
         val port = startServer()
         val (_, probe) = connect(port)
