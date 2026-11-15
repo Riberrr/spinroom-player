@@ -8,14 +8,14 @@ Koordynator czyta **tylko ten plik** i sekcje „Wynik” plików `SFix03?-*.md`
 
 | ID | Temat | Plik sesji | Model | Fala | Zależy od | Gałąź |
 | --- | --- | --- | --- | --- | --- | --- |
-| SFix03a | Crash przy zajętym porcie Sendspin | `SFix03a-sendspin-port.md` | Sonnet | 1 | — | `fix-sendspin-port` |
-| SFix03b | Fokus menu bocznego i powrót do treści | `SFix03b-shell-focus.md` | Sonnet | 1 | — | `fix-shell-focus` |
-| SFix03c | Układ Szczegółów, Teraz odtwarzane, mini-odtwarzacza | `SFix03c-player-layout.md` | Sonnet | 1 | — | `fix-player-layout` |
-| SFix03d | Start: odświeżanie, fokus, stany, stacje | `SFix03d-home.md` | Sonnet | 2 | b | `fix-home` |
-| SFix03e | Biblioteka: stany, pasek liter | `SFix03e-library.md` | Haiku | 2 | b | `fix-library` |
-| SFix03f | Źródła: fokus po wejściu do folderu, „..”, liczba pozycji | `SFix03f-sources.md` | Sonnet | 2 | b | `fix-sources` |
-| SFix03g | Szukaj i Ustawienia: fokus, chipy, klawiatura | `SFix03g-search-settings.md` | Haiku | 3 | b | `fix-search-settings` |
-| SFix03v | Test końcowy na emulatorze | `SFix03v-verify.md` | Sonnet (+ Haiku do zrzutów) | 4 | a–g scalone | brak (tylko raport) |
+| SFix03a ✓ | Crash przy zajętym porcie Sendspin | `SFix03a-sendspin-port.md` | Sonnet | 1 | — | `fix-sendspin-port` |
+| SFix03b ✓ | Fokus menu bocznego i powrót do treści | `SFix03b-shell-focus.md` | Sonnet | 1 | — | `fix-shell-focus` |
+| SFix03c ✓ | Układ Szczegółów, Teraz odtwarzane, mini-odtwarzacza | `SFix03c-player-layout.md` | Sonnet | 1 | — | `fix-player-layout` |
+| SFix03d ✓ | Start: odświeżanie, fokus, stany, stacje | `SFix03d-home.md` | Sonnet | 2 | b | `fix-home` |
+| SFix03e ✓ | Biblioteka: stany, pasek liter | `SFix03e-library.md` | Haiku | 2 | b | `fix-library` |
+| SFix03f ✓ | Źródła: fokus po wejściu do folderu, „..”, liczba pozycji | `SFix03f-sources.md` | Sonnet | 2 | b | `fix-sources` |
+| SFix03g ✓ | Szukaj i Ustawienia: fokus, chipy, klawiatura | `SFix03g-search-settings.md` | Haiku | 3 | b | `fix-search-settings` |
+| SFix03v ✓ | Test końcowy na emulatorze | `SFix03v-verify.md` | Sonnet (+ Haiku do zrzutów) | 4 | a–g scalone | brak (tylko raport) |
 
 Opcjonalnie, osobno po decyzji użytkownika: **zakładka „Ulubione” w Bibliotece** (nowa funkcja, nie poprawka). Nie uruchamiać bez zgody.
 
@@ -48,3 +48,14 @@ Czytasz tylko docs/sessions/SFix03-plan.md i sekcje „Wynik” plików docs/ses
 
 ## Wynik
 _(koordynator: data scalenia każdej sesji, numer wersji)_
+- Scalone 2026-11-15: SFix03a (#26), b (#28), c (#27), d (#29), e (#30), f (#31), g (#32). Raport SFix03v: PR #33. Wersja: jeszcze bez tagu (patch po SFix04 i teście na TV).
+
+## Nowe wiersze z raportu SFix03v (SFix04; uruchomić po decyzji użytkownika)
+| ID | Temat (numer błędu z raportu) | Model | Zależy od | Gałąź |
+| --- | --- | --- | --- | --- |
+| SFix04a | Ustawienia: fokus startowy na „Wyloguj” zamiast mini-playera (2); lista odtwarzaczy: duplikaty, rozpoznanie „tego TV” (3) | Sonnet | — | `fix-settings-focus` |
+| SFix04b | Biblioteka: „Albumy · 0”, ↓/→ przy pustej zakładce, powrót z Now Playing (4); Źródła: fokus na ostatnio aktywnym po powrocie → (5) | Sonnet | — | `fix-library-sources-focus` |
+| SFix04c | Now Playing radio: „kolejka (1)” vs „Kolejka jest pusta” (6); „Radio RMF” bez logo, ucięte „Dodaj do…” w Szczegółach (7) | Haiku | — | `fix-ui-polish` |
+| SFix04d | Debug: ANR `startForegroundService` bez `startForeground` na emulatorze; BindException debug+release (1) — najpierw sprawdzić na świeżym debugu z main | Sonnet | — | `fix-debug-start` |
+
+Błąd 8 (długie OK na mini-playerze uruchamia odtwarzanie) to pomyłka testu, nie błąd aplikacji. Wykrywanie sieci (mDNS) nie działa na emulatorze (NAT) — testować na TV 10.0.0.6.
