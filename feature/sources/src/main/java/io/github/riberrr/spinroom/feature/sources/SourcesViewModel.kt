@@ -55,7 +55,7 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
     private suspend fun loadProviders() {
         _state.update { it.copy(loadingProviders = true, providersFailed = false) }
         val result = runCatching { backend.browse(null) }
-        val providers = result.getOrNull().orEmpty().filter { it.path != null }.map { it.toRow() }
+        val providers = result.getOrNull().orEmpty().filter { it.path != null && !it.isParentEntry() }.map { it.toRow() }
         _state.update { it.copy(loadingProviders = false, providersFailed = result.isFailure, providers = providers, trail = emptyList()) }
         if (providers.isNotEmpty()) onSelectProvider(_state.value.selectedProvider.coerceIn(providers.indices))
     }
@@ -68,7 +68,7 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         val provider = s.providers.getOrNull(index) ?: return
         val path = provider.item.path ?: return
         if (s.trail.firstOrNull()?.path == path) return
-        _state.update { it.copy(selectedProvider = index, trail = listOf(Crumb(provider.name, path)), items = emptyList(), playedName = null) }
+        _state.update { it.copy(selectedProvider = index, trail = listOf(Crumb(provider.name, path)), items = emptyList(), playedName = null, focusItems = false, focusKey = null) }
         load(path)
     }
 
@@ -79,7 +79,7 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         if (uri != null) {
             play(row.name, uri)
         } else if (path != null) {
-            _state.update { it.copy(trail = it.trail + Crumb(row.name, path), items = emptyList(), playedName = null) }
+            _state.update { it.copy(trail = it.trail + Crumb(row.name, path, row.key), items = emptyList(), playedName = null, focusItems = true, focusKey = null) }
             load(path)
         }
     }
@@ -89,7 +89,8 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         val trail = _state.value.trail
         if (index !in 0 until trail.lastIndex) return
         val cut = trail.take(index + 1)
-        _state.update { it.copy(trail = cut, items = emptyList()) }
+        val cameFrom = trail[index + 1].rowKey.ifEmpty { null }
+        _state.update { it.copy(trail = cut, items = emptyList(), focusItems = true, focusKey = cameFrom) }
         load(cut.last().path)
     }
 
@@ -100,6 +101,8 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         onCrumb(trail.size - 2)
         return true
     }
+
+    fun onFocusHandled() = _state.update { it.copy(focusItems = false) }
 
     fun onToggleFavorite(row: SourceRow) {
         val target = !row.favorite
@@ -131,10 +134,13 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
             // The user may have moved on while this was loading.
             if (_state.value.trail.lastOrNull()?.path != path) return@launch
             _state.update {
-                it.copy(loadingItems = false, itemsFailed = result.isFailure, items = result.getOrNull().orEmpty().map { m -> m.toRow() })
+                it.copy(loadingItems = false, itemsFailed = result.isFailure, items = result.getOrNull().orEmpty().filterNot { m -> m.isParentEntry() }.map { m -> m.toRow() })
             }
         }
     }
+
+    /** MA lists a ".." row in every folder; Back already goes up, so we drop it. */
+    private fun MediaItem.isParentEntry() = name == ".."
 
     private fun MediaItem.toRow() = SourceRow(
         item = this,

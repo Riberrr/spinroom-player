@@ -19,8 +19,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,10 +60,11 @@ data class SourcesActions(
     val onCrumb: (Int) -> Unit = {},
     val onBack: () -> Boolean = { false },
     val onRetry: () -> Unit = {},
+    val onFocusHandled: () -> Unit = {},
 ) {
     companion object {
         fun of(vm: SourcesViewModel) = SourcesActions(
-            vm::onSelectProvider, vm::onItemClick, vm::onToggleFavorite, vm::onCrumb, vm::onBack, vm::onRetry,
+            vm::onSelectProvider, vm::onItemClick, vm::onToggleFavorite, vm::onCrumb, vm::onBack, vm::onRetry, vm::onFocusHandled,
         )
     }
 }
@@ -77,7 +81,10 @@ fun SourcesContent(state: SourcesUiState, actions: SourcesActions, modifier: Mod
     BackHandler(enabled = state.canGoUp) { actions.onBack() }
     Box(modifier.fillMaxSize().background(SpinroomColors.Bg)) {
         when {
-            state.providersFailed || state.connection is MaConnectionState.Failed ->
+            state.offline ->
+                ErrorState(stringResource(R.string.sources_offline), onRetry = actions.onRetry,
+                    title = stringResource(R.string.sources_error_title), retryLabel = stringResource(R.string.sources_retry))
+            state.providersFailed ->
                 ErrorState(stringResource(R.string.sources_error), onRetry = actions.onRetry,
                     title = stringResource(R.string.sources_error_title), retryLabel = stringResource(R.string.sources_retry))
             state.connection !is MaConnectionState.Connected || state.loadingProviders ->
@@ -130,21 +137,36 @@ private fun ProviderColumn(state: SourcesUiState, actions: SourcesActions, modif
 @Composable
 private fun BrowsePane(state: SourcesUiState, actions: SourcesActions, modifier: Modifier) {
     Column(modifier) {
-        Row(Modifier.fillMaxWidth().height(44.dp), verticalAlignment = Alignment.CenterVertically) {
-            Breadcrumbs(state.trail, actions.onCrumb, Modifier.weight(1f))
-            if (state.items.isNotEmpty()) {
-                Text(stringResource(R.string.sources_count, state.items.size), style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary)
-            }
-        }
-        Spacer(Modifier.height(12.dp))
+        Breadcrumbs(state.trail, actions.onCrumb, Modifier.fillMaxWidth().height(44.dp))
+        Text(
+            if (state.items.isNotEmpty()) pluralStringResource(R.plurals.sources_count, state.items.size, state.items.size) else "",
+            style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary, modifier = Modifier.height(24.dp),
+        )
+        Spacer(Modifier.height(8.dp))
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when {
                 state.itemsFailed -> ErrorState(stringResource(R.string.sources_items_error), onRetry = actions.onRetry,
                     title = stringResource(R.string.sources_error_title), retryLabel = stringResource(R.string.sources_retry))
                 state.loadingItems -> Text(stringResource(R.string.sources_loading), color = SpinroomColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
                 state.items.isEmpty() -> EmptyState(stringResource(R.string.sources_folder_empty))
-                else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    itemsIndexed(state.items, key = { _, r -> r.key }) { _, row -> ItemRow(row, actions) }
+                else -> {
+                    val listState = rememberLazyListState()
+                    val target = remember { FocusRequester() }
+                    val targetIndex = state.items.indexOfFirst { it.key == state.focusKey }.coerceAtLeast(0)
+                    // After entering / leaving a folder the old focused row is gone: put focus on the first row, or on the folder we came from.
+                    LaunchedEffect(state.items, state.focusItems) {
+                        if (state.focusItems) {
+                            listState.scrollToItem(targetIndex)
+                            withFrameNanos { }
+                            runCatching { target.requestFocus() }
+                            actions.onFocusHandled()
+                        }
+                    }
+                    LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        itemsIndexed(state.items, key = { _, r -> r.key }) { i, row ->
+                            ItemRow(row, actions, if (i == targetIndex) Modifier.focusRequester(target) else Modifier)
+                        }
+                    }
                 }
             }
         }
@@ -161,7 +183,11 @@ private fun BrowsePane(state: SourcesUiState, actions: SourcesActions, modifier:
 @Composable
 private fun Breadcrumbs(trail: List<Crumb>, onCrumb: (Int) -> Unit, modifier: Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Long paths lose their beginning ("… › By category"), the end is what matters.
+        val firstShown = (trail.size - 2).coerceAtLeast(0)
+        if (firstShown > 0) Text("…", color = SpinroomColors.TextSecondary)
         trail.forEachIndexed { i, crumb ->
+            if (i < firstShown) return@forEachIndexed
             val last = i == trail.lastIndex
             if (i > 0) Text("›", color = SpinroomColors.TextSecondary)
             if (last) {
@@ -176,11 +202,11 @@ private fun Breadcrumbs(trail: List<Crumb>, onCrumb: (Int) -> Unit, modifier: Mo
 }
 
 @Composable
-private fun ItemRow(row: SourceRow, actions: SourcesActions) {
+private fun ItemRow(row: SourceRow, actions: SourcesActions, focusModifier: Modifier = Modifier) {
     val menu = LocalItemMenu.current
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FocusSurface(
-            { actions.onItemClick(row) }, Modifier.weight(1f), shape = RoundedCornerShape(10.dp), focusedScale = 1.01f,
+            { actions.onItemClick(row) }, Modifier.weight(1f).then(focusModifier), shape = RoundedCornerShape(10.dp), focusedScale = 1.01f,
             onLongClick = if (row.canFavorite) ({ row.item.uri?.let { menu(it, row.name) } }) else null,
         ) {
             Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {

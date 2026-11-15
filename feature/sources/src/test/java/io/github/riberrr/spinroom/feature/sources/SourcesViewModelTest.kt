@@ -120,6 +120,39 @@ class SourcesViewModelTest {
         assertFalse(v.state.value.itemsFailed)
     }
 
+    @Test fun `parent entry is dropped from folders and providers`() = runTest {
+        val b = backend().apply {
+            tree[null] = listOf(folder("..", "root://"), folder("Radio Browser", "rb://"))
+            tree["rb://"] = listOf(folder("..", "rb://up"), folder("Według kraju", "rb://country"))
+        }
+        val v = vm(b)
+        assertEquals(listOf("Radio Browser"), v.state.value.providers.map { it.name })
+        assertEquals(listOf("Według kraju"), v.state.value.items.map { it.name })
+    }
+
+    @Test fun `entering a folder focuses the list and back restores the folder we left`() = runTest {
+        val v = vm(backend())
+        assertFalse(v.state.value.focusItems)
+        val country = v.state.value.items[0]
+        v.onItemClick(country); runCurrent()
+        assertTrue(v.state.value.focusItems)
+        assertNull(v.state.value.focusKey)
+        v.onFocusHandled()
+        assertFalse(v.state.value.focusItems)
+        v.onBack(); runCurrent()
+        assertTrue(v.state.value.focusItems)
+        assertEquals(country.key, v.state.value.focusKey)
+    }
+
+    @Test fun `offline is reported instead of loading forever`() = runTest {
+        val b = backend().apply { conn.value = MaConnectionState.Disconnected }
+        val v = vm(b)
+        assertTrue(v.state.value.offline)
+        b.conn.value = MaConnectionState.Connected(ServerInfo(), true); runCurrent()
+        assertFalse(v.state.value.offline)
+        assertEquals(2, v.state.value.providers.size)
+    }
+
     @Test fun `favorite is optimistic and rolled back on failure`() = runTest {
         val b = backend().apply { failFavorite = true }
         val v = vm(b)
