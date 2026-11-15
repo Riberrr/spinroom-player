@@ -30,4 +30,30 @@ Potwierdzić poprawki SFix03 na `emulator-5554` przy najniższym zużyciu token�
 „Wynik” zawiera tabelę krok → OK/BŁĄD oraz listę nowych błędów (kandydaci na SFix04). Kodu nie zmieniaj.
 
 ## Wynik
-_(uzupełnia sesja)_
+Test na `emulator-5554`, wariant release (build z main 2c4c960, `install -r`, użytkownik Tv pozostał zalogowany). Emulator wymagał cold bootu i ręcznego Wi-Fi (VPN na hoście blokował sieć). Aplikacja reaguje na klawisze wolno (~2–3 s), co utrudniało sekwencje.
+
+| # | Krok | Wynik |
+| --- | --- | --- |
+| 1 | Oba warianty naraz | **BŁĄD** — wariant debug crashuje: `java.net.BindException: Address already in use` (port Sendspin 8928 współdzielony z release); powtarza się w pętli restartów. |
+| 2 | Bez połączenia: „Połącz się z serwerem" | **NIE TESTOWANO** — wymagałoby Wyloguj, a nie wolno wpisywać haseł. Przy starcie bez sieci Start pokazał „Łączę z serwerem…" (nie pustkę). |
+| 3 | ← menu / → powrót | OK na Start i Szukaj (z „a"). Źródła: ← z listy folderów idzie do listy wtyczek, dopiero drugie ← do menu. Biblioteka/Ustawienia nie sprawdzone dokładnie. |
+| 4 | Start: playlista → szczegóły → Wstecz | OK (fokus wraca na ten sam kafelek) |
+| 5 | Ulubione | OK — „Dodaj do ulubionych" w Bibliotece → wiersz „Ulubione" na Start; „Usuń z ulubionych" znika bez restartu. Stan przywrócony. |
+| 6 | Ulubione stacje | OK w większości — logo + „Radio Browser"; „Radio RMF" ma tylko ikonę nutki. |
+| 7 | Źródła: folder | OK — fokus na 1. pozycji, Wstecz → fokus na folderze, brak „..", „9 pozycji"/„3 pozycje". |
+| 8 | Szczegóły / Teraz odtwarzane / radio | OK — przyciski w jednej linii (3. „Dodaj do" wygląda na ucięty), jest „następny", radio bez „0:00". |
+| 9 | Szukaj | OK — ← z „a" otwiera menu, chipy przewijają się (widać „Radio"). |
+| 10 | Ustawienia | Adres: klawiatura URL (inputType 0x11) OK. **BŁĄD:** fokus po wejściu ląduje na „Poprzedni" w mini-playerze, nie na „Wyloguj". |
+
+### Nowe błędy (kandydaci SFix04)
+1. **Crash debug przy równoległym uruchomieniu z release** — `BindException` na porcie 8928; Sendspin powinien łapać wyjątek i wybrać wolny port lub wyłączyć się łagodnie (osobno znany ANR debug: `startForegroundService` bez `startForeground`).
+2. **Ustawienia: fokus startowy** na mini-playerze zamiast „Wyloguj".
+3. **Ustawienia: lista odtwarzaczy** ma duplikaty/stare wpisy („Telewizor" ×2, „Web (Chrome on Windows)", „2020/2021 UHD Android TV"); nie widać, który to to TV.
+4. **Biblioteka:** po powrocie (Wstecz z Now Playing) wraca na „Albumy · 0"; przy pustej zakładce ↓ przeskakuje do mini-playera, a → z ostatniego chipa też. „Albumy · 0" przy bibliotece z utworami — do sprawdzenia.
+5. **Źródła:** po powrocie do listy folderów → trafia w pierwszą pozycję, nie w ostatnio aktywną („Playlists").
+6. **Now Playing (radio):** „pokaż całą kolejkę (1)" obok „Kolejka jest pusta" — niespójne.
+7. **Drobne UI:** „Radio RMF" bez logo; etykieta „Dodaj do…" ucięta na szczegółach playlisty.
+8. **Mini-player:** długie OK na play uruchamia odtwarzanie (pomyłka testu — Radio ZET na PC_CHROME na kilka sekund, spauzowane; przypadkowo zmieniony wybrany odtwarzacz przywrócony na PC_CHROME).
+
+### Uwagi środowiskowe
+`ping` w emulatorze nie działa (NAT). Po restarcie emulatora: `cmd wifi connect-network AndroidWifi open`. Brak `local.properties` w worktree → build z `ANDROID_HOME=C:/Users/lukas/AppData/Local/Android/Sdk`.
