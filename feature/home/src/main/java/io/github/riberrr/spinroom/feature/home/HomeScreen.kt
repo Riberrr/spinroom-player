@@ -19,6 +19,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +64,7 @@ data class HomeActions(
     val onOpenDetails: (String) -> Unit = {},
     val onPlayStation: (StationTileState) -> Unit = {},
     val onRetry: () -> Unit = {},
+    val onOpenSettings: () -> Unit = {},
 )
 
 /** "Start" screen. Stateful wrapper: collects [HomeViewModel] and renders [HomeContent]. */
@@ -68,11 +74,17 @@ fun HomeScreen(
     onOpenNowPlaying: () -> Unit = {},
     onOpenSources: () -> Unit = {},
     onOpenDetails: (String) -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val ui by viewModel.state.collectAsStateWithLifecycle()
-    val actions = remember(viewModel, onOpenNowPlaying, onOpenSources, onOpenDetails) {
-        HomeActions(onOpenNowPlaying, onOpenSources, onOpenDetails, viewModel::onPlayStation, viewModel::onRetry)
+    val actions = remember(viewModel, onOpenNowPlaying, onOpenSources, onOpenDetails, onOpenSettings) {
+        HomeActions(onOpenNowPlaying, onOpenSources, onOpenDetails, viewModel::onPlayStation, viewModel::onRetry, onOpenSettings)
+    }
+    // Back from Library/Details: favorites may have changed there.
+    LifecycleResumeEffect(viewModel) {
+        viewModel.onResume()
+        onPauseOrDispose { }
     }
     ItemMenuHost { HomeContent(ui, actions, modifier) }
 }
@@ -82,52 +94,80 @@ fun HomeScreen(
 fun HomeContent(state: HomeUiState, actions: HomeActions, modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize().background(SpinroomColors.Bg)) {
         when {
-            state.loading && !state.hasContent -> Unit
-            state.failed && !state.hasContent -> ErrorState(
+            state.hasContent -> Rows(state, actions)
+            state.notConfigured -> EmptyState(
+                title = stringResource(R.string.home_connect_title),
+                message = stringResource(R.string.home_connect_message),
+                actionLabel = stringResource(R.string.home_connect_action),
+                onAction = actions.onOpenSettings,
+            )
+            state.failed -> ErrorState(
                 message = stringResource(R.string.home_error_message),
                 title = stringResource(R.string.home_error_title),
                 retryLabel = stringResource(R.string.home_retry),
                 onRetry = actions.onRetry,
             )
-            !state.hasContent -> EmptyState(
+            state.loading || !state.isConnected -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.home_connecting), style = MaterialTheme.typography.headlineSmall, color = SpinroomColors.TextSecondary)
+            }
+            else -> EmptyState(
                 title = stringResource(R.string.home_empty_title),
                 message = stringResource(R.string.home_empty_message),
             )
-            else -> Rows(state, actions)
         }
     }
 }
 
+/** Remembers which tile was focused last (survives Back from Details) and hands out per-tile focus requesters. */
+private class FocusMemory(var lastKey: String?, val onChange: (String) -> Unit) {
+    val requesters = HashMap<String, FocusRequester>()
+    fun requester(key: String) = requesters.getOrPut(key) { FocusRequester() }
+    fun Modifier.track(key: String): Modifier = this.focusRequester(requester(key)).onFocusChanged { if (it.hasFocus && lastKey != key) { lastKey = key; onChange(key) } }
+}
+
 @Composable
 private fun Rows(state: HomeUiState, actions: HomeActions) {
-    val first = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
+    var savedKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val memory = remember { FocusMemory(savedKey) { savedKey = it } }
+    LaunchedEffect(Unit) {
+        val restored = memory.lastKey?.let { memory.requesters[it] }
+        val target = restored ?: memory.requesters[if (state.continueCard != null) "card:continue" else "card:radio"]
+        runCatching { target?.requestFocus() }
+    }
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             Header(state)
         }
         item {
-            TopCards(state, actions, first)
+            TopCards(state, actions, memory)
         }
         if (state.recent.isNotEmpty()) item {
-            SectionRow(stringResource(R.string.home_recent)) { items(state.recent, key = { it.key }) { Tile(it, actions) } }
+            SectionRow(stringResource(R.string.home_recent)) { items(state.recent, key = { it.key }) { with(memory) { Tile(it, actions, Modifier.track("recent:${it.key}")) } } }
         }
         if (state.favorites.isNotEmpty()) item {
-            SectionRow(stringResource(R.string.home_favorites)) { items(state.favorites, key = { it.key }) { Tile(it, actions) } }
+            SectionRow(stringResource(R.string.home_favorites)) { items(state.favorites, key = { it.key }) { with(memory) { Tile(it, actions, Modifier.track("fav:${it.key}")) } } }
         }
         if (state.playlists.isNotEmpty()) item {
-            SectionRow(stringResource(R.string.home_playlists)) { items(state.playlists, key = { it.key }) { Tile(it, actions) } }
+            SectionRow(stringResource(R.string.home_playlists)) { items(state.playlists, key = { it.key }) { with(memory) { Tile(it, actions, Modifier.track("pl:${it.key}")) } } }
         }
         if (state.stations.isNotEmpty()) item {
             SectionRow(stringResource(R.string.home_stations)) {
                 items(state.stations, key = { it.key }) { s ->
                     val menu = LocalItemMenu.current
-                    StationTile(s.name, s.provider, s.initials, onClick = { actions.onPlayStation(s) }, onLongClick = s.uri?.let { u -> { menu(u, s.name) } })
+                    with(memory) {
+                        StationTile(
+                            s.name, s.provider, s.initials,
+                            onClick = { actions.onPlayStation(s) },
+                            modifier = Modifier.track("st:${s.key}"),
+                            onLongClick = s.uri?.let { u -> { menu(u, s.name) } },
+                            logo = s.coverUrl?.let { url -> { Cover(url, Modifier.fillMaxSize().clip(RoundedCornerShape(6.dp))) } },
+                        )
+                    }
                 }
             }
         }
         if (state.showYoutube) item {
-            SectionRow(stringResource(R.string.home_recommended)) { items(state.recommended, key = { it.key }) { Tile(it, actions) } }
+            SectionRow(stringResource(R.string.home_recommended)) { items(state.recommended, key = { it.key }) { with(memory) { Tile(it, actions, Modifier.track("yt:${it.key}")) } } }
         }
         item { Box(Modifier.height(24.dp)) }
     }
@@ -156,12 +196,12 @@ private fun Header(state: HomeUiState) {
 }
 
 @Composable
-private fun TopCards(state: HomeUiState, actions: HomeActions, first: FocusRequester) {
+private fun TopCards(state: HomeUiState, actions: HomeActions, memory: FocusMemory) = with(memory) {
     Row(Modifier.fillMaxWidth().height(144.dp).padding(horizontal = 48.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
         val card = state.continueCard
         // The first card present takes the initial focus.
-        if (card != null) ContinueCardView(card, actions.onOpenNowPlaying, Modifier.weight(2f).fillMaxHeight().focusRequester(first))
-        val radioMod = Modifier.weight(1f).fillMaxHeight().let { if (card == null) it.focusRequester(first) else it }
+        if (card != null) ContinueCardView(card, actions.onOpenNowPlaying, Modifier.weight(2f).fillMaxHeight().track("card:continue"))
+        val radioMod = Modifier.weight(1f).fillMaxHeight().track("card:radio")
         LinkCard(
             title = stringResource(R.string.home_radio),
             subtitle = if (state.stations.isEmpty()) stringResource(R.string.home_radio_empty) else stringResource(R.string.home_radio_count, state.stations.size),
@@ -170,7 +210,7 @@ private fun TopCards(state: HomeUiState, actions: HomeActions, first: FocusReque
         if (state.showYoutube) {
             LinkCard(
                 title = stringResource(R.string.home_youtube), subtitle = stringResource(R.string.home_youtube_sub),
-                onClick = actions.onOpenSources, modifier = Modifier.weight(1f).fillMaxHeight(),
+                onClick = actions.onOpenSources, modifier = Modifier.weight(1f).fillMaxHeight().track("card:youtube"),
             )
         }
     }
@@ -184,7 +224,11 @@ private fun ContinueCardView(card: ContinueCard, onClick: () -> Unit, modifier: 
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.home_continue), style = MaterialTheme.typography.labelMedium, color = SpinroomColors.Accent)
                 Text(card.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                val sub = if (card.total > 0) stringResource(R.string.home_continue_track, card.artist, card.position, card.total) else card.artist
+                val sub = when {
+                    card.total <= 0 -> card.artist
+                    card.artist.isBlank() -> stringResource(R.string.home_continue_track_only, card.position, card.total)
+                    else -> stringResource(R.string.home_continue_track, card.artist, card.position, card.total)
+                }
                 Text(sub, style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Box(Modifier.padding(top = 8.dp).fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(SpinroomColors.Outline)) {
                     Box(Modifier.fillMaxHeight().fillMaxWidth(card.progress).background(SpinroomColors.Accent))
@@ -207,12 +251,12 @@ private fun LinkCard(title: String, subtitle: String, onClick: () -> Unit, modif
 }
 
 @Composable
-private fun Tile(tile: HomeTile, actions: HomeActions) {
+private fun Tile(tile: HomeTile, actions: HomeActions, modifier: Modifier = Modifier) {
     val menu = LocalItemMenu.current
     val subtitle = tile.subtitle.ifBlank { if (tile.isPlaylist) stringResource(R.string.home_playlist_label) else "" }
     CoverTile(
         title = tile.title, subtitle = subtitle,
-        onClick = { tile.uri?.let(actions.onOpenDetails) },
+        onClick = { tile.uri?.let(actions.onOpenDetails) }, modifier = modifier,
         onLongClick = tile.uri?.let { u -> { menu(u, tile.title) } },
         cover = { Cover(tile.coverUrl, Modifier.fillMaxSize()) },
     )
