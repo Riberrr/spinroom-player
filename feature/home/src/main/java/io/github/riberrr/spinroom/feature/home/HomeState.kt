@@ -19,6 +19,7 @@ data class StationTileState(
     val provider: String,
     val initials: String,
     val uri: String?,
+    val coverUrl: String? = null,
 )
 
 /** What is playing on the chosen player, for the large "continue listening" card. */
@@ -42,6 +43,8 @@ data class HomeUiState(
     val stations: List<StationTileState> = emptyList(),
     val recommended: List<HomeTile> = emptyList(),
     val hasPlayer: Boolean = false,
+    /** No server address/token saved: offer Settings instead of a spinner. */
+    val notConfigured: Boolean = false,
 ) {
     val isConnected: Boolean get() = connection is MaConnectionState.Connected
     val hasContent: Boolean

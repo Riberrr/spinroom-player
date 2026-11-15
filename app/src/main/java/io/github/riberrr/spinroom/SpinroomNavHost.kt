@@ -40,6 +40,7 @@ fun SpinroomNavHost(navController: NavHostController = rememberNavController()) 
                     onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) },
                     onOpenSources = { navController.navigate(Routes.SOURCES) },
                     onOpenDetails = { uri -> navController.navigate(Routes.details(uri)) },
+                    onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 )
             }
             composable(Routes.NOW_PLAYING) { NowPlayingScreen() }

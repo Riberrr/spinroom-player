@@ -3,6 +3,11 @@
     <string name="home_greeting">Dzień dobry</string>
     <string name="home_continue">KONTYNUUJ SŁUCHANIE</string>
     <string name="home_continue_track">%1$s · utwór %2$d z %3$d</string>
+    <string name="home_continue_track_only">Utwór %1$d z %2$d</string>
+    <string name="home_connecting">Łączę z serwerem…</string>
+    <string name="home_connect_title">Połącz się z serwerem</string>
+    <string name="home_connect_message">Podaj adres serwera Music Assistant w Ustawieniach.</string>
+    <string name="home_connect_action">Otwórz Ustawienia</string>
     <string name="home_radio">Radio</string>
     <string name="home_radio_count">Ulubione stacje: %1$d</string>
     <string name="home_radio_empty">Stacje radiowe</string>

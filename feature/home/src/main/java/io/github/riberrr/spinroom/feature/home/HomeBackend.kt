@@ -9,6 +9,7 @@ import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.PlayerRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.maapi.LibraryApi
+import io.github.riberrr.spinroom.core.maapi.MaClient
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.MediaTypes
@@ -19,6 +20,8 @@ import javax.inject.Singleton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 /** What the home ViewModel needs from the data layer; [MaHomeBackend] is the real one, tests use a fake. */
@@ -30,6 +33,9 @@ interface HomeBackend {
     val serverAddress: Flow<String>
 
     fun queue(queueId: String): Flow<PlayerQueue>
+
+    /** Emits whenever the library changed on the server (favorite toggled, item added/removed). */
+    val libraryChanges: Flow<Unit> get() = emptyFlow()
 
     suspend fun recentlyPlayed(): List<MediaItem>
     suspend fun playlists(): List<MediaItem>
@@ -46,6 +52,7 @@ class MaHomeBackend @Inject constructor(
     private val browse: BrowseRepository,
     private val players: PlayerRepository,
     private val library: LibraryApi,
+    private val client: MaClient,
     settings: SettingsStore,
     connectionManager: ConnectionManager,
 ) : HomeBackend {
@@ -56,6 +63,10 @@ class MaHomeBackend @Inject constructor(
     override val serverAddress = settings.settings.map { it.serverAddress }
 
     override fun queue(queueId: String) = players.queue(queueId)
+
+    override val libraryChanges: Flow<Unit> = client.events
+        .filter { it.event == "media_item_updated" || it.event == "media_item_added" || it.event == "media_item_deleted" }
+        .map { }
 
     override suspend fun recentlyPlayed() = browse.recentlyPlayed(ROW_LIMIT)
     override suspend fun playlists() = library.items(MediaTypes.PLAYLISTS, limit = ROW_LIMIT, orderBy = "name")
