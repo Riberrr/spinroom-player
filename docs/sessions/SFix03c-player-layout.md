@@ -16,4 +16,8 @@
 Podglądy pokazują poprawny układ, test `isLive` zielony, `bash scripts/check.sh` czyste. PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+- `isLive(durationMs)` w `:core:data` (`Playback.kt`, test `PlaybackTest`): czas ≤ 0 = strumień na żywo. Mini-odtwarzacz i Teraz odtwarzane pokazują wtedy „Na żywo” zamiast czasów i paska.
+- Teraz odtwarzane: rząd przycisków skaluje się do szerokości kolumny (BoxWithConstraints, bez Spacera), „Następne w kolejce” / „pokaż całą kolejkę” bez łamania (maxLines 1, softWrap false).
+- Szczegóły: tytuł do 2 linii z wielokropkiem, przyciski akcji `maxLines = 1`, `softWrap = false`, mniejszy padding.
+- Zweryfikowane: kompilacja + `PlaybackTest` zielone. NIE sprawdzone wzrokiem (brak emulatora/podglądu) — zrób zrzut na 1280×720 przy menu zwiniętym i rozwiniętym.
+- Uwaga: `check.sh` lint zgłasza błąd tylko przez mój lokalny `local.properties` (ukośniki bez `C\:`); w CI nie dotyczy. „Na żywo” jest na sztywno w `:core:design` (tak jak reszta tekstów tam).

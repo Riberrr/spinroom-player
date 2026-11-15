@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -49,6 +50,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.SubcomposeAsyncImage
+import io.github.riberrr.spinroom.core.data.isLive
 import io.github.riberrr.spinroom.core.design.CoverPlaceholder
 import io.github.riberrr.spinroom.core.design.EmptyState
 import io.github.riberrr.spinroom.core.design.FocusSurface
@@ -224,10 +226,14 @@ private fun Details(state: NowPlayingUiState, actions: NowPlayingActions) {
         Text(subtitle, style = MaterialTheme.typography.titleLarge, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
     Spacer(Modifier.height(24.dp))
-    ProgressBar(state.positionMs, state.durationMs, Modifier.fillMaxWidth())
-    Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(formatTime(state.positionMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary)
-        Text(formatTime(state.durationMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary)
+    if (isLive(state.durationMs)) {
+        Text("Na żywo", style = MaterialTheme.typography.labelLarge, color = SpinroomColors.Accent, maxLines = 1, softWrap = false)
+    } else {
+        ProgressBar(state.positionMs, state.durationMs, Modifier.fillMaxWidth())
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(formatTime(state.positionMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary)
+            Text(formatTime(state.durationMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary)
+        }
     }
     Spacer(Modifier.height(20.dp))
     Controls(state, actions, playFocus)
@@ -237,24 +243,28 @@ private fun Details(state: NowPlayingUiState, actions: NowPlayingActions) {
 
 @Composable
 private fun Controls(state: NowPlayingUiState, actions: NowPlayingActions, playFocus: FocusRequester) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-        ControlButton(NowPlayingIcons.Shuffle, stringResource(R.string.nowplaying_shuffle), actions.onShuffle, 52.dp, active = state.shuffle)
-        ControlButton(SpinroomIcons.Previous, stringResource(R.string.nowplaying_previous), actions.onPrevious, 60.dp)
-        ControlButton(
-            if (state.isPlaying) SpinroomIcons.Pause else SpinroomIcons.Play,
-            stringResource(if (state.isPlaying) R.string.nowplaying_pause else R.string.nowplaying_play),
-            actions.onPlayPause, 80.dp, filled = true, modifier = Modifier.focusRequester(playFocus),
-        )
-        ControlButton(SpinroomIcons.Next, stringResource(R.string.nowplaying_next), actions.onNext, 60.dp)
-        ControlButton(
-            if (state.repeat == RepeatMode.ONE) NowPlayingIcons.RepeatOne else NowPlayingIcons.Repeat,
-            stringResource(R.string.nowplaying_repeat), actions.onRepeat, 52.dp, active = state.repeat != RepeatMode.OFF,
-        )
-        Spacer(Modifier.weight(1f))
-        ControlButton(
-            if (state.favorite) NowPlayingIcons.Favorite else NowPlayingIcons.FavoriteOutline,
-            stringResource(R.string.nowplaying_favorite), actions.onFavorite, 52.dp, active = state.favorite,
-        )
+    // Natural width: 4 x 52 + 2 x 60 + 80 dp buttons + 5 gaps of 12 dp = 468. Scale down when the column is narrower.
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val k = (maxWidth.value / 468f).coerceAtMost(1f)
+        fun d(v: Int) = (v * k).dp
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(d(12)), verticalAlignment = Alignment.CenterVertically) {
+            ControlButton(NowPlayingIcons.Shuffle, stringResource(R.string.nowplaying_shuffle), actions.onShuffle, d(52), active = state.shuffle)
+            ControlButton(SpinroomIcons.Previous, stringResource(R.string.nowplaying_previous), actions.onPrevious, d(60))
+            ControlButton(
+                if (state.isPlaying) SpinroomIcons.Pause else SpinroomIcons.Play,
+                stringResource(if (state.isPlaying) R.string.nowplaying_pause else R.string.nowplaying_play),
+                actions.onPlayPause, d(80), filled = true, modifier = Modifier.focusRequester(playFocus),
+            )
+            ControlButton(SpinroomIcons.Next, stringResource(R.string.nowplaying_next), actions.onNext, d(60))
+            ControlButton(
+                if (state.repeat == RepeatMode.ONE) NowPlayingIcons.RepeatOne else NowPlayingIcons.Repeat,
+                stringResource(R.string.nowplaying_repeat), actions.onRepeat, d(52), active = state.repeat != RepeatMode.OFF,
+            )
+            ControlButton(
+                if (state.favorite) NowPlayingIcons.Favorite else NowPlayingIcons.FavoriteOutline,
+                stringResource(R.string.nowplaying_favorite), actions.onFavorite, d(52), active = state.favorite,
+            )
+        }
     }
 }
 
@@ -285,12 +295,12 @@ private fun ControlButton(
 private fun UpNext(state: NowPlayingUiState, actions: NowPlayingActions) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(SpinroomColors.Bg.copy(alpha = 0.7f)).padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.nowplaying_up_next), style = MaterialTheme.typography.titleSmall, color = SpinroomColors.TextPrimary, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.nowplaying_up_next), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleSmall, color = SpinroomColors.TextPrimary, fontWeight = FontWeight.SemiBold)
             FocusSurface(actions.onToggleQueue, shape = RoundedCornerShape(8.dp), containerColor = Color.Transparent, focusedScale = 1.03f) {
                 Text(
                     stringResource(R.string.nowplaying_show_queue, state.queue.size),
                     Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary,
+                    style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false,
                 )
             }
         }

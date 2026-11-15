@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import io.github.riberrr.spinroom.core.data.isLive
 
 /** Immutable snapshot rendered by [MiniPlayerBar]. Times in milliseconds. */
 data class MiniPlayerState(
@@ -74,9 +76,14 @@ fun MiniPlayerBar(
             )
             RoundIconButton(SpinroomIcons.Next, "Następny", onNext, 40.dp)
         }
-        Text(formatTime(state.positionMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary)
-        ProgressBar(state.positionMs, state.durationMs, Modifier.padding(horizontal = 12.dp).weight(1f))
-        Text(formatTime(state.durationMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary)
+        if (isLive(state.durationMs)) {
+            Spacer(Modifier.weight(1f))
+            Text("Na żywo", style = MaterialTheme.typography.labelLarge, color = SpinroomColors.Accent, maxLines = 1, softWrap = false)
+        } else {
+            Text(formatTime(state.positionMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
+            ProgressBar(state.positionMs, state.durationMs, Modifier.padding(horizontal = 12.dp).weight(1f))
+            Text(formatTime(state.durationMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
+        }
         FocusSurface(
             onOpenNowPlaying, Modifier.padding(start = 24.dp), shape = RoundedCornerShape(24.dp),
             containerColor = SpinroomColors.SurfaceHigh, focusedContainerColor = SpinroomColors.Outline, focusedScale = 1.04f,

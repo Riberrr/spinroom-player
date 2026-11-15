@@ -144,7 +144,7 @@ private fun Loaded(state: DetailsUiState, actions: DetailsActions) {
                 style = MaterialTheme.typography.labelMedium,
                 color = SpinroomColors.Accent,
             )
-            Text(state.title, Modifier.padding(top = 4.dp), style = MaterialTheme.typography.displaySmall, color = SpinroomColors.TextPrimary, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Text(state.title, Modifier.padding(top = 4.dp), style = MaterialTheme.typography.displaySmall, color = SpinroomColors.TextPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
             val meta = metaText(state)
             if (meta.isNotBlank()) {
                 Text(meta, Modifier.padding(top = 10.dp), style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary)
@@ -248,9 +248,9 @@ private fun ActionButton(
         focusedScale = 1.06f,
     ) {
         val color = if (primary) SpinroomColors.Bg else SpinroomColors.TextPrimary
-        Row(Modifier.padding(horizontal = 24.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(horizontal = 18.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (icon != null) Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
-            Text(label, style = MaterialTheme.typography.titleSmall, color = color)
+            Text(label, style = MaterialTheme.typography.titleSmall, color = color, maxLines = 1, softWrap = false)
         }
     }
 }
