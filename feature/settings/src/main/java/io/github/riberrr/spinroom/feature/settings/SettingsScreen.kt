@@ -160,13 +160,18 @@ internal fun playerDetail(player: Player): String? {
 private fun PlayerList(ui: SettingsUiState, onPick: (Player) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.settings_player_title), color = SpinroomColors.TextSecondary)
-        if (ui.players.isEmpty()) Text(stringResource(R.string.settings_player_none), color = SpinroomColors.TextSecondary)
-        ui.players.forEach { player ->
-            val note = when {
-                player.playerId == ui.playerId -> stringResource(R.string.settings_player_selected)
-                !player.available -> stringResource(R.string.settings_player_unavailable)
-                else -> null
-            }
+        val rows = remember(ui.players, ui.ownPlayerId, ui.playerId) { buildPlayerRows(ui.players, ui.ownPlayerId, ui.playerId) }
+        if (rows.isEmpty()) Text(stringResource(R.string.settings_player_none), color = SpinroomColors.TextSecondary)
+        rows.forEach { row ->
+            val player = row.player
+            val note = listOfNotNull(
+                if (row.isOwn) stringResource(R.string.settings_player_own) else null,
+                when {
+                    row.isSelected -> stringResource(R.string.settings_player_selected)
+                    !player.available -> stringResource(R.string.settings_player_unavailable)
+                    else -> null
+                },
+            ).joinToString(" · ").ifEmpty { null }
             FocusSurface(onClick = { onPick(player) }, modifier = Modifier.widthIn(min = 240.dp, max = 560.dp)) {
                 Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                     Text(player.name.ifBlank { player.playerId }, color = SpinroomColors.TextPrimary)
@@ -177,7 +182,7 @@ private fun PlayerList(ui: SettingsUiState, onPick: (Player) -> Unit) {
                     note?.let {
                         Text(
                             it,
-                            color = if (player.playerId == ui.playerId) SpinroomColors.Success else SpinroomColors.TextSecondary,
+                            color = if (row.isSelected) SpinroomColors.Success else SpinroomColors.TextSecondary,
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }

@@ -8,3 +8,4 @@ Not done yet: Sendspin pairing/QR (S01a design), TV player name. Add them as new
 Depends on `:core:design`, `:core:data` (Hilt).
 Sub-screen "O aplikacji" (S16, `AboutScreen`): wersja, notka o nieoficjalnym kliencie, licencje. Opened from a button at the bottom, same in-screen pattern as latency.
 Player list shows a second line (model · address) from MA `device_info` (`PlayerDeviceInfo` in :core:ma-api); the address field uses the Uri keyboard; after login focus moves to "Wyloguj".
+SFix04a: the list marks this TV ("To urządzenie", first) and hides stale unavailable players (`PlayerRows.kt`).

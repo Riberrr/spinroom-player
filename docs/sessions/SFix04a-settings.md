@@ -15,4 +15,7 @@ adb: `C:/Users/lukas/AppData/Local/Android/Sdk/platform-tools/adb.exe`. Emulator
 `bash scripts/check.sh` czyste (lint może paść na `local.properties` — to środowisko), PR otwarty, nie scalony.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Błąd 2: `buildPlayerRows` (PlayerRows.kt, testy JVM): własny odtwarzacz (id = klucz Sendspin z `SendspinCredentials`) pierwszy z etykietą „To urządzenie”, dostępne po nazwie, niedostępne ukryte (chyba że własny/wybrany). Druga linia z SFix03g bez zmian (zależy od `device_info` z MA — nie sprawdzone na żywo).
+- Błąd 1 (zweryfikowane na emulatorze, release): → z dolnej pozycji menu trafiało w „Poprzedni” (beam search z najniższego elementu; `focusRestorer` i `focusProperties.right` nie pomagały). Poprawka w `SpinroomShell`: → w menu (onPreviewKeyEvent) i Back-w-menu robią `screenFocus.requestFocus()`; `focusRestorer` tylko wokół treści ekranu, mini-odtwarzacz poza nim. Wynik: po → fokus na polu adresu (pierwsza kontrolka). Uwaga: w trakcie testu fokus startowy Home bywał w mini-odtwarzaczu (stare zachowanie, po zmianie fokus startuje w treści).
+- Do zbadania osobno: Back przy otwartym menu na Ustawieniach cofa do Startu zamiast wrócić fokusem do treści (kolejność BackHandlerów NavHost vs shell; zachowanie sprzed zmiany nie sprawdzone).
+- Pułapki: zmiana dotyka :app (SpinroomShell, wspólny plik fokusu wszystkich ekranów); `scripts/check.sh`: tylko lint na local.properties.

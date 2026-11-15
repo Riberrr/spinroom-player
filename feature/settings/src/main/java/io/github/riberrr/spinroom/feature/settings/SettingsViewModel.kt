@@ -9,6 +9,7 @@ import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.LibraryRepository
 import io.github.riberrr.spinroom.core.data.PlayerRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
+import io.github.riberrr.spinroom.core.data.di.SendspinCredentials
 import io.github.riberrr.spinroom.core.maapi.AuthApi
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaTypes
@@ -55,6 +56,8 @@ data class SettingsUiState(
     /** MA players to play on; [playerId] is the chosen one (empty = none). */
     val players: List<Player> = emptyList(),
     val playerId: String = "",
+    /** MA player id of this TV (its Sendspin client id); empty until known. */
+    val ownPlayerId: String = "",
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -66,6 +69,7 @@ class SettingsViewModel @Inject constructor(
     private val connection: ConnectionManager,
     private val discovery: MaServerDiscovery,
     private val playerRepository: PlayerRepository,
+    private val sendspinCredentials: SendspinCredentials,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsUiState())
@@ -77,6 +81,10 @@ class SettingsViewModel @Inject constructor(
             val s = settings.settings.first()
             _state.update { it.copy(address = s.serverAddress, loggedIn = s.isConfigured) }
         }
+        viewModelScope.launch {
+            runCatching { sendspinCredentials.get().identity.id }
+                .onSuccess { id -> _state.update { it.copy(ownPlayerId = id) } }
+        }
         viewModelScope.launch { settings.settings.collect { s -> _state.update { it.copy(autostart = s.autostart, playerId = s.playerId) } } }
         viewModelScope.launch {
             // (Re)load the player list each time an authenticated session comes up.
@@ -84,7 +92,7 @@ class SettingsViewModel @Inject constructor(
                 .map { it is MaConnectionState.Connected && it.authenticated }
                 .distinctUntilChanged()
                 .flatMapLatest { ready -> if (ready) playerRepository.players().catch { emit(emptyList()) } else flowOf(emptyList()) }
-                .collect { list -> _state.update { it.copy(players = list.sortedWith(compareBy({ !it.available }, { it.name.lowercase() }))) } }
+                .collect { list -> _state.update { it.copy(players = list) } }
         }
         viewModelScope.launch { connection.state.collect { c -> _state.update { it.copy(connection = c) } } }
         viewModelScope.launch {
