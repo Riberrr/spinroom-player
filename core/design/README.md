@@ -9,7 +9,7 @@ All components are stateless; texts are passed in (Polish, from `strings.xml` of
 - `CoverTile(title, subtitle, onClick, modifier, size = 148.dp, cover = placeholder)` — square cover (slot: put Coil `AsyncImage` there), scale 1.08 + outline on focus. `CoverPlaceholder(modifier, tint)`.
 - `SectionRow(title, modifier) { item { } / items(..) }` — title + `LazyRow`, 48 dp side padding.
 - `StationTile(name, provider, initials, onClick, modifier, badgeColor)` — radio/source chip.
-- `SideMenu(items: List<SideMenuItem(id,label,icon)>, selectedId, onSelect, bottomItems, firstItemFocusRequester, onFocusChange)` — 88 dp icon rail, expands to 240 dp with labels while focused.
+- `SideMenu(items: List<SideMenuItem(id,label,icon)>, selectedId, onSelect, bottomItems, enterFocusRequester, onFocusChange)` — 88 dp icon rail, expands to 240 dp with labels while focused as an overlay (layout slot stays 88 dp). Focus entering the menu always lands on `selectedId` (focusGroup + onEnter).
 - `MiniPlayerBar(state: MiniPlayerState(title, artist, isPlaying, positionMs, durationMs), onPrevious, onPlayPause, onNext, onOpenNowPlaying, nowPlayingLabel, cover)`; `ProgressBar(positionMs, durationMs)`.
 - `EmptyState(title, message?, actionLabel?, onAction?)`, `ErrorState(message, title, retryLabel, onRetry?)` — centered; the action button takes initial focus.
 
