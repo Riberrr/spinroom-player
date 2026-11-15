@@ -42,6 +42,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val focusManager = LocalFocusManager.current
     val menuFocus = remember { FocusRequester() }
     val contentFocus = remember { FocusRequester() }
+    val screenFocus = remember { FocusRequester() }
     var menuHasFocus by remember { mutableStateOf(false) }
     var menuOpenedByUser by remember { mutableStateOf(false) }
     var leftEdgeHit by remember { mutableStateOf(false) }
@@ -110,8 +111,10 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         ) {
             // Inner group: coming back from the menu restores the last focused control (the first one if it is gone).
             // Kept apart from the outer group because both would set onExit and the outer one wins.
-            Column(Modifier.fillMaxSize().focusRestorer()) {
-                Column(Modifier.weight(1f)) { content() }
+            // Fallback is the screen itself: with nothing to restore (e.g. → from the bottom "Ustawienia" menu
+            // item, geometrically closest to the mini player) focus must land in the content, not the mini player.
+            Column(Modifier.fillMaxSize().focusRestorer(screenFocus)) {
+                Column(Modifier.weight(1f).focusRequester(screenFocus)) { content() }
                 if (route != Routes.NOW_PLAYING) {
                     NowPlayingMiniPlayer(onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } })
                 }
