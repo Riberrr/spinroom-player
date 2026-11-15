@@ -12,6 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.maapi.LibraryApi
+import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,6 +24,9 @@ import kotlinx.coroutines.flow.map
 /** What the library screen needs from `:core:data`. Fake it in tests. */
 interface LibraryBackend {
     val serverAddress: Flow<String>
+
+    /** Connection to the Music Assistant server (drives the offline / connecting states). */
+    val connection: Flow<MaConnectionState>
 
     /** Paged items of [tab] sorted by name, placeholders enabled so the grid can jump to any index. */
     fun pager(tab: LibraryTab): Flow<PagingData<MediaItem>>
@@ -71,6 +75,7 @@ class MaLibraryBackend @Inject constructor(
     init { connectionManager.start() }
 
     override val serverAddress = settings.settings.map { it.serverAddress }
+    override val connection: Flow<MaConnectionState> = connectionManager.state
 
     override fun pager(tab: LibraryTab): Flow<PagingData<MediaItem>> = flow {
         val total = api.count(tab.mediaType)

@@ -1,5 +1,6 @@
 package io.github.riberrr.spinroom.feature.library
 
+import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaTypes
 
 enum class LibraryTab(val mediaType: String) {
@@ -21,6 +22,7 @@ data class LibraryUiState(
     val tab: LibraryTab = LibraryTab.Albums,
     /** Item count per tab, filled in lazily (shown in the label of the selected tab). */
     val counts: Map<LibraryTab, Int> = emptyMap(),
+    val connection: MaConnectionState = MaConnectionState.Disconnected,
 ) {
     val count: Int? get() = counts[tab]
 }
