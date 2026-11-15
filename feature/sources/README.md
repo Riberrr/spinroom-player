@@ -10,6 +10,8 @@ Depends on `:core:design`, `:core:data` (+ Coil 3 for covers). `SourcesScreen()`
 ## Behaviour
 - Root `music/browse` (no path) = provider list; focusing/clicking a provider browses its path. No per-plugin code: Radio Browser, TuneIn, YouTube Music, local files all come from the same tree.
 - Folder row (`media_type=folder` or not playable with a path) → opens, adds a breadcrumb. Playable row → `play_media(option=replace)` on `settings.playerId`; hint line shows what was sent (or "choose a player" when none).
+- The ".." row MA adds to every folder is dropped (Back goes up). Count line sits under the breadcrumbs (`plurals`: 1 pozycja / 2–4 pozycje / 5+ pozycji); long trails show "… › parent › current".
+- Focus: after entering a folder (or Back / crumb) the VM sets `focusItems`; the list scrolls to and focuses the first row, or the folder we came from (`Crumb.rowKey`), then calls `onFocusHandled`. Browsing providers never steals focus. Not connected (`offline`) shows "Brak połączenia z serwerem" + retry instead of endless loading.
 - Breadcrumbs: earlier ones are focusable and jump up; Back goes one folder up, at the provider root it leaves the screen.
 - Heart button (second focus stop in a row, right of the row) toggles favorite for non-folder items; optimistic with rollback.
 - Pattern is the one from `:feature:nowplaying` (`SourcesBackend` seam, VM tests with a fake, see `SourcesViewModelTest`).

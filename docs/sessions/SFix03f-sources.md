@@ -16,4 +16,9 @@ Punkty 1–6. Testy JVM `SourcesViewModel` dla filtra „..”, odmiany (funkcja
 Testy zielone, przegląd potwierdza fokus po wejściu i wyjściu z folderu, PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Fokus: po wejściu do folderu lista dostaje fokus na pierwszej pozycji, po Wstecz/okruszku na folderze, z którego wyszliśmy (`focusItems`/`focusKey` w stanie, `Crumb.rowKey`). Przegląd na emulatorze (release): RadioBrowser › By category › By language i z powrotem — OK. Pusty folder: fokus zostaje na dostawcach.
+- „..” usunięte z listy folderów i dostawców (`name == ".."`); licznik przez `plurals` pod okruszkami; okruszki pokazują „… › rodzic › bieżący”.
+- Offline (`SourcesUiState.offline`: Disconnected/Failed): „Brak połączenia z serwerem” + ponów zamiast „Wczytuję…”. Zweryfikowane na emulatorze przed logowaniem.
+- Punkt 5 (Radio): surowe `music/browse` dla `builtin://radios` zwraca tylko „..” (raw=1, decoded=1) — MA nie zwraca stacji w drzewie, nie gubimy ich po stronie klienta (Start bierze ulubione z biblioteki). Uwaga: `decodeList()` po cichu pomija pozycje, których nie da się zdekodować; tu nie zachodzi.
+- Odmiana: tylko `plurals` (Android zna polskie reguły), bez osobnej funkcji czystej, więc bez testu JVM odmiany. Testy VM: filtr „..”, fokus, offline.
+- Pułapki: `R` z dostawcy ląduje na pozycji najbliższej wysokości (nie zawsze pierwszej); debug ANR-uje na emulatorze, testy na release.

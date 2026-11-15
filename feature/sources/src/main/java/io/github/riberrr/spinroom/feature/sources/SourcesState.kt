@@ -23,7 +23,7 @@ data class SourceRow(
 }
 
 /** One step of the breadcrumb trail; the first one is the provider. */
-data class Crumb(val name: String, val path: String)
+data class Crumb(val name: String, val path: String, val rowKey: String = "")
 
 data class SourcesUiState(
     val connection: MaConnectionState = MaConnectionState.Disconnected,
@@ -41,6 +41,12 @@ data class SourcesUiState(
     val playFailed: Boolean = false,
     /** User pressed play but no player is chosen yet. */
     val noPlayer: Boolean = false,
+    /** The folder list should take focus once loaded (set after entering / leaving a folder, not when browsing providers). */
+    val focusItems: Boolean = false,
+    /** Row to focus after going back (the folder we came from); null = first row. */
+    val focusKey: String? = null,
 ) {
+    /** No usable connection: show the same "no connection" state as Start instead of an endless "loading". */
+    val offline: Boolean get() = connection is MaConnectionState.Disconnected || connection is MaConnectionState.Failed
     val canGoUp: Boolean get() = trail.size > 1
 }
