@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + raport SFix03v (15.11.2026, PR #26–#33). Ostatni tag: sprawdź `git tag` (v0.3.0 wysypuje się przy starcie)._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + raport SFix03v (15.11.2026, PR #26–#33). Ostatni tag: v1.0.1._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
