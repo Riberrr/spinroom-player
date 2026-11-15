@@ -68,7 +68,7 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         val provider = s.providers.getOrNull(index) ?: return
         val path = provider.item.path ?: return
         if (s.trail.firstOrNull()?.path == path) return
-        _state.update { it.copy(selectedProvider = index, trail = listOf(Crumb(provider.name, path)), items = emptyList(), playedName = null, focusItems = false, focusKey = null) }
+        _state.update { it.copy(selectedProvider = index, trail = listOf(Crumb(provider.name, path)), items = emptyList(), playedName = null, focusItems = false, focusKey = null, lastFocusKey = null) }
         load(path)
     }
 
@@ -79,7 +79,7 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         if (uri != null) {
             play(row.name, uri)
         } else if (path != null) {
-            _state.update { it.copy(trail = it.trail + Crumb(row.name, path, row.key), items = emptyList(), playedName = null, focusItems = true, focusKey = null) }
+            _state.update { it.copy(trail = it.trail + Crumb(row.name, path, row.key), items = emptyList(), playedName = null, focusItems = true, focusKey = null, lastFocusKey = null) }
             load(path)
         }
     }
@@ -90,7 +90,7 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         if (index !in 0 until trail.lastIndex) return
         val cut = trail.take(index + 1)
         val cameFrom = trail[index + 1].rowKey.ifEmpty { null }
-        _state.update { it.copy(trail = cut, items = emptyList(), focusItems = true, focusKey = cameFrom) }
+        _state.update { it.copy(trail = cut, items = emptyList(), focusItems = true, focusKey = cameFrom, lastFocusKey = cameFrom) }
         load(cut.last().path)
     }
 
@@ -101,6 +101,9 @@ class SourcesViewModel @Inject constructor(private val backend: SourcesBackend) 
         onCrumb(trail.size - 2)
         return true
     }
+
+    /** The user moved focus to the folder-list row [key]; remembered per level. */
+    fun onItemFocused(key: String) = _state.update { if (it.lastFocusKey == key) it else it.copy(lastFocusKey = key) }
 
     fun onFocusHandled() = _state.update { it.copy(focusItems = false) }
 

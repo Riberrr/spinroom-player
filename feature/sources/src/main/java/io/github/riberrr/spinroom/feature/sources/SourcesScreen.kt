@@ -61,10 +61,11 @@ data class SourcesActions(
     val onBack: () -> Boolean = { false },
     val onRetry: () -> Unit = {},
     val onFocusHandled: () -> Unit = {},
+    val onItemFocused: (String) -> Unit = {},
 ) {
     companion object {
         fun of(vm: SourcesViewModel) = SourcesActions(
-            vm::onSelectProvider, vm::onItemClick, vm::onToggleFavorite, vm::onCrumb, vm::onBack, vm::onRetry, vm::onFocusHandled,
+            vm::onSelectProvider, vm::onItemClick, vm::onToggleFavorite, vm::onCrumb, vm::onBack, vm::onRetry, vm::onFocusHandled, vm::onItemFocused,
         )
     }
 }
@@ -102,7 +103,9 @@ fun SourcesContent(state: SourcesUiState, actions: SourcesActions, modifier: Mod
 @Composable
 private fun ProviderColumn(state: SourcesUiState, actions: SourcesActions, modifier: Modifier) {
     val first = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
+    // Coming back into a folder: the browse pane restores its own focus, so don't grab it here.
+    val skipInitialFocus = remember { state.lastFocusKey != null }
+    LaunchedEffect(Unit) { if (!skipInitialFocus) runCatching { first.requestFocus() } }
     Column(modifier) {
         Text(stringResource(R.string.sources_title), style = MaterialTheme.typography.displaySmall, color = SpinroomColors.TextPrimary)
         Text(stringResource(R.string.sources_subtitle), style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary)
@@ -152,7 +155,17 @@ private fun BrowsePane(state: SourcesUiState, actions: SourcesActions, modifier:
                 else -> {
                     val listState = rememberLazyListState()
                     val target = remember { FocusRequester() }
-                    val targetIndex = state.items.indexOfFirst { it.key == state.focusKey }.coerceAtLeast(0)
+                    // Key remembered when this list appeared (screen re-entered); null on a fresh folder.
+                    val restoreKey = remember { state.lastFocusKey }
+                    val wantedKey = if (state.focusItems) state.focusKey else restoreKey
+                    val targetIndex = state.items.indexOfFirst { it.key == wantedKey }.coerceAtLeast(0)
+                    LaunchedEffect(Unit) {
+                        if (restoreKey != null && !state.focusItems) {
+                            listState.scrollToItem(targetIndex)
+                            withFrameNanos { }
+                            runCatching { target.requestFocus() }
+                        }
+                    }
                     // After entering / leaving a folder the old focused row is gone: put focus on the first row, or on the folder we came from.
                     LaunchedEffect(state.items, state.focusItems) {
                         if (state.focusItems) {
@@ -164,7 +177,8 @@ private fun BrowsePane(state: SourcesUiState, actions: SourcesActions, modifier:
                     }
                     LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         itemsIndexed(state.items, key = { _, r -> r.key }) { i, row ->
-                            ItemRow(row, actions, if (i == targetIndex) Modifier.focusRequester(target) else Modifier)
+                            ItemRow(row, actions, (if (i == targetIndex) Modifier.focusRequester(target) else Modifier)
+                                .onFocusChanged { if (it.hasFocus) actions.onItemFocused(row.key) })
                         }
                     }
                 }

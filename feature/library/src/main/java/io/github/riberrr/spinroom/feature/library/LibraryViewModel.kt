@@ -40,7 +40,9 @@ class LibraryViewModel @Inject constructor(private val backend: LibraryBackend) 
     /** True when the server is connected and logged in, i.e. the library can be read. */
     private val ready: Flow<Boolean> = backend.connection.map { it.isReady() }.distinctUntilChanged()
 
-    val state: StateFlow<LibraryUiState> = combine(tab, counts, backend.connection) { t, c, conn -> LibraryUiState(t, c, conn) }
+    private val focus = MutableStateFlow<LibraryFocus>(LibraryFocus.Tab)
+
+    val state: StateFlow<LibraryUiState> = combine(tab, counts, backend.connection, focus) { t, c, conn, f -> LibraryUiState(t, c, conn, f) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, LibraryUiState())
 
     /** Grid items of the selected tab, mapped to [LibraryRow]. Empty while the server is not ready. */
@@ -61,7 +63,11 @@ class LibraryViewModel @Inject constructor(private val backend: LibraryBackend) 
         }
     }
 
+    /** Remembers the last focused element (chip or grid index) so Back from another screen can restore it. */
+    fun onFocused(target: LibraryFocus) { focus.value = target }
+
     fun onSelectTab(newTab: LibraryTab) {
+        focus.value = LibraryFocus.Tab
         if (newTab == tab.value) return
         tab.value = newTab
         refreshCount(newTab)

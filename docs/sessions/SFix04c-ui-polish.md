@@ -16,4 +16,9 @@ adb: `C:/Users/lukas/AppData/Local/Android/Sdk/platform-tools/adb.exe`. Emulator
 `bash scripts/check.sh` czyste (lint może paść na `local.properties` — środowisko), PR otwarty, nie scalony.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Punkt 1 (Teraz odtwarzane): link „pokaż całą kolejkę (n)” pokazywany tylko gdy `upcoming` niepusty; przy pustej kolejce zostaje „Kolejka jest pusta” (licznik `queue.size` liczył bieżący utwór). Zmiana w `NowPlayingScreen.kt` (`UpNext`), bez logiki do testu JVM.
+- Punkt 2 (logo RMF): kod nie wybiera obrazu per stacja — `HomeViewModel.toStation()` używa `bestImage` dla każdej stacji; brak logo = brak obrazu w MA → ikona zastępcza. Nie sprawdzono na serwerze MA; bez zmian w kodzie.
+- Punkt 3 (Dodaj do): `details_add_to_queue` skrócone do „Dodaj do” (`feature/details/src/main/res/values/strings.xml`), `maxLines = 1` już był. Brak weryfikacji na emulatorze (brak przydziału) — do potwierdzenia wizualnie.
+- Testy: `:feature:nowplaying|details|home:testDebugUnitTest` zielone. `scripts/check.sh` kompiluje, ale pada na `lintDebug` przez `local.properties` (PropertyEscape: ścieżka Windows) — środowisko, plik gitignorowany.
+- Dalej: wizualna weryfikacja punktów 1 i 3 na emulatorze po przydziale koordynatora; ewentualnie sprawdzić w MA obraz RMF.
+- Pułapka: `queue.size` wlicza bieżący utwór — nie używać jako licznika „następnych”.

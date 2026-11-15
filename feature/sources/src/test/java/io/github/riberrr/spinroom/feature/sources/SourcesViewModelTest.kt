@@ -144,6 +144,19 @@ class SourcesViewModelTest {
         assertEquals(country.key, v.state.value.focusKey)
     }
 
+    @Test fun `last focused row is remembered per level and reset on navigation`() = runTest {
+        val vm = vm(backend())
+        vm.onItemFocused("rb://radio/Jazz Jeden")
+        assertEquals("rb://radio/Jazz Jeden", vm.state.value.lastFocusKey)
+        vm.onItemClick(vm.state.value.items.first { it.name == "Według kraju" })
+        runCurrent()
+        assertNull(vm.state.value.lastFocusKey)
+        vm.onItemFocused("p://radio/Klasyka 24")
+        vm.onBack()
+        runCurrent()
+        assertEquals("rb://country", vm.state.value.lastFocusKey)
+    }
+
     @Test fun `offline is reported instead of loading forever`() = runTest {
         val b = backend().apply { conn.value = MaConnectionState.Disconnected }
         val v = vm(b)

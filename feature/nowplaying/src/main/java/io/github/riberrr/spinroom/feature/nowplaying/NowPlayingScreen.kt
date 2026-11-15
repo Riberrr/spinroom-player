@@ -296,12 +296,16 @@ private fun UpNext(state: NowPlayingUiState, actions: NowPlayingActions) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(SpinroomColors.Bg.copy(alpha = 0.7f)).padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.nowplaying_up_next), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleSmall, color = SpinroomColors.TextPrimary, fontWeight = FontWeight.SemiBold)
-            FocusSurface(actions.onToggleQueue, shape = RoundedCornerShape(8.dp), containerColor = Color.Transparent, focusedScale = 1.03f) {
-                Text(
-                    stringResource(R.string.nowplaying_show_queue, state.queue.size),
-                    Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false,
-                )
+            // Link to the full queue only when there is something upcoming; otherwise it would show a count
+            // (the current track) next to "Kolejka jest pusta".
+            if (state.upcoming.isNotEmpty()) {
+                FocusSurface(actions.onToggleQueue, shape = RoundedCornerShape(8.dp), containerColor = Color.Transparent, focusedScale = 1.03f) {
+                    Text(
+                        stringResource(R.string.nowplaying_show_queue, state.queue.size),
+                        Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false,
+                    )
+                }
             }
         }
         Spacer(Modifier.height(8.dp))

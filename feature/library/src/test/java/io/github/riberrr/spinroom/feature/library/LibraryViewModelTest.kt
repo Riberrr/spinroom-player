@@ -58,6 +58,25 @@ class LibraryViewModelTest {
 
     private val names = listOf("1999", "Akwarele", "Bez pośpiechu", "Ciepły beton", "Dalekie brzegi", "Echo", "Horyzont", "Iskry", "Zorza")
 
+    @Test fun `focus is remembered and a tab change resets it to the chips`() = runTest {
+        val vm = LibraryViewModel(FakeBackend(names))
+        runCurrent()
+        assertEquals(LibraryFocus.Tab, vm.state.value.focus)
+        vm.onFocused(LibraryFocus.Item(4))
+        runCurrent()
+        assertEquals(LibraryFocus.Item(4), vm.state.value.focus)
+        vm.onSelectTab(LibraryTab.Artists)
+        runCurrent()
+        assertEquals(LibraryFocus.Tab, vm.state.value.focus)
+    }
+
+    @Test fun `count label prefers the paged size over a stray zero`() {
+        assertEquals(412, libraryCountLabel(0, 412, true))
+        assertEquals(0, libraryCountLabel(0, 0, true))
+        assertEquals(7, libraryCountLabel(7, 0, false))
+        assertNull(libraryCountLabel(null, 0, false))
+    }
+
     @Test fun `album count is loaded and tab switch loads the other count`() = runTest {
         val vm = LibraryViewModel(FakeBackend(names))
         runCurrent()
