@@ -6,6 +6,10 @@
     <string name="settings_servers_title">Serwery w sieci</string>
     <string name="settings_servers_scanning">Szukam serwerów Music Assistant…</string>
     <string name="settings_servers_none">Nie znalazłem serwera w sieci. Wpisz adres ręcznie.</string>
+    <string name="settings_player_title">Odtwarzacz</string>
+    <string name="settings_player_none">Brak odtwarzaczy. Odtwarzacz tego telewizora pojawi się, gdy serwer go zobaczy.</string>
+    <string name="settings_player_selected">wybrany</string>
+    <string name="settings_player_unavailable">niedostępny</string>
     <string name="settings_username">Login</string>
     <string name="settings_password">Hasło</string>
     <string name="settings_login">Zaloguj</string>

@@ -23,6 +23,7 @@ import androidx.tv.material3.Text
 import io.github.riberrr.spinroom.core.design.FocusSurface
 import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
+import io.github.riberrr.spinroom.core.maapi.Player
 import io.github.riberrr.spinroom.core.maapi.discovery.DiscoveredServer
 import io.github.riberrr.spinroom.feature.settings.latency.LatencyScreen
 
@@ -64,6 +65,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
             )
         } else {
             Button(stringResource(R.string.settings_logout), onClick = viewModel::logout)
+            PlayerList(ui, viewModel::onPickPlayer)
         }
         Button(
             stringResource(if (ui.autostart) R.string.settings_autostart_on else R.string.settings_autostart_off),
@@ -121,6 +123,34 @@ private fun ServerList(ui: SettingsUiState, onPick: (DiscoveredServer) -> Unit) 
             }
             ui.scanFinished -> Text(stringResource(R.string.settings_servers_none), color = SpinroomColors.TextSecondary)
             else -> Text(stringResource(R.string.settings_servers_scanning), color = SpinroomColors.TextSecondary)
+        }
+    }
+}
+
+/** MA players; the chosen one is where Play sends music (the TV's own player is picked automatically). */
+@Composable
+private fun PlayerList(ui: SettingsUiState, onPick: (Player) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.settings_player_title), color = SpinroomColors.TextSecondary)
+        if (ui.players.isEmpty()) Text(stringResource(R.string.settings_player_none), color = SpinroomColors.TextSecondary)
+        ui.players.forEach { player ->
+            val note = when {
+                player.playerId == ui.playerId -> stringResource(R.string.settings_player_selected)
+                !player.available -> stringResource(R.string.settings_player_unavailable)
+                else -> null
+            }
+            FocusSurface(onClick = { onPick(player) }, modifier = Modifier.widthIn(min = 240.dp, max = 560.dp)) {
+                Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+                    Text(player.name.ifBlank { player.playerId }, color = SpinroomColors.TextPrimary)
+                    note?.let {
+                        Text(
+                            it,
+                            color = if (player.playerId == ui.playerId) SpinroomColors.Success else SpinroomColors.TextSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
         }
     }
 }

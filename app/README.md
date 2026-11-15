@@ -7,3 +7,4 @@ Entry point. `MainActivity` starts `SpinroomPlaybackService` (S05) and hosts Com
 - Debug build installs side by side as `io.github.riberrr.spinroom.debug`.
 - `SpinroomApp` implements `PlaybackHost` (`:core:audio`): Sendspin credentials from `:core:data`, version, notification icon; on the first MA activation it sets `settings.playerId` to this TV's Sendspin client id if no player was chosen. The S03 debug starter (`app/src/debug`) is gone.
 - Network security config allows cleartext (SFix02): MA in the home network is plain `http`/`ws` at a user-typed address.
+- `SpinroomShell`: Up/Down never leave the screen content for the side menu (SFix02); Left opens the menu.
