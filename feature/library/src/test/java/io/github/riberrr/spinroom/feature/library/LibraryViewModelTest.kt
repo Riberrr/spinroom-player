@@ -75,6 +75,7 @@ class LibraryViewModelTest {
         assertEquals(0, libraryCountLabel(0, 0, true))
         assertEquals(7, libraryCountLabel(7, 0, false))
         assertNull(libraryCountLabel(null, 0, false))
+        assertEquals(0, libraryCountLabel(3, 0, false, loadedEmpty = true))
     }
 
     @Test fun `album count is loaded and tab switch loads the other count`() = runTest {

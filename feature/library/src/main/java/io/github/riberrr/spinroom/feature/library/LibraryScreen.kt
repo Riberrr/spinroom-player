@@ -143,7 +143,7 @@ fun LibraryContent(
         Row(Modifier.padding(top = 20.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             LibraryTab.entries.forEach { tab ->
                 val selected = tab == state.tab
-                val shown = libraryCountLabel(state.count, itemCount, hasContent)
+                val shown = libraryCountLabel(state.count, itemCount, hasContent, status == LibraryStatus.Empty)
                 val label = stringResource(tab.labelRes) + if (selected && shown != null) " · $shown" else ""
                 var chip: Modifier = Modifier.onFocusChanged { if (it.isFocused) actions.onFocused(LibraryFocus.Tab) }
                 if (selected) chip = chip.focusRequester(tabFocus)
@@ -182,8 +182,9 @@ fun LibraryContent(
     }
 }
 
-/** Count for the selected chip. Once the grid shows items its (paged) size is the truth, so a stray 0 from the counter cannot win. */
-internal fun libraryCountLabel(count: Int?, itemCount: Int, hasContent: Boolean): Int? =
+/** Count for the selected chip. A finished load with no items shows 0 (the server counter may include artists it will not list). Once the grid shows items its (paged) size is the truth, so a stray 0 from the counter cannot win. */
+internal fun libraryCountLabel(count: Int?, itemCount: Int, hasContent: Boolean, loadedEmpty: Boolean = false): Int? =
+    if (loadedEmpty) 0 else
     if (hasContent && itemCount > 0) itemCount else count
 
 private val LibraryTab.labelRes: Int

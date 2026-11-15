@@ -57,7 +57,9 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     )
     val bottom = listOf(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
 
-    BackHandler(enabled = menuHasFocus) { runCatching { screenFocus.requestFocus() } }
+    // Composed only while the menu has focus: a handler added on entering the composition is the newest one, so it
+    // runs before the NavHost's own (registered earlier), which would otherwise pop the screen.
+    if (menuHasFocus) BackHandler { runCatching { screenFocus.requestFocus() } }
 
     Row(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
         SideMenu(
