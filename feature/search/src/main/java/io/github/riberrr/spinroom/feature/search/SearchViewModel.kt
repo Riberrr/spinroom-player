@@ -8,6 +8,8 @@ import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.SearchResults
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -87,7 +89,11 @@ class SearchViewModel internal constructor(
             val base = backend.serverAddress.first()
             _state.update { s -> if (s.query != text) s else s.withResults(results, base).copy(loading = false) }
         } catch (e: CancellationException) {
-            throw e
+            // Our own cancellation (a newer query) must propagate. A CancellationException raised
+            // while this coroutine is still active is a timeout from the client (no connection):
+            // it has to end in the failed state, or the spinner would stay forever.
+            if (!currentCoroutineContext().isActive) throw e
+            _state.update { it.copy(loading = false, failed = true) }
         } catch (e: Exception) {
             _state.update { it.copy(loading = false, failed = true) }
         }

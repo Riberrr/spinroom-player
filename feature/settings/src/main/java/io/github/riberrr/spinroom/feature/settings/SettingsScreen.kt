@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,6 +38,13 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
     val ui by viewModel.state.collectAsStateWithLifecycle()
     var showLatency by rememberSaveable { mutableStateOf(false) }
     var showAbout by rememberSaveable { mutableStateOf(false) }
+    val logoutFocus = remember { FocusRequester() }
+    var prevLoggedIn by remember { mutableStateOf(ui.loggedIn) }
+    LaunchedEffect(ui.loggedIn) {
+        // Only on the transition (login just succeeded), not when the screen opens while logged in.
+        if (ui.loggedIn && !prevLoggedIn) runCatching { logoutFocus.requestFocus() }
+        prevLoggedIn = ui.loggedIn
+    }
     if (showAbout) {
         AboutScreen(onBack = { showAbout = false }, modifier = modifier)
         return
@@ -55,6 +67,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
             ui.address,
             viewModel::onAddress,
             hint = stringResource(R.string.settings_address_hint),
+            keyboardType = KeyboardType.Uri,
         )
         if (!ui.loggedIn) {
             SettingsTextField(stringResource(R.string.settings_username), ui.username, viewModel::onUsername)
@@ -64,7 +77,8 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
                 onClick = viewModel::login,
             )
         } else {
-            Button(stringResource(R.string.settings_logout), onClick = viewModel::logout)
+            // "Zaloguj" is gone once logged in: move focus to "Wyloguj" instead of letting it fall off the screen.
+            Button(stringResource(R.string.settings_logout), onClick = viewModel::logout, focusRequester = logoutFocus)
             PlayerList(ui, viewModel::onPickPlayer)
         }
         Button(
@@ -100,8 +114,11 @@ private fun statusText(s: LoginStatus): String? = when (s) {
 }
 
 @Composable
-private fun Button(label: String, onClick: () -> Unit) {
-    FocusSurface(onClick = onClick, modifier = Modifier.widthIn(min = 240.dp)) {
+private fun Button(label: String, onClick: () -> Unit, focusRequester: FocusRequester? = null) {
+    FocusSurface(
+        onClick = onClick,
+        modifier = Modifier.widthIn(min = 240.dp).then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
+    ) {
         Text(label, modifier = Modifier.padding(horizontal = 24.dp, vertical = 14.dp))
     }
 }
@@ -127,6 +144,17 @@ private fun ServerList(ui: SettingsUiState, onPick: (DiscoveredServer) -> Unit) 
     }
 }
 
+/** "model · address" from MA's device info; null when MA sends neither. */
+internal fun playerDetail(player: Player): String? {
+    val info = player.deviceInfo ?: return null
+    return listOfNotNull(info.model, info.address)
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .distinct()
+        .joinToString(" · ")
+        .ifEmpty { null }
+}
+
 /** MA players; the chosen one is where Play sends music (the TV's own player is picked automatically). */
 @Composable
 private fun PlayerList(ui: SettingsUiState, onPick: (Player) -> Unit) {
@@ -142,6 +170,10 @@ private fun PlayerList(ui: SettingsUiState, onPick: (Player) -> Unit) {
             FocusSurface(onClick = { onPick(player) }, modifier = Modifier.widthIn(min = 240.dp, max = 560.dp)) {
                 Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                     Text(player.name.ifBlank { player.playerId }, color = SpinroomColors.TextPrimary)
+                    // Second line tells apart players with the same name (e.g. two "Telewizor"), from MA's device info.
+                    playerDetail(player)?.let {
+                        Text(it, color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    }
                     note?.let {
                         Text(
                             it,

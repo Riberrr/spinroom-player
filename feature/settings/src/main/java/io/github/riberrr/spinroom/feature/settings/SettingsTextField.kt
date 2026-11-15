@@ -62,6 +62,8 @@ internal fun SettingsTextField(
     onChange: (String) -> Unit,
     hint: String = "",
     secret: Boolean = false,
+    /** Keyboard layout for the on-screen keyboard; the address field uses Uri (no spaces, dots and slashes at hand). */
+    keyboardType: KeyboardType = KeyboardType.Text,
 ) {
     var editing by remember { mutableStateOf(false) }
     // Only OK opens the on-screen keyboard; typing on a hardware keyboard should not cover the screen.
@@ -123,7 +125,7 @@ internal fun SettingsTextField(
                 cursorBrush = SolidColor(if (editing) SpinroomColors.Accent else SpinroomColors.Surface),
                 visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = if (secret) KeyboardType.Password else KeyboardType.Uri,
+                    keyboardType = if (secret) KeyboardType.Password else keyboardType,
                     imeAction = ImeAction.Done,
                     autoCorrectEnabled = false,
                     showKeyboardOnFocus = false,

@@ -28,7 +28,7 @@
     <string name="search_empty_title">Nic nie znalazłem</string>
     <string name="search_empty_message">Spróbuj innego słowa albo krótszej frazy.</string>
     <string name="search_loading">Szukam…</string>
-    <string name="search_error">Nie udało się wyszukać. Sprawdź połączenie z serwerem.</string>
+    <string name="search_error">Brak połączenia z serwerem</string>
     <string name="search_notice_no_voice">Ten telewizor nie ma wyszukiwania głosowego.</string>
     <string name="search_notice_no_player">Wybierz najpierw odtwarzacz w ustawieniach.</string>
     <string name="search_notice_play_failed">Nie udało się odtworzyć.</string>
