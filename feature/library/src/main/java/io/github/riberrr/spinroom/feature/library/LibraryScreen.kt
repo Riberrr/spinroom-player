@@ -18,11 +18,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -70,6 +75,7 @@ data class LibraryActions(
     val onJumpToLetter: (String) -> Unit = {},
     val onOpenItem: (LibraryRow) -> Unit = {},
     val onRetry: () -> Unit = {},
+    val onFocused: (LibraryFocus) -> Unit = {},
 )
 
 /** Library (route `library`). [onOpenItem] gets a Music Assistant URI such as `library://album/12`. */
@@ -99,6 +105,7 @@ fun LibraryScreen(
             onJumpToLetter = viewModel::onJumpToLetter,
             onOpenItem = { onOpenItem(it.uri) },
             onRetry = { items.retry(); items.refresh() },
+            onFocused = viewModel::onFocused,
         ),
         modifier = modifier,
         gridState = gridState,
@@ -116,15 +123,36 @@ fun LibraryContent(
     gridState: LazyGridState = rememberLazyGridState(),
 ) {
     val tabFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { tabFocus.requestFocus() } }
+    val itemFocus = remember { FocusRequester() }
+    // Focus as it was when the screen was entered: after Back we return to the last tile, not to the first chip.
+    val restoreIndex = remember { (state.focus as? LibraryFocus.Item)?.index }
+    var restored by remember { mutableStateOf(restoreIndex == null) }
+    LaunchedEffect(Unit) { if (restoreIndex == null) runCatching { tabFocus.requestFocus() } }
+    // The grid fills in after the connection is up; restore once the target tile exists.
+    LaunchedEffect(status, itemCount) {
+        if (!restored && restoreIndex != null && status == LibraryStatus.Content && itemCount > restoreIndex) {
+            gridState.scrollToItem(restoreIndex)
+            withFrameNanos { }
+            restored = runCatching { itemFocus.requestFocus() }.isSuccess
+        }
+    }
+    val hasContent = status == LibraryStatus.Content
 
     Column(modifier.fillMaxSize().background(SpinroomColors.Bg).padding(start = 48.dp, end = 32.dp, top = 32.dp)) {
         Text(stringResource(R.string.library_title), style = MaterialTheme.typography.displaySmall, color = SpinroomColors.TextPrimary)
         Row(Modifier.padding(top = 20.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             LibraryTab.entries.forEach { tab ->
                 val selected = tab == state.tab
-                val label = stringResource(tab.labelRes) + if (selected && state.count != null) " · ${state.count}" else ""
-                TabChip(label, selected, actions.onSelectTab.let { { it(tab) } }, if (selected) Modifier.focusRequester(tabFocus) else Modifier)
+                val shown = libraryCountLabel(state.count, itemCount, hasContent)
+                val label = stringResource(tab.labelRes) + if (selected && shown != null) " · $shown" else ""
+                var chip: Modifier = Modifier.onFocusChanged { if (it.isFocused) actions.onFocused(LibraryFocus.Tab) }
+                if (selected) chip = chip.focusRequester(tabFocus)
+                // Without a grid below there is nothing to move to: keep focus on the chips instead of falling to the mini player.
+                if (!hasContent) chip = chip.focusProperties {
+                    down = FocusRequester.Cancel
+                    if (tab == LibraryTab.entries.last()) right = FocusRequester.Cancel
+                }
+                TabChip(label, selected, actions.onSelectTab.let { { it(tab) } }, chip)
             }
         }
         Box(Modifier.fillMaxSize()) {
@@ -145,7 +173,7 @@ fun LibraryContent(
                     message = stringResource(R.string.library_empty_message),
                 )
                 LibraryStatus.Content -> Row(Modifier.fillMaxSize()) {
-                    CoverGrid(itemCount, itemAt, actions.onOpenItem, gridState, Modifier.weight(1f))
+                    CoverGrid(itemCount, itemAt, actions.onOpenItem, gridState, Modifier.weight(1f), restoreIndex, itemFocus, actions.onFocused)
                     // The letter rail only makes sense when there is something to jump through.
                     if (itemCount > 0) LetterRail(actions.onJumpToLetter)
                 }
@@ -153,6 +181,10 @@ fun LibraryContent(
         }
     }
 }
+
+/** Count for the selected chip. Once the grid shows items its (paged) size is the truth, so a stray 0 from the counter cannot win. */
+internal fun libraryCountLabel(count: Int?, itemCount: Int, hasContent: Boolean): Int? =
+    if (hasContent && itemCount > 0) itemCount else count
 
 private val LibraryTab.labelRes: Int
     get() = when (this) {
@@ -188,6 +220,9 @@ private fun CoverGrid(
     onOpen: (LibraryRow) -> Unit,
     gridState: LazyGridState,
     modifier: Modifier = Modifier,
+    focusIndex: Int? = null,
+    itemFocus: FocusRequester = FocusRequester(),
+    onFocused: (LibraryFocus) -> Unit = {},
 ) {
     val menu = LocalItemMenu.current
     LazyVerticalGrid(
@@ -207,6 +242,9 @@ private fun CoverGrid(
                     title = row.title,
                     subtitle = row.subtitle,
                     onClick = { onOpen(row) },
+                    modifier = Modifier
+                        .onFocusChanged { if (it.hasFocus) onFocused(LibraryFocus.Item(index)) }
+                        .then(if (index == focusIndex) Modifier.focusRequester(itemFocus) else Modifier),
                     onLongClick = { menu(row.uri, row.title) },
                     cover = { Cover(row.coverUrl) },
                 )

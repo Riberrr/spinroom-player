@@ -45,6 +45,8 @@ data class SourcesUiState(
     val focusItems: Boolean = false,
     /** Row to focus after going back (the folder we came from); null = first row. */
     val focusKey: String? = null,
+    /** Key of the folder-list row that last had focus at this level; restored when the screen is entered again. */
+    val lastFocusKey: String? = null,
 ) {
     /** No usable connection: show the same "no connection" state as Start instead of an endless "loading". */
     val offline: Boolean get() = connection is MaConnectionState.Disconnected || connection is MaConnectionState.Failed

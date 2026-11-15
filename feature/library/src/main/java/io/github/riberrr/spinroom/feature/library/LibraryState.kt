@@ -18,11 +18,18 @@ data class LibraryRow(
     val coverUrl: String?,
 )
 
+/** Where focus last was inside the library screen, so coming back (Back from Now Playing) restores it. */
+sealed interface LibraryFocus {
+    data object Tab : LibraryFocus
+    data class Item(val index: Int) : LibraryFocus
+}
+
 data class LibraryUiState(
     val tab: LibraryTab = LibraryTab.Albums,
     /** Item count per tab, filled in lazily (shown in the label of the selected tab). */
     val counts: Map<LibraryTab, Int> = emptyMap(),
     val connection: MaConnectionState = MaConnectionState.Disconnected,
+    val focus: LibraryFocus = LibraryFocus.Tab,
 ) {
     val count: Int? get() = counts[tab]
 }

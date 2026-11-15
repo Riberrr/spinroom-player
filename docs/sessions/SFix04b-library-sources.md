@@ -16,4 +16,9 @@ adb: `C:/Users/lukas/AppData/Local/Android/Sdk/platform-tools/adb.exe`. Emulator
 `bash scripts/check.sh` czyste (lint może paść na `local.properties` — to środowisko), PR otwarty, nie scalony.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Biblioteka: ostatnio sfokusowany element (chip albo kafelek o indeksie) trzyma `LibraryViewModel` (`LibraryFocus`); po powrocie ekran przewija do kafelka i fokusuje go (czeka, aż siatka się załaduje). Zmiana zakładki resetuje fokus na chipy.
+- Pusta zakładka / brak siatki: chipy mają `down = Cancel`, a ostatni chip także `right = Cancel`, więc fokus nie ucieka do mini-odtwarzacza.
+- „Albumy · 0”: nie udało się odtworzyć bez emulatora. Licznik na chipie bierze teraz rozmiar strony z Paging (`libraryCountLabel`), gdy siatka ma pozycje, więc przypadkowe 0 z `count()` nie wygra. Przyczyny samego 0 nie ustaliłem.
+- Źródła: `lastFocusKey` w stanie (ustawiane z `onFocusChanged` wiersza, zerowane przy zmianie folderu/dostawcy); po powrocie do ekranu lista przywraca fokus na ten wiersz, a kolumna dostawców nie przejmuje fokusu.
+- ← z listy folderów do wtyczek to zwykła nawigacja przestrzenna (kolumna dostawców jest po lewej), drugie ← idzie do menu — uznane za zamierzone, bez zmian.
+- Testy JVM: fokus Biblioteki, `libraryCountLabel`, `lastFocusKey` w Źródłach. Emulatora nie użyłem (brak przydziału); do sprawdzenia ręcznie: Wstecz z Teraz odtwarzane w Bibliotece i Źródłach.
