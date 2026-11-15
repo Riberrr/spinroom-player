@@ -20,4 +20,9 @@
 Testy zielone, przegląd na emulatorze potwierdza punkty 1–5, README modułu zaktualizowane, PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+Kod i testy JVM gotowe (10/10 w `HomeViewModelTest`); **przegląd na emulatorze jeszcze nie wykonany** (czeka na emulator od koordynatora).
+- Odświeżanie: ciche przeładowanie na ON_RESUME ekranu + zdarzenia MA `media_item_updated/added/deleted` (debounce 600 ms) przez `HomeBackend.libraryChanges`; nieudany wiersz zachowuje stare dane.
+- Fokus: klucz ostatniego kafelka w `rememberSaveable`, pierwszy fokus tylko bez zapisanego klucza.
+- Stany: brak serwera → EmptyState + przycisk Ustawień (`HomeScreen(onOpenSettings)`), łączenie → „Łączę z serwerem…”, błąd → ErrorState.
+- Stacje: logo z `image`, podpis z `provider_mappings` (puste gdy brak). Dotknięte poza modułem: `MediaItem.providerMappings` (ma-api), `StationTile(logo)` (design), jedna linia w NavHost.
+- Pułapka: nie sprawdzone, czy MA wysyła `media_item_updated` przy przełączeniu ulubionych (ON_RESUME pokrywa powrót z Biblioteki/Szczegółów); fokus po Wstecz nie sprawdzony na urządzeniu.
