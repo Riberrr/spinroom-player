@@ -40,7 +40,7 @@ val session = SendspinSession(config, credentials, scope /* lives as long as the
 ### `transport` (S03) — sockets and mDNS
 The only Android/network code in the module (Ktor CIO server, OkHttp client, `NsdManager`); the manifest adds `INTERNET`.
 - `SendspinNetwork(context, session, scope, log)` — what the S05 service should own. Exactly one mode at a time:
-  - `startServer(name, port = 8928)` — server-initiated (default): WS server on `0.0.0.0:8928/sendspin` + mDNS `_sendspin._tcp` with TXT `path=/sendspin`, `name=<name>`.
+  - `startServer(name, port = 8928)` — server-initiated (default): WS server on `0.0.0.0:8928/sendspin` + mDNS `_sendspin._tcp` with TXT `path=/sendspin`, `name=<name>`. If the port is taken it tries port+1…port+10, then an ephemeral port; mDNS announces the actual bound port. Bind failures never throw: `SendspinNetwork.serverError` / `SendspinServer.error` hold the reason (also logged).
   - `startClient(host)` — fallback: connect to `ws://<host>:8927/sendspin` (`SendspinClient.urlFor` accepts `10.0.1.50`, `host:port`, IPv6, full `ws://` URL), exponential backoff 1 → 30 s.
   - `stop()` (call `session.disconnect()` first for a goodbye), `shutdown()` (also stops the outgoing collector; not restartable).
   - `bridge.receivedBinaryFrames/receivedBinaryBytes`, `bridge.isConnected` for diagnostics.

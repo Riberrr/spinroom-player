@@ -20,4 +20,8 @@ Wyjątek leci z korutyny CIO bez obsługi, więc zabija cały proces (także us�
 Test zielony, `bash scripts/check.sh` czyste. Na emulatorze uruchomione oba warianty naraz bez crasha (`adb logcat -d -b crash | tail` puste). PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+Działa: `SendspinServer.start()` sprawdza wolny port (8928…8938, potem 0), zwraca port lub -1, nie rzuca; `error` i `SendspinNetwork.serverError` niosą powód, log `Spinroom`. mDNS ogłasza `boundPort()`.
+Test JVM `busyPortFallsBackToAnotherPort` (zajęty port → inny port, klient się łączy) zielony; TransportTest przechodzi.
+Wątpliwość: wyścig między sprawdzeniem a bindem (okno ms) — nie zamknięty, ale to nie crashuje przy typowej kolizji.
+Nie zrobione: test na emulatorze (oba warianty naraz) — wymaga przydziału emulatora od koordynatora; UI nie pokazuje `serverError`. MA łączy się z portu z SRV (spec: port ogłaszany w mDNS) — niezweryfikowane na żywo.
+Pułapka: check.sh w worktree wywala lint na local.properties (PropertyEscape) — to środowisko, nie kod.

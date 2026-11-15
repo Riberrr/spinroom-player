@@ -36,9 +36,50 @@ class SendspinServer(
 ) {
     private var server: EmbeddedServer<*, *>? = null
 
+    /** Last start failure (null when running or never failed). */
+    @Volatile
+    var error: String? = null
+        private set
+
+    /**
+     * Starts listening, falling back to the next [PORT_FALLBACKS] ports and then an ephemeral one when
+     * [port] is taken. Ktor binds asynchronously and an unhandled bind failure would kill the process,
+     * so a free port is verified first. Never throws; returns the bound port or -1 (see [error]).
+     */
     @Synchronized
-    fun start() {
-        if (server != null) return
+    fun start(): Int {
+        if (server != null) return boundPort()
+        val chosen = pickFreePort()
+        if (chosen < 0) {
+            error = "no free port for Sendspin server"
+            log(error!!)
+            return -1
+        }
+        if (chosen != port) log("port $port busy, using $chosen")
+        return try {
+            launch(chosen)
+            error = null
+            boundPort()
+        } catch (e: Exception) {
+            server = null
+            error = "server start failed: ${e.message}"
+            log(error!!)
+            -1
+        }
+    }
+
+    private fun pickFreePort(): Int {
+        val candidates = if (port == 0) listOf(0) else (port..port + PORT_FALLBACKS).toList() + 0
+        for (p in candidates) {
+            try {
+                java.net.ServerSocket(p).use { return if (p == 0) it.localPort else p }
+            } catch (_: java.io.IOException) {
+            }
+        }
+        return -1
+    }
+
+    private fun launch(port: Int) {
         server = embeddedServer(CIO, port = port, host = "0.0.0.0") {
             install(WebSockets) {
                 pingPeriod = 15.seconds
@@ -116,6 +157,7 @@ class SendspinServer(
 
     companion object {
         const val DEFAULT_PORT = 8928
+        const val PORT_FALLBACKS = 10
         const val DEFAULT_PATH = "/sendspin"
         const val MAX_FRAME_BYTES = 4L * 1024 * 1024
     }
