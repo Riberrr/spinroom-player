@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Music Assistant runs on the home network over plain http/ws at an address the user types
+     (any IP or hostname), so cleartext cannot be limited to known domains. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

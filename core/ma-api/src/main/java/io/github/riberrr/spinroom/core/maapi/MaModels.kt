@@ -153,8 +153,16 @@ data class RecommendationFolder(
     val items: List<MediaItem> = emptyList(),
 )
 
+/** MA 2.10 sends `access_token`; older builds `token`. */
 @Serializable
-data class AuthLoginResult(val success: Boolean = false, val token: String? = null, val error: String? = null)
+data class AuthLoginResult(
+    val success: Boolean = false,
+    @SerialName("access_token") val accessToken: String? = null,
+    @SerialName("token") val legacyToken: String? = null,
+    val error: String? = null,
+) {
+    val token: String? get() = accessToken ?: legacyToken
+}
 
 /** Server push. [data] is raw so consumers decode only what they need (see [asPlayer], [asQueue]). */
 data class MaEvent(val event: String, val objectId: String?, val data: JsonElement?) {

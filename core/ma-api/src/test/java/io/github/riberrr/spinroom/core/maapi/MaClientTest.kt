@@ -156,7 +156,7 @@ class MaClientTest {
     @Test fun loginFlowReturnsLongToken() = runBlocking {
         fakeMa { ws, id, cmd, _ ->
             when (cmd) {
-                "auth/login" -> ws.send("""{"message_id":"$id","result":{"success":true,"token":"good","user":{}}}""")
+                "auth/login" -> ws.send("""{"message_id":"$id","result":{"success":true,"access_token":"good","user":{}}}""")
                 "auth/token/create" -> ws.send("""{"message_id":"$id","result":"long-token"}""")
             }
         }
@@ -168,6 +168,11 @@ class MaClientTest {
         fakeMa { ws, id, _, _ -> ws.send("""{"message_id":"$id","result":{"success":false,"error":"Invalid username or password"}}""") }
         val e = runCatching { AuthApi(OkHttpClient()).login(base(), "u", "x", "TV", scope) }.exceptionOrNull()
         assertTrue(e is AuthApi.LoginFailed)
+    }
+
+    @Test fun loginResultAcceptsBothTokenFields() {
+        assertEquals("a", MaJson.decodeFromString(AuthLoginResult.serializer(), """{"success":true,"access_token":"a"}""").token)
+        assertEquals("b", MaJson.decodeFromString(AuthLoginResult.serializer(), """{"success":true,"token":"b"}""").token)
     }
 
     @Test fun urlNormalization() {

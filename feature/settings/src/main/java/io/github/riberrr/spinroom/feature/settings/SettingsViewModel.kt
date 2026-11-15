@@ -1,5 +1,6 @@
 package io.github.riberrr.spinroom.feature.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,6 +12,8 @@ import io.github.riberrr.spinroom.core.maapi.AuthApi
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaTypes
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -77,8 +80,16 @@ class SettingsViewModel @Inject constructor(
                 // Prove the stored token works: ask the library for its album count.
                 LoginStatus.Done(library.count(MediaTypes.ALBUMS))
             } catch (e: AuthApi.LoginFailed) {
+                Log.w(TAG, "login: rejected by server")
                 LoginStatus.WrongCredentials
+            } catch (e: CancellationException) {
+                // MaClient.command times out with TimeoutCancellationException: a failure, not a cancel.
+                if (e !is TimeoutCancellationException) throw e
+                Log.w(TAG, "login: timed out")
+                LoginStatus.ServerUnreachable
             } catch (e: Exception) {
+                // Class + message only: never the password or a token.
+                Log.w(TAG, "login: failed: ${e.javaClass.simpleName}: ${e.message}")
                 LoginStatus.ServerUnreachable
             }
             // The password never outlives the attempt.
@@ -91,5 +102,9 @@ class SettingsViewModel @Inject constructor(
             auth.logout()
             _state.update { it.copy(loggedIn = false, status = LoginStatus.Idle) }
         }
+    }
+
+    private companion object {
+        const val TAG = "Spinroom"
     }
 }
