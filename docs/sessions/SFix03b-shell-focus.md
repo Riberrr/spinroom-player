@@ -19,4 +19,10 @@
 Na każdym z 5 ekranów ← trafia na bieżącą pozycję menu, a → wraca do poprzedniego elementu treści. Treść nie zmienia układu przy rozwinięciu menu. PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja; opisz API dla ekranów, np. jak zgłosić „domyślny fokus ekranu”)_
+Zrobione i sprawdzone na emulatorze (build release; debug ANR-uje na emulatorze także na HEAD, nie wiem czemu):
+- ← z treści otwiera menu na pozycji bieżącego ekranu (Ustawienia → „Ustawienia”), → wraca do ostatnio aktywnego elementu treści (np. „Opóźnienie dźwięku”), nie do elementu na tej samej wysokości.
+- Rozwinięte menu przykrywa treść (slot 88 dp, `zIndex`), treść nie zmienia układu.
+- Fokus wpadający do menu bez ← (zniknięcie elementu) wraca do treści (`contentFocus`); ekrany same ustawiają swój fokus (SFix03d/f/g).
+API: bez zmian dla ekranów. `SideMenu(..., enterFocusRequester)` zastąpiło `firstItemFocusRequester`. „Domyślny fokus ekranu” = pierwszy fokusowalny element treści (fallback `focusRestorer`).
+Pułapki: `cancelFocusChange()` sprawia, że `moveFocus()` zwraca true (krawędź ← wykrywana flagą w `onExit`); `onExit` z kierunkiem `Enter` musi przechodzić; `focusRestorer` w osobnej grupie wewnętrznej, bo onExit zewnętrznej go nadpisuje. Nie przetestowano ←/→ na ekranach z danymi (brak logowania MA w tej sesji): Start/Biblioteka/Źródła/Szukaj sprawdzić po SFix03d/f/g. Brak testu automatycznego (w :app nie ma testów UI).
+

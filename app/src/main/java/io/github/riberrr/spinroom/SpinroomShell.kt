@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -39,7 +41,10 @@ import io.github.riberrr.spinroom.feature.nowplaying.NowPlayingMiniPlayer
 fun SpinroomShell(navController: NavHostController, content: @Composable () -> Unit) {
     val focusManager = LocalFocusManager.current
     val menuFocus = remember { FocusRequester() }
+    val contentFocus = remember { FocusRequester() }
     var menuHasFocus by remember { mutableStateOf(false) }
+    var menuOpenedByUser by remember { mutableStateOf(false) }
+    var leftEdgeHit by remember { mutableStateOf(false) }
 
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
     val items = listOf(
@@ -64,19 +69,28 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 }
             },
             bottomItems = bottom,
-            firstItemFocusRequester = menuFocus,
-            onFocusChange = { menuHasFocus = it },
+            enterFocusRequester = menuFocus,
+            onFocusChange = {
+                menuHasFocus = it
+                if (it && !menuOpenedByUser) {
+                    // Focus fell into the menu because a focused control vanished: keep it in the content.
+                    runCatching { contentFocus.requestFocus() }
+                }
+                if (!it) menuOpenedByUser = false
+            },
         )
         Column(
             Modifier
                 .weight(1f)
-                // Up/Down at the top/bottom of a screen stay put instead of jumping into the side menu
-                // (geometric focus search would pick the nearest menu item). The menu opens only with Left.
+                // Focus never leaves the content geometrically (that would pick the menu item at the same
+                // height); the menu opens only with Left, handled below, and always on the current screen.
+                .focusRequester(contentFocus)
                 .focusProperties {
                     onExit = {
-                        if (requestedFocusDirection == FocusDirection.Up || requestedFocusDirection == FocusDirection.Down) {
-                            cancelFocusChange()
-                        }
+                        // cancelFocusChange() still makes moveFocus() report success, so remember the edge hit.
+                        if (requestedFocusDirection == FocusDirection.Left) leftEdgeHit = true
+                        // Programmatic requestFocus() (menu open) comes with direction Enter and must pass.
+                        if (requestedFocusDirection != FocusDirection.Enter) cancelFocusChange()
                     }
                 }
                 .focusGroup()
@@ -84,16 +98,23 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                     // Left with nowhere to go inside the screen -> open the menu. Bubble phase, so a
                     // focused control that uses Left itself (e.g. the latency slider) handles it first.
                     if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
-                        if (focusManager.moveFocus(FocusDirection.Left)) true else {
+                        leftEdgeHit = false
+                        focusManager.moveFocus(FocusDirection.Left)
+                        if (leftEdgeHit) {
+                            menuOpenedByUser = true
                             menuFocus.requestFocus()
-                            true
                         }
+                        true
                     } else false
                 },
         ) {
-            Column(Modifier.weight(1f)) { content() }
-            if (route != Routes.NOW_PLAYING) {
-                NowPlayingMiniPlayer(onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } })
+            // Inner group: coming back from the menu restores the last focused control (the first one if it is gone).
+            // Kept apart from the outer group because both would set onExit and the outer one wins.
+            Column(Modifier.fillMaxSize().focusRestorer()) {
+                Column(Modifier.weight(1f)) { content() }
+                if (route != Routes.NOW_PLAYING) {
+                    NowPlayingMiniPlayer(onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } })
+                }
             }
         }
     }
