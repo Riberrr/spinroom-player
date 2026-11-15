@@ -2,6 +2,7 @@ package io.github.riberrr.spinroom
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -30,7 +32,7 @@ import io.github.riberrr.spinroom.feature.nowplaying.NowPlayingMiniPlayer
 
 /**
  * App chrome: side menu on the left, [content] (the nav host) in the middle, mini player at the bottom.
- * D-pad left on the content's left edge opens the menu; Back inside the menu returns focus to the content.
+ * D-pad left on the content's left edge opens the menu (Up/Down never leave the content); Back inside the menu returns focus to the content.
  * The mini player shows the shared now-playing state and hides itself when nothing is playing.
  */
 @Composable
@@ -68,6 +70,16 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         Column(
             Modifier
                 .weight(1f)
+                // Up/Down at the top/bottom of a screen stay put instead of jumping into the side menu
+                // (geometric focus search would pick the nearest menu item). The menu opens only with Left.
+                .focusProperties {
+                    onExit = {
+                        if (requestedFocusDirection == FocusDirection.Up || requestedFocusDirection == FocusDirection.Down) {
+                            cancelFocusChange()
+                        }
+                    }
+                }
+                .focusGroup()
                 .onKeyEvent { event ->
                     // Left with nowhere to go inside the screen -> open the menu. Bubble phase, so a
                     // focused control that uses Left itself (e.g. the latency slider) handles it first.

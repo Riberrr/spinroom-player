@@ -22,6 +22,7 @@ import io.github.riberrr.spinroom.core.maapi.BrowseApi
 import io.github.riberrr.spinroom.core.maapi.LibraryApi
 import io.github.riberrr.spinroom.core.maapi.MaClient
 import io.github.riberrr.spinroom.core.maapi.PlayerQueueApi
+import io.github.riberrr.spinroom.core.maapi.discovery.MaServerDiscovery
 import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -53,6 +54,7 @@ object DataModule {
 
     @Provides @Singleton fun settingsStore(store: DataStore<Preferences>) = SettingsStore(store)
     @Provides @Singleton fun maClient(http: OkHttpClient, @AppScope scope: CoroutineScope) = MaClient(http, scope)
+    @Provides @Singleton fun serverDiscovery(@ApplicationContext context: Context) = MaServerDiscovery(context)
     @Provides @Singleton fun connectionManager(s: SettingsStore, c: MaClient, @AppScope scope: CoroutineScope) = ConnectionManager(s, c, scope)
 
     @Provides @Singleton fun libraryApi(c: MaClient) = LibraryApi(c)

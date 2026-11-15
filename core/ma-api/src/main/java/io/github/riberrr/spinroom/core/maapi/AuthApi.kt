@@ -2,7 +2,7 @@ package io.github.riberrr.spinroom.core.maapi
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 
@@ -24,7 +24,13 @@ class AuthApi(private val http: OkHttpClient) {
         val client = MaClient(http, scope)
         try {
             client.connect(baseUrl, token = null)
-            withTimeout(15_000) { client.state.first { it is MaConnectionState.Connected || it is MaConnectionState.Failed } }
+            // Not withTimeout: its TimeoutCancellationException looks like a cancellation to callers.
+            val state = withTimeoutOrNull(15_000) {
+                client.state.first { it is MaConnectionState.Connected || it is MaConnectionState.Failed }
+            }
+            if (state !is MaConnectionState.Connected) {
+                throw MaException(MaException.LOCAL, "No server handshake: ${state ?: client.state.value}")
+            }
             val login = client.command(
                 "auth/login",
                 args("username" to username, "password" to password, "provider_id" to "builtin", "device_name" to deviceName),

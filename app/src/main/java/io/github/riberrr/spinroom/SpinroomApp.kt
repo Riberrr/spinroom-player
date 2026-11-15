@@ -5,6 +5,7 @@ import android.util.Log
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
+import coil3.util.DebugLogger
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import dagger.hilt.android.HiltAndroidApp
@@ -33,6 +34,7 @@ class SpinroomApp : Application(), PlaybackHost, SingletonImageLoader.Factory {
         ImageLoader.Builder(context)
             .memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.2).build() }
             .diskCache { DiskCache.Builder().directory(cacheDir.resolve("covers").toOkioPath()).maxSizeBytes(100L * 1024 * 1024).build() }
+            .apply { if (BuildConfig.DEBUG) logger(DebugLogger()) }
             .build()
 
     override suspend fun sendspinCredentials(): CredentialStore = credentials.get()
