@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -29,11 +31,14 @@ class SearchViewModelTest {
         val played = mutableListOf<String>()
         var canPlay = true
         var fail = false
+        var timeout = false
         var results = SearchResults()
 
         override val serverAddress = flowOf("http://srv:8095")
         override suspend fun search(query: String): SearchResults {
             queries += query
+            // Like MaClient.command without a connection: waits for Connected until the timeout fires.
+            if (timeout) withTimeout(1_000) { awaitCancellation() }
             if (fail) error("offline")
             return results
         }
@@ -117,6 +122,23 @@ class SearchViewModelTest {
             backend.results = SearchResults(tracks = listOf(item("A", "track", "x")))
             vm.onRetry(); runCurrent()
             assertTrue(!vm.state.value.failed)
+            assertEquals(1, vm.state.value.tracks.size)
+        }
+    }
+
+    @Test fun offlineTimeoutEndsInFailedStateNotSpinner() = runTest {
+        backend.timeout = true
+        vmTest { vm ->
+            vm.onType("a"); advanceTimeBy(500); runCurrent()
+            assertTrue(vm.state.value.loading)
+            advanceUntilIdle()
+            assertTrue(vm.state.value.failed)
+            assertTrue(!vm.state.value.loading)
+            // The flow keeps working after the failure: a later query still runs.
+            backend.timeout = false
+            backend.results = SearchResults(tracks = listOf(item("A", "track", "x")))
+            vm.onType("b"); advanceTimeBy(500); runCurrent()
+            assertEquals(listOf("a", "ab"), backend.queries)
             assertEquals(1, vm.state.value.tracks.size)
         }
     }

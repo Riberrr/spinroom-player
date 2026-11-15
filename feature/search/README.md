@@ -11,3 +11,4 @@ Behaviour: on-screen keyboard (35 letters incl. Polish, "123" layer for digits/s
 (`SearchViewModel.sourceLabel`). Tabs filter by type; "Wszystko" adds a best-result card (first artist, else album, else track).
 Voice: mic button and the remote's search key (`Key.Search`) start `RecognizerIntent` (pl-PL); with no recognizer on the TV a notice is shown.
 Structure follows the S08 pattern (State / Backend / ViewModel / Screen). Tests: `SearchViewModelTest` (fake backend).
+Offline: a timeout from `MaClient` (no connection) ends in the failed state "Brak połączenia z serwerem" (retry), not a spinner; results box is not focusable without results; filter chips are a `LazyRow`.

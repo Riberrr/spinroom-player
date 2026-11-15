@@ -111,6 +111,15 @@ data class Player(
     @SerialName("synced_to") val syncedTo: String? = null,
     /** Members when this player leads a sync group or is a group player (S14c). */
     @SerialName("group_members") val groupMembers: List<String> = emptyList(),
+    /** Hardware info MA reports for the player (SFix03g: second line in the player list). */
+    @SerialName("device_info") val deviceInfo: PlayerDeviceInfo? = null,
+)
+
+@Serializable
+data class PlayerDeviceInfo(
+    val model: String? = null,
+    val manufacturer: String? = null,
+    val address: String? = null,
 )
 
 @Serializable

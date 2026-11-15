@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -170,7 +173,9 @@ fun SearchContent(
         }
         Column(Modifier.weight(1f).fillMaxHeight()) {
             FilterChips(state.filter, actions.onFilter)
-            Box(Modifier.weight(1f).fillMaxWidth().padding(top = 12.dp)) {
+            // No results (idle, empty, loading, offline): nothing here may take focus, so ← from the keyboard
+            // reaches the menu instead of an invisible target on the right.
+            Box(Modifier.weight(1f).fillMaxWidth().padding(top = 12.dp).focusProperties { canFocus = state.hasShown }) {
                 Results(state, actions)
                 state.notice?.let { Notice(it, onNoticeShown, Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp)) }
             }
@@ -223,8 +228,13 @@ private fun KeyboardKey(label: String, onClick: () -> Unit, modifier: Modifier) 
 
 @Composable
 private fun FilterChips(selected: SearchFilter, onSelect: (SearchFilter) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 4.dp)) {
-        SearchFilter.entries.forEach { filter ->
+    // LazyRow: chips scroll sideways and stop short of the list's scrollbar at the right edge.
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(end = 32.dp),
+        modifier = Modifier.padding(top = 4.dp).fillMaxWidth(),
+    ) {
+        items(SearchFilter.entries, key = { it.name }) { filter ->
             val on = filter == selected
             FocusSurface(
                 onClick = { onSelect(filter) },
