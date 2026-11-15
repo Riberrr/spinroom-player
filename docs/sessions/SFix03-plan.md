@@ -53,9 +53,11 @@ _(koordynator: data scalenia każdej sesji, numer wersji)_
 ## Nowe wiersze z raportu SFix03v (SFix04; uruchomić po decyzji użytkownika)
 | ID | Temat (numer błędu z raportu) | Model | Zależy od | Gałąź |
 | --- | --- | --- | --- | --- |
-| SFix04a | Ustawienia: fokus startowy na „Wyloguj” zamiast mini-playera (2); lista odtwarzaczy: duplikaty, rozpoznanie „tego TV” (3) | Sonnet | — | `fix-settings-focus` |
-| SFix04b | Biblioteka: „Albumy · 0”, ↓/→ przy pustej zakładce, powrót z Now Playing (4); Źródła: fokus na ostatnio aktywnym po powrocie → (5) | Sonnet | — | `fix-library-sources-focus` |
-| SFix04c | Now Playing radio: „kolejka (1)” vs „Kolejka jest pusta” (6); „Radio RMF” bez logo, ucięte „Dodaj do…” w Szczegółach (7) | Haiku | — | `fix-ui-polish` |
-| SFix04d | Debug: ANR `startForegroundService` bez `startForeground` na emulatorze; BindException debug+release (1) — najpierw sprawdzić na świeżym debugu z main | Sonnet | — | `fix-debug-start` |
+| SFix04a ✓ | Ustawienia: fokus startowy na „Wyloguj” zamiast mini-playera (2); lista odtwarzaczy: duplikaty, rozpoznanie „tego TV” (3) | Sonnet | — | `fix-settings-focus` |
+| SFix04b ✓ | Biblioteka: „Albumy · 0”, ↓/→ przy pustej zakładce, powrót z Now Playing (4); Źródła: fokus na ostatnio aktywnym po powrocie → (5) | Sonnet | — | `fix-library-sources-focus` |
+| SFix04c ✓ | Now Playing radio: „kolejka (1)” vs „Kolejka jest pusta” (6); „Radio RMF” bez logo, ucięte „Dodaj do…” w Szczegółach (7) | Haiku | — | `fix-ui-polish` |
+| SFix04d ✓ | Debug: ANR `startForegroundService` bez `startForeground` na emulatorze; BindException debug+release (1) — najpierw sprawdzić na świeżym debugu z main | Sonnet | — | `fix-debug-start` |
 
 Błąd 8 (długie OK na mini-playerze uruchamia odtwarzanie) to pomyłka testu, nie błąd aplikacji. Wykrywanie sieci (mDNS) nie działa na emulatorze (NAT) — testować na TV 10.0.0.6.
+
+SFix04a–d scalone 2026-11-15 (PR #36, #37, #35, #38). SFix04d: ANR i BindException nie odtworzone na świeżym debugu z `main` (tylko dokumentacja). Do ewentualnego SFix05: Back przy otwartym menu na Ustawieniach cofa do Startu (SFix04a); „Albumy · 0” — przyczyna nieustalona (SFix04b); sprawdzić na emulatorze fokus po Wstecz w Bibliotece/Źródłach i układ Teraz odtwarzane/Szczegółów (SFix04b/c bez wizualnej weryfikacji).

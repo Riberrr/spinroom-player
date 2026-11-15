@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + raport SFix03v (15.11.2026, PR #26–#33). Ostatni tag: v1.0.1._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + raport SFix03v (15.11.2026, PR #26–#38, SFix04a–d). Ostatni tag: v1.0.1._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -21,7 +21,7 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + rapor
 - Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione spoza biblioteki, `start_item`).
 
 ## W toku
-- SFix04a–d (wiersze w `docs/sessions/SFix03-plan.md`, jeszcze bez plików sesji): fokus Ustawień i lista odtwarzaczy, Biblioteka/Źródła fokus, UI-szlify, start debug (ANR). Po nich: tag patch i test na TV 10.0.0.6.
+- Nic otwartego. Kandydaci na SFix05 (Back z menu w Ustawieniach, „Albumy · 0”) i test na TV 10.0.0.6 — patrz koniec `docs/sessions/SFix03-plan.md`.
 
 ## Następne
 - Tag v1.0.0 — czeka na 4 sekrety SIGNING_* w GitHub (bez nich release.yml kończy się błędem). Przed instalacją v1.0 odinstalować v0.x z TV. Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
