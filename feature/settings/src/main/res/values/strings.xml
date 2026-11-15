@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_title">Ustawienia</string>
-    <string name="settings_address">Adres serwera Music Assistant</string>
+    <string name="settings_address">Adres serwera</string>
+    <string name="settings_address_hint">np. 192.168.1.10 lub 192.168.1.10:8095</string>
+    <string name="settings_servers_title">Serwery w sieci</string>
+    <string name="settings_servers_scanning">Szukam serwerów Music Assistant…</string>
+    <string name="settings_servers_none">Nie znalazłem serwera w sieci. Wpisz adres ręcznie.</string>
     <string name="settings_username">Login</string>
     <string name="settings_password">Hasło</string>
     <string name="settings_login">Zaloguj</string>

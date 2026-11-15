@@ -1,33 +1,20 @@
 package io.github.riberrr.spinroom.feature.settings
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,6 +23,7 @@ import androidx.tv.material3.Text
 import io.github.riberrr.spinroom.core.design.FocusSurface
 import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
+import io.github.riberrr.spinroom.core.maapi.discovery.DiscoveredServer
 import io.github.riberrr.spinroom.feature.settings.latency.LatencyScreen
 
 /** Server address + login. Only the token is stored; the password is cleared after each attempt. */
@@ -60,10 +48,16 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
         Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium, color = SpinroomColors.TextPrimary)
         Text(connectionText(ui), color = connectionColor(ui.connection))
 
-        Field(stringResource(R.string.settings_address), ui.address, viewModel::onAddress, hint = "10.0.1.50")
+        if (!ui.loggedIn) ServerList(ui, viewModel::onPickServer)
+        SettingsTextField(
+            stringResource(R.string.settings_address),
+            ui.address,
+            viewModel::onAddress,
+            hint = stringResource(R.string.settings_address_hint),
+        )
         if (!ui.loggedIn) {
-            Field(stringResource(R.string.settings_username), ui.username, viewModel::onUsername)
-            Field(stringResource(R.string.settings_password), ui.password, viewModel::onPassword, secret = true)
+            SettingsTextField(stringResource(R.string.settings_username), ui.username, viewModel::onUsername)
+            SettingsTextField(stringResource(R.string.settings_password), ui.password, viewModel::onPassword, secret = true)
             Button(
                 if (ui.status == LoginStatus.Working) stringResource(R.string.settings_logging_in) else stringResource(R.string.settings_login),
                 onClick = viewModel::login,
@@ -110,39 +104,23 @@ private fun Button(label: String, onClick: () -> Unit) {
     }
 }
 
+
+/** Servers found by mDNS; picking one fills the address field. */
 @Composable
-private fun Field(
-    label: String,
-    value: String,
-    onChange: (String) -> Unit,
-    hint: String = "",
-    secret: Boolean = false,
-) {
-    var focused by remember { mutableStateOf(false) }
-    Column(Modifier.widthIn(max = 560.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(label, color = SpinroomColors.TextSecondary)
-        BasicTextField(
-            value = value,
-            onValueChange = onChange,
-            singleLine = true,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = SpinroomColors.TextPrimary),
-            cursorBrush = SolidColor(SpinroomColors.Accent),
-            visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(keyboardType = if (secret) KeyboardType.Password else KeyboardType.Text),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .background(SpinroomColors.Surface)
-                .border(
-                    BorderStroke(if (focused) 3.dp else 1.dp, if (focused) SpinroomColors.Accent else SpinroomColors.Outline),
-                    RoundedCornerShape(10.dp),
-                )
-                .onFocusChanged { focused = it.isFocused }
-                .padding(16.dp),
-            decorationBox = { inner ->
-                if (value.isEmpty() && hint.isNotEmpty()) Text(hint, color = SpinroomColors.TextSecondary)
-                inner()
-            },
-        )
+private fun ServerList(ui: SettingsUiState, onPick: (DiscoveredServer) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.settings_servers_title), color = SpinroomColors.TextSecondary)
+        when {
+            ui.servers.isNotEmpty() -> ui.servers.forEach { server ->
+                FocusSurface(onClick = { onPick(server) }, modifier = Modifier.widthIn(min = 240.dp, max = 560.dp)) {
+                    Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+                        Text(server.name, color = SpinroomColors.TextPrimary)
+                        Text(server.address, color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+            ui.scanFinished -> Text(stringResource(R.string.settings_servers_none), color = SpinroomColors.TextSecondary)
+            else -> Text(stringResource(R.string.settings_servers_scanning), color = SpinroomColors.TextSecondary)
+        }
     }
 }

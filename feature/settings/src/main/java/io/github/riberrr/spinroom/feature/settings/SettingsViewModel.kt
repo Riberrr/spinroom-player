@@ -11,11 +11,15 @@ import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.maapi.AuthApi
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaTypes
+import io.github.riberrr.spinroom.core.maapi.discovery.DiscoveredServer
+import io.github.riberrr.spinroom.core.maapi.discovery.MaServerDiscovery
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,6 +41,10 @@ data class SettingsUiState(
     val autostart: Boolean = true,
     val status: LoginStatus = LoginStatus.Idle,
     val connection: MaConnectionState = MaConnectionState.Disconnected,
+    /** Servers found on the local network (mDNS). */
+    val servers: List<DiscoveredServer> = emptyList(),
+    /** True once the scan ran long enough that an empty [servers] means "none found". */
+    val scanFinished: Boolean = false,
 )
 
 @HiltViewModel
@@ -45,6 +53,7 @@ class SettingsViewModel @Inject constructor(
     private val auth: AuthRepository,
     private val library: LibraryRepository,
     private val connection: ConnectionManager,
+    private val discovery: MaServerDiscovery,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsUiState())
@@ -58,11 +67,21 @@ class SettingsViewModel @Inject constructor(
         }
         viewModelScope.launch { settings.settings.collect { s -> _state.update { it.copy(autostart = s.autostart) } } }
         viewModelScope.launch { connection.state.collect { c -> _state.update { it.copy(connection = c) } } }
+        viewModelScope.launch {
+            discovery.servers()
+                .catch { e -> Log.w(TAG, "discovery: failed: ${e.javaClass.simpleName}") }
+                .collect { list -> _state.update { it.copy(servers = list) } }
+        }
+        viewModelScope.launch {
+            delay(SCAN_WINDOW_MS)
+            _state.update { it.copy(scanFinished = true) }
+        }
     }
 
     fun onAddress(v: String) = _state.update { it.copy(address = v) }
     fun onUsername(v: String) = _state.update { it.copy(username = v) }
     fun onPassword(v: String) = _state.update { it.copy(password = v) }
+    fun onPickServer(server: DiscoveredServer) = _state.update { it.copy(address = server.address) }
 
     fun onAutostart() {
         val next = !_state.value.autostart
@@ -106,5 +125,6 @@ class SettingsViewModel @Inject constructor(
 
     private companion object {
         const val TAG = "Spinroom"
+        const val SCAN_WINDOW_MS = 8_000L
     }
 }
