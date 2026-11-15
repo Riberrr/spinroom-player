@@ -16,7 +16,7 @@ Punkty 1–6, każdy osobno i lokalnie. Test JVM tylko dla logiki stanu offline 
 `bash scripts/check.sh` czyste, PR otwarty.
 
 ## Wynik
-PR #32 (gałąź `fix-search-settings`), NIE zweryfikowane na emulatorze (brak przydziału; zapytanie do koordynatora bez odpowiedzi). `assembleDebug assembleRelease testDebugUnitTest` zielone; `lintDebug` lokalnie pada tylko na `local.properties` (PropertyEscape, ścieżka SDK), nie na kodzie.
+PR #32 (gałąź `fix-search-settings`). Emulator (release, instalacja `-r` nad istniejącą, bez logowania): **punkt 1 i 3 potwierdzone**: jedno ← z „a” otwiera menu (Szukaj podświetlone), bez niewidocznego celu po prawej; offline po wpisaniu litery → „Coś poszło nie tak / Brak połączenia z serwerem / Spróbuj ponownie”. Punkt 2: chipy mieszczą się w kolumnie, ostatni chip ucięty przez przewijanie (LazyRow). **Niezweryfikowane na emulatorze**: punkt 4 (wymaga logowania, którego nie wykonywałem), punkt 5 (klawiatura Uri nie sprawdzona), punkt 6 (lista odtwarzaczy pusta: serwer MA nieosiągalny z emulatora, „Łączenie…”). `assembleDebug assembleRelease testDebugUnitTest` zielone; `lintDebug` lokalnie pada tylko na `local.properties` (PropertyEscape, ścieżka SDK), nie na kodzie.
 - Punkt 3 (offline): timeout z `MaClient` (CancellationException przy aktywnej korutynie) → stan `failed`, tekst „Brak połączenia z serwerem”. Test JVM `offlineTimeoutEndsInFailedStateNotSpinner`.
 - Punkt 1 (← z „a”): wyniki nie są fokusowalne bez wyników (`focusProperties { canFocus = state.hasShown }`). Niezweryfikowane; przyczyna nie potwierdzona na urządzeniu.
 - Punkt 2 (chipy): `LazyRow` z `contentPadding(end = 32.dp)`. Niezweryfikowane wizualnie.
