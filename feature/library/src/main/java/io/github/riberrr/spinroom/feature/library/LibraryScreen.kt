@@ -47,9 +47,23 @@ import io.github.riberrr.spinroom.core.design.ErrorState
 import io.github.riberrr.spinroom.core.design.FocusSurface
 import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
+import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 
 /** What the grid area shows. */
-enum class LibraryStatus { Loading, Content, Empty, Error }
+enum class LibraryStatus { NoServer, Connecting, Loading, Content, Empty, Error }
+
+/** Picks the grid-area state. Connection problems win over list state, but a list already on screen stays while reconnecting. */
+internal fun libraryStatus(connection: MaConnectionState, refresh: LoadState, itemCount: Int): LibraryStatus = when {
+    connection is MaConnectionState.Failed -> LibraryStatus.Error
+    connection is MaConnectionState.Disconnected -> LibraryStatus.NoServer
+    connection is MaConnectionState.Connected && !connection.authenticated -> LibraryStatus.NoServer
+    connection !is MaConnectionState.Connected && itemCount == 0 -> LibraryStatus.Connecting
+    connection !is MaConnectionState.Connected -> LibraryStatus.Content
+    refresh is LoadState.Error && itemCount == 0 -> LibraryStatus.Error
+    refresh is LoadState.Loading && itemCount == 0 -> LibraryStatus.Loading
+    itemCount == 0 -> LibraryStatus.Empty
+    else -> LibraryStatus.Content
+}
 
 data class LibraryActions(
     val onSelectTab: (LibraryTab) -> Unit = {},
@@ -73,13 +87,7 @@ fun LibraryScreen(
     // A new tab starts at the top.
     LaunchedEffect(state.tab) { gridState.scrollToItem(0) }
 
-    val refresh = items.loadState.refresh
-    val status = when {
-        refresh is LoadState.Error && items.itemCount == 0 -> LibraryStatus.Error
-        refresh is LoadState.Loading && items.itemCount == 0 -> LibraryStatus.Loading
-        items.itemCount == 0 -> LibraryStatus.Empty
-        else -> LibraryStatus.Content
-    }
+    val status = libraryStatus(state.connection, items.loadState.refresh, items.itemCount)
 
     ItemMenuHost { LibraryContent(
         state = state,
@@ -121,6 +129,12 @@ fun LibraryContent(
         }
         Box(Modifier.fillMaxSize()) {
             when (status) {
+                LibraryStatus.NoServer -> EmptyState(
+                    title = stringResource(R.string.library_no_server_title),
+                    message = stringResource(R.string.library_no_server_message),
+                )
+                LibraryStatus.Connecting -> EmptyState(title = stringResource(R.string.library_connecting))
+                LibraryStatus.Loading -> EmptyState(title = stringResource(R.string.library_loading))
                 LibraryStatus.Error -> ErrorState(
                     message = stringResource(R.string.library_error_message),
                     retryLabel = stringResource(R.string.library_retry),
@@ -130,9 +144,10 @@ fun LibraryContent(
                     title = stringResource(R.string.library_empty_title),
                     message = stringResource(R.string.library_empty_message),
                 )
-                else -> Row(Modifier.fillMaxSize()) {
+                LibraryStatus.Content -> Row(Modifier.fillMaxSize()) {
                     CoverGrid(itemCount, itemAt, actions.onOpenItem, gridState, Modifier.weight(1f))
-                    LetterRail(actions.onJumpToLetter)
+                    // The letter rail only makes sense when there is something to jump through.
+                    if (itemCount > 0) LetterRail(actions.onJumpToLetter)
                 }
             }
         }

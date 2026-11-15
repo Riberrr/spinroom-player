@@ -117,15 +117,17 @@ fun StationTile(
     modifier: Modifier = Modifier,
     badgeColor: Color = Color(0xFF7D3F4A),
     onLongClick: (() -> Unit)? = null,
+    /** Optional logo drawn instead of the initials (fills the 40 dp badge). */
+    logo: (@Composable () -> Unit)? = null,
 ) {
     FocusSurface(onClick, modifier.width(206.dp), shape = RoundedCornerShape(10.dp), focusedScale = 1.06f, onLongClick = onLongClick) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.size(40.dp).background(badgeColor, RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
-                Text(initials, style = MaterialTheme.typography.labelMedium, color = SpinroomColors.TextPrimary)
+                if (logo != null) logo() else Text(initials, style = MaterialTheme.typography.labelMedium, color = SpinroomColors.TextPrimary)
             }
             Column {
                 Text(name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(provider, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (provider.isNotBlank()) Text(provider, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }

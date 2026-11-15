@@ -16,4 +16,9 @@
 Testy zielone, `bash scripts/check.sh` czyste, PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Bez połączenia / niezalogowany: `EmptyState` „Połącz się z serwerem” + „Wpisz adres serwera w Ustawieniach.”; łączenie przy pustej siatce: „Łączę z serwerem…”; „Wczytuję…” przy ładowaniu; `Failed` → `ErrorState`. Teksty są w `library_no_server_*` / `library_connecting` / `library_loading` — po scaleniu SFix03d zrównać z jego słowami.
+- Pasek liter tylko gdy `itemCount > 0`. Liczniki (`counts`) ładują się przy każdym przejściu w stan gotowy (połączony + zalogowany) dla wszystkich zakładek — stąd licznik widać od razu, nie po OK.
+- Public API: `libraryStatus(connection, refresh, itemCount)` (internal, pure); `LibraryUiState.connection`; `LibraryBackend.connection: Flow<MaConnectionState>` (nowe pole, zaimplementowane w `MaLibraryBackend` przez `ConnectionManager.state`). Pager tylko przy gotowości.
+- Testy: `LibraryViewModelTest` 10/10 zielone (offline, bez zalogowania, pusta karta, tabela `libraryStatus`). `scripts/check.sh` kończy się błędem `:app:lintDebug` (PropertyEscape na `local.properties` tej worktree — plik lokalny, poza repo); `assembleDebug assembleRelease testDebugUnitTest` przechodzą.
+- Emulator nie był użyty (sesja pozwalała na testy JVM + Preview). Do sprawdzenia ręcznie: Biblioteka bez logowania, po zalogowaniu liczniki bez OK.
+- Pułapki: nazwa testu JVM nie może zawierać `:`; `pager()` zawiesza się/wyrzuca wyjątek bez połączenia, więc items są gated; `Disconnected` pojawia się też przed pierwszym połączeniem (krótki „Połącz się” zanim „Łączę”).

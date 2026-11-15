@@ -15,6 +15,10 @@ Depends on `:core:design`, `:core:data` (+ Coil 3 for covers).
   "Polecane z YouTube Music" (flattened `music/recommendations` folders whose provider contains `ytmusic`; row hidden otherwise).
 - Tiles open details (`Routes.details(uri)`); station tiles play immediately with `play_media(option=replace)` on `settings.playerId` (no-op without a player).
 - Loads when the connection becomes `Connected` and on retry; each row fails independently, error state only if all calls fail.
+- Refresh: quiet reload on `ON_RESUME` and on MA `media_item_*` events (debounced); failed rows keep their old content.
+- States: no server saved → "Połącz się z serwerem" + button to Settings (`onOpenSettings`); connecting → "Łączę z serwerem…"; failed → error with retry.
+- Focus: last focused tile key is kept in `rememberSaveable` and restored after Back; the first top card is focused only on the first entry.
+- Stations: logo from the item image, caption = provider name from `provider_mappings` (none if unknown).
 - Greeting is a plain "Dzień dobry" (MA gives no user name); the connection chip shows connected/offline.
 
 ## Not verified against a live server

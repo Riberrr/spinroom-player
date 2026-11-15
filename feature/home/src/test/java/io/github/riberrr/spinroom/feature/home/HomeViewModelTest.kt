@@ -5,6 +5,7 @@ import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.MediaItemImage
 import io.github.riberrr.spinroom.core.maapi.PlayerQueue
+import io.github.riberrr.spinroom.core.maapi.ProviderMapping
 import io.github.riberrr.spinroom.core.maapi.QueueItem
 import io.github.riberrr.spinroom.core.maapi.RecommendationFolder
 import io.github.riberrr.spinroom.core.maapi.ServerInfo
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -42,7 +44,10 @@ private class FakeBackend : HomeBackend {
 
     override val connection: Flow<MaConnectionState> = connectionState
     override val playerId: Flow<String> = player
-    override val serverAddress: Flow<String> = MutableStateFlow("10.0.1.50:8095")
+    val address = MutableStateFlow("10.0.1.50:8095")
+    val changes = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 8)
+    override val serverAddress: Flow<String> = address
+    override val libraryChanges: Flow<Unit> = changes
     override fun queue(queueId: String): Flow<PlayerQueue> = queueState.filterNotNull()
 
     private fun <T> guard(v: T): T = if (failAll) error("offline") else v
@@ -165,6 +170,75 @@ class HomeViewModelTest {
         vm.onPlayStation(station)
         runCurrent()
         assertEquals(listOf("tv" to "library://radio/5"), b.played)
+        vm.viewModelScopeCancel()
+    }
+
+    @Test fun `no server configured stops loading`() = runTest(dispatcher) {
+        val b = FakeBackend().apply { address.value = "" }
+        val vm = HomeViewModel(b)
+        runCurrent()
+        assertTrue(vm.state.value.notConfigured)
+        assertFalse(vm.state.value.loading)
+        vm.viewModelScopeCancel()
+    }
+
+    @Test fun `connecting keeps loading, failed connection shows failure`() = runTest(dispatcher) {
+        val b = FakeBackend()
+        val vm = HomeViewModel(b)
+        b.connectionState.value = MaConnectionState.Connecting
+        runCurrent()
+        assertTrue(vm.state.value.loading)
+        assertFalse(vm.state.value.notConfigured)
+        b.connectionState.value = MaConnectionState.Failed(1, "nope")
+        runCurrent()
+        assertFalse(vm.state.value.loading)
+        assertTrue(vm.state.value.failed)
+        vm.viewModelScopeCancel()
+    }
+
+    @Test fun `library change and resume refresh rows quietly`() = runTest(dispatcher) {
+        val b = FakeBackend().apply { favs = listOf(album("1", "A", "X")) }
+        val vm = HomeViewModel(b)
+        b.connectionState.value = connected()
+        runCurrent()
+        assertEquals(1, vm.state.value.favorites.size)
+        b.favs = emptyList()
+        b.changes.tryEmit(Unit)
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertTrue(vm.state.value.favorites.isEmpty())
+        b.favs = listOf(album("2", "B", "Y"), album("3", "C", "Z"))
+        vm.onResume()
+        runCurrent()
+        assertEquals(2, vm.state.value.favorites.size)
+        // a failing silent refresh keeps the old rows
+        b.failAll = true
+        vm.onResume()
+        runCurrent()
+        assertEquals(2, vm.state.value.favorites.size)
+        assertFalse(vm.state.value.loading)
+        vm.viewModelScopeCancel()
+    }
+
+    @Test fun `station shows provider name from mappings and image, never library`() = runTest(dispatcher) {
+        val b = FakeBackend().apply {
+            radios = listOf(
+                MediaItem(
+                    itemId = "5", provider = "library", mediaType = "radio", name = "Jazz Jeden", uri = "library://radio/5",
+                    providerMappings = listOf(ProviderMapping(itemId = "x", providerDomain = "radiobrowser", providerInstance = "radiobrowser--1")),
+                    image = MediaItemImage(path = "p5", provider = "library"),
+                ),
+                MediaItem(itemId = "6", provider = "library", mediaType = "radio", name = "Bez mapy", uri = "library://radio/6"),
+            )
+        }
+        val vm = HomeViewModel(b)
+        b.connectionState.value = connected()
+        runCurrent()
+        val (a, c) = vm.state.value.stations
+        assertEquals("Radio Browser", a.provider)
+        assertNotNull(a.coverUrl)
+        assertEquals("", c.provider)
+        assertNull(c.coverUrl)
         vm.viewModelScopeCancel()
     }
 }

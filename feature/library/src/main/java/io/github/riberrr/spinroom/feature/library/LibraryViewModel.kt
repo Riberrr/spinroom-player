@@ -7,6 +7,7 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
+import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,6 +18,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -34,20 +37,28 @@ class LibraryViewModel @Inject constructor(private val backend: LibraryBackend) 
     private val counts = MutableStateFlow<Map<LibraryTab, Int>>(emptyMap())
     private val scrollEvents = Channel<Int>(Channel.CONFLATED)
 
-    val state: StateFlow<LibraryUiState> = combine(tab, counts) { t, c -> LibraryUiState(t, c) }
+    /** True when the server is connected and logged in, i.e. the library can be read. */
+    private val ready: Flow<Boolean> = backend.connection.map { it.isReady() }.distinctUntilChanged()
+
+    val state: StateFlow<LibraryUiState> = combine(tab, counts, backend.connection) { t, c, conn -> LibraryUiState(t, c, conn) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, LibraryUiState())
 
-    /** Grid items of the selected tab, mapped to [LibraryRow]. */
-    val items: Flow<PagingData<LibraryRow>> = combine(tab, backend.serverAddress) { t, a -> t to a }
+    /** Grid items of the selected tab, mapped to [LibraryRow]. Empty while the server is not ready. */
+    val items: Flow<PagingData<LibraryRow>> = combine(tab, ready, backend.serverAddress) { t, r, a -> Triple(t, r, a) }
         .distinctUntilChanged()
-        .flatMapLatest { (t, a) -> backend.pager(t).map { page -> page.map { it.toRow(a) } } }
+        .flatMapLatest { (t, r, a) ->
+            if (!r) emptyFlow() else backend.pager(t).map { page -> page.map { it.toRow(a) } }
+        }
         .cachedIn(viewModelScope)
 
     /** Absolute grid index the screen should scroll to (one-shot). */
     val scrollTo: Flow<Int> = scrollEvents.receiveAsFlow()
 
     init {
-        refreshCount(LibraryTab.Albums)
+        // Counts fail while offline, so (re)load all of them every time the server becomes ready.
+        viewModelScope.launch {
+            ready.filter { it }.collect { LibraryTab.entries.forEach { refreshCount(it) } }
+        }
     }
 
     fun onSelectTab(newTab: LibraryTab) {
@@ -86,6 +97,8 @@ internal suspend fun firstIndexOf(letter: Char, total: Int, itemAt: suspend (Int
     }
     return lo.coerceAtMost((total - 1).coerceAtLeast(0))
 }
+
+internal fun MaConnectionState.isReady(): Boolean = this is MaConnectionState.Connected && authenticated
 
 internal fun MediaItem.toRow(serverAddress: String): LibraryRow {
     val type = mediaType.ifBlank { "item" }
