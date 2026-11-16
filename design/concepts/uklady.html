@@ -1,0 +1,286 @@
+<title>Spinroom — 8 układów</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 2-column gallery of 16:9 TV mockups, brand tokens from docs/BRAND.md, single dark look (TV app) */
+:root{
+  --bg:#0B0D12; --surface:#151922; --high:#1E2430; --outline:#2A3140;
+  --text:#F2F4F8; --sec:#9AA3B2; --accent:#F5A524; --ok:#3DD68C; --info:#4FC3F7;
+  --page:#07080C;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+.wrap{max-width:1280px;margin:0 auto}
+h1{font-size:clamp(28px,4vw,44px);line-height:1.1;margin:0 0 12px;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.lead{color:var(--sec);max-width:68ch;margin:0 0 32px}
+.lead b{color:var(--text);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 32px}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{display:flex;flex-direction:column;gap:14px;min-width:0}
+.head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.num{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.12em}
+.card h2{margin:0;font-size:22px;font-weight:700;letter-spacing:-.01em}
+.tag{margin-left:auto;font-size:12px;color:var(--sec);border:1px solid var(--outline);border-radius:99px;padding:2px 10px;white-space:nowrap}
+.idea{margin:0;color:var(--text);max-width:62ch}
+ul.how{margin:0;padding:0;list-style:none;display:grid;gap:6px;color:var(--sec);font-size:14px}
+ul.how li{padding-left:18px;position:relative}
+ul.how li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:2px;background:var(--accent)}
+ul.how b{color:var(--text);font-weight:600}
+kbd{font-family:var(--font);font-size:12px;background:var(--high);border:1px solid var(--outline);border-radius:5px;padding:0 5px;color:var(--text)}
+.cons{font-size:13px;color:var(--sec);border-top:1px solid var(--outline);padding-top:10px}
+.cons b{color:var(--ok);font-weight:600}.cons i{font-style:normal;color:#F07178;font-weight:600}
+
+/* ---------- TV mockup ---------- */
+.frame{container-type:inline-size;border-radius:12px;border:1px solid var(--outline);overflow:hidden;box-shadow:0 12px 40px #0008}
+.tv{position:relative;aspect-ratio:16/9;background:var(--bg);font-size:1.45cqw;line-height:1.25;overflow:hidden;color:var(--text)}
+.tv *{box-sizing:border-box}
+.cv{background:linear-gradient(160deg,color-mix(in srgb,var(--c) 100%,#fff 10%),var(--c));border-radius:.55em;position:relative}
+.cv::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 30% 25%,#fff3,transparent 55%)}
+.foc{outline:.2em solid #fff;outline-offset:.15em}
+.acc{color:var(--accent)}.sec{color:var(--sec)}
+.pill{display:inline-flex;align-items:center;gap:.4em;background:var(--surface);border-radius:99px;padding:.35em .9em;font-size:.9em;color:var(--sec);white-space:nowrap}
+.pill.on{background:#fff;color:#0B0D12;font-weight:600}
+.pill.ac{background:var(--accent);color:#0B0D12;font-weight:600}
+.dot{display:inline-block;width:.7em;height:.7em;border-radius:50%}
+.abs{position:absolute}
+.t1{font-weight:700;font-size:1.6em;letter-spacing:-.01em}
+.t2{font-weight:600;font-size:1.05em}
+.t3{color:var(--sec);font-size:.88em}
+.bar{height:.3em;border-radius:9em;background:var(--outline);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.st{display:grid;place-items:center;border-radius:50%;font-weight:700;font-size:.85em;color:#fff}
+
+/* 1 dial */
+.dial svg{position:absolute;left:0;right:0;bottom:0;width:100%}
+/* 2 pads */
+.pads{position:absolute;left:3%;top:15%;width:63%;display:grid;grid-template-columns:repeat(3,1fr);gap:1.1em}
+.pad{position:relative;border-radius:.8em;padding:.8em;height:9.3em;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 100%,#fff 8%),var(--c))}
+.pad .n{position:absolute;top:.35em;left:.6em;font-size:2.3em;font-weight:700;opacity:.9;line-height:1}
+.pad small{font-size:.72em;opacity:.8;text-transform:uppercase;letter-spacing:.08em}
+/* 3 wall */
+.wall{position:absolute;inset:-1%;display:grid;grid-template-columns:repeat(10,1fr);gap:.5em;padding:.5em;transform:rotate(-2deg) scale(1.06)}
+.wall .cv{aspect-ratio:1;border-radius:.4em}
+/* 4 dock */
+.dock{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:.7em;padding:.7em 1em;background:#151922d9;border:1px solid var(--outline);border-radius:1.4em;backdrop-filter:blur(8px)}
+.dock .it{width:4em;height:4em;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:1em}
+.dock .sq{border-radius:.8em}
+.dock .big{width:5.8em;height:5.8em;font-size:1.3em;outline:.17em solid var(--accent);outline-offset:.14em}
+.dock .sep{width:1px;height:3em;background:var(--outline);align-self:center}
+/* 5 search */
+.cols{position:absolute;left:3%;right:3%;top:30%;display:grid;grid-template-columns:repeat(4,1fr);gap:1.2em}
+.col h4{margin:0 0 .6em;font-size:.78em;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.row{display:flex;align-items:center;gap:.7em;padding:.45em;border-radius:.6em;margin-bottom:.3em;background:var(--surface);font-size:.92em}
+.row .cv,.row .st{width:2.2em;height:2.2em;flex:none;border-radius:.4em}
+.row.f{background:var(--high);outline:.15em solid #fff}
+.qr{width:5.2em;height:5.2em;border-radius:.4em;background:#fff;padding:.4em;display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.qr i{background:#0B0D12}.qr i.o{background:transparent}
+/* 6 flow */
+.flow{position:absolute;left:0;right:0;top:15%;height:56%;perspective:60em}
+.flow .cv{position:absolute;top:50%;left:50%;width:15em;height:15em;margin:-7.5em 0 0 -7.5em;border-radius:.7em}
+/* 7 mood */
+.moods{position:absolute;left:3%;right:3%;top:20%;bottom:14%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1.2em}
+.mood{border-radius:1em;padding:1.1em 1.3em;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--c1),var(--c2))}
+.mood .t1{font-size:1.9em}
+.mood small{opacity:.85;font-size:.85em}
+.mood .why{position:absolute;top:.9em;right:.9em}
+/* 8 pager */
+.side{position:absolute;top:0;bottom:0;width:15%;background:var(--surface);padding:1.4em .8em;display:flex;flex-direction:column;gap:.7em}
+.side.l{left:0;border-right:1px solid var(--outline)}.side.r{right:0;border-left:1px solid var(--outline)}
+.side h5{margin:0 0 .3em;font-size:.72em;letter-spacing:.12em;text-transform:uppercase;color:var(--sec);font-weight:600}
+.side .st,.side .cv{width:3.6em;height:3.6em;flex:none;border-radius:.6em}
+.side.l .st{border-radius:50%}
+
+.shared{margin-top:56px;border-top:1px solid var(--outline);padding-top:32px}
+.shared h3,.reco h3{font-size:22px;margin:0 0 6px}
+.shared p{color:var(--sec);margin:0 0 20px;max-width:70ch}
+.mech{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.mech div{background:var(--surface);border:1px solid var(--outline);border-radius:12px;padding:16px}
+.mech b{display:block;margin-bottom:4px}
+.mech span{color:var(--sec);font-size:14px}
+.reco{margin-top:40px;background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:24px}
+.reco p{margin:6px 0 0;color:var(--sec);max-width:75ch}.reco p b{color:var(--text)}
+</style>
+
+<div class="wrap">
+<h1>Spinroom: 8 pomysłów na nowy interfejs</h1>
+<p class="lead">Wszystkie zachowują to, co lubisz w ekranie startowym (duże, czytelne kafelki i ciepły bursztynowy fokus), ale każdy odpowiada inaczej na trzy pytania: <b>jak szybko wejść w ulubione radio i playlistę</b>, <b>jak wyszukiwać bez męczenia się z klawiaturą ekranową</b> i <b>czy w ogóle potrzebne jest menu boczne</b>. Makiety są poglądowe, pilot to tylko strzałki, OK, Wstecz i Menu.</p>
+
+<div class="grid">
+
+<!-- 1 -->
+<section class="card"><div class="head"><span class="num">01</span><h2>Strojenie</h2><span class="tag">Wysiłek: duży</span></div>
+<p class="idea">Radio z lat 70. jako metafora całej aplikacji. Skala strojenia na dole, <kbd>←</kbd><kbd>→</kbd> kręcą gałką i „przeskakują” między ulubionymi.</p>
+<div class="frame"><div class="tv dial">
+  <div class="abs" style="left:3%;top:5%;right:3%;display:flex;gap:.6em"><span class="pill ac">Radio</span><span class="pill">Playlisty</span><span class="pill">Albumy</span><span class="pill">Wykonawcy</span><span class="pill" style="margin-left:auto">Szukaj</span></div>
+  <div class="abs" style="left:0;right:0;top:20%;text-align:center"><div class="t3" style="letter-spacing:.2em;text-transform:uppercase">Na antenie · <span style="color:var(--ok)">●</span> na żywo</div><div style="font-size:4.2em;font-weight:700;letter-spacing:-.02em;margin:.1em 0">Jazz Jeden</div><div class="t3">Radio Browser · Teraz: Miles Davis — So What</div></div>
+  <svg viewBox="0 0 160 62" id="dial"></svg>
+</div></div>
+<ul class="how"><li><b>Pasma</b> zamiast zakładek: Radio, Playlisty, Albumy.</li><li>Dojście do stacji z ulubionych: <b>2 naciśnięcia</b> od startu.</li><li>Przytrzymaj <kbd>OK</kbd> na stacji, by zapisać ją na skali.</li></ul>
+<div class="cons"><b>+</b> Bardzo charakterystyczny, ciekawy dla radia. <i>−</i> Mało miejsca na okładki, więc słabsze dla dużej biblioteki albumów.</div></section>
+
+<!-- 2 -->
+<section class="card"><div class="head"><span class="num">02</span><h2>Przyciski 1–9</h2><span class="tag">Wysiłek: mały</span></div>
+<p class="idea">Jak w radiu samochodowym: dziewięć „zaprogramowanych” miejsc. Mieszasz w nich stacje, playlisty i albumy, a na pilocie wciskasz cyfrę i gra. Kolorowe klawisze pilota przełączają strony.</p>
+<div class="frame"><div class="tv">
+  <div class="abs" style="left:3%;top:5%;right:3%;display:flex;align-items:center"><span class="t1">Moje przyciski</span><span class="pill" style="margin-left:auto"><span class="dot" style="background:var(--ok)"></span>Salon TV</span></div>
+  <div class="pads">
+    <div class="pad" style="--c:#7D3F4C"><span class="n">1</span><b>Jazz Jeden</b><small>Radio</small></div>
+    <div class="pad foc" style="--c:#2E4A7D"><span class="n">2</span><b>Klasyka 24</b><small>Radio</small></div>
+    <div class="pad" style="--c:#3D6E5C"><span class="n">3</span><b>Spokojny poranek</b><small>Playlista</small></div>
+    <div class="pad" style="--c:#6B4E8C"><span class="n">4</span><b>Mix dla Ciebie</b><small>YouTube Music</small></div>
+    <div class="pad" style="--c:#8C6A2E"><span class="n">5</span><b>Lo-fi Studio</b><small>Radio</small></div>
+    <div class="pad" style="--c:#2E7080"><span class="n">6</span><b>Jazz na wieczór</b><small>Playlista</small></div>
+    <div class="pad" style="--c:#4A4F5C"><span class="n">7</span><b>Nocne światła</b><small>Album</small></div>
+    <div class="pad" style="--c:#4A4F5C"><span class="n">8</span><b>Rock Wieczorem</b><small>Radio</small></div>
+    <div class="pad" style="background:var(--surface);border:2px dashed var(--outline)"><span class="n sec">9</span><b class="sec">Wolne miejsce</b><small>Przytrzymaj OK</small></div>
+  </div>
+  <div class="abs" style="right:3%;top:15%;width:27%"><div class="cv" style="--c:#2E4A7D;aspect-ratio:1"></div><div class="t2" style="margin-top:.7em">Klasyka 24</div><div class="t3">Tunein · gra teraz</div><div class="bar" style="margin-top:.7em"><i style="width:100%"></i></div></div>
+  <div class="abs" style="left:3%;bottom:4%;display:flex;gap:1.2em;font-size:.92em;color:var(--sec)"><span><span class="dot" style="background:#E5484D"></span> Radio</span><span><span class="dot" style="background:var(--ok)"></span> Playlisty</span><span><span class="dot" style="background:var(--accent)"></span> Albumy</span><span><span class="dot" style="background:var(--info)"></span> Szukaj</span></div>
+</div></div>
+<ul class="how"><li><b>Cyfra na pilocie</b> działa z każdego ekranu aplikacji.</li><li>Zapis: przytrzymaj <kbd>OK</kbd> na czymkolwiek, wybierz numer.</li><li>Kolorowe klawisze to skróty do czterech głównych miejsc.</li></ul>
+<div class="cons"><b>+</b> Najszybsza droga do ulubionych: <b>0 nawigacji</b>. <i>−</i> Pilot bez klawiszy cyfr: wtedy zostaje siatka.</div></section>
+
+<!-- 3 -->
+<section class="card"><div class="head"><span class="num">03</span><h2>Ściana okładek</h2><span class="tag">Wysiłek: średni</span></div>
+<p class="idea">Brak menu i paneli. Cały ekran to mozaika okładek, którą przesuwasz strzałkami. Zaznaczona okładka się powiększa i podpisuje, a filtr (Radio, Playlisty, Albumy) to jedna pływająca belka.</p>
+<div class="frame"><div class="tv">
+  <div class="wall" id="wall"></div>
+  <div class="abs" style="inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 20%,#0B0D12cc 85%)"></div>
+  <div class="abs" style="left:50%;top:5%;transform:translateX(-50%);display:flex;gap:.5em;background:#151922e6;padding:.35em;border-radius:99px"><span class="pill on">Wszystko</span><span class="pill">Radio</span><span class="pill">Playlisty</span><span class="pill">Albumy</span></div>
+  <div class="abs" style="left:50%;top:50%;transform:translate(-50%,-50%);width:23%;background:var(--high);border-radius:.9em;padding:.8em;box-shadow:0 1em 3em #000c;outline:.2em solid var(--accent)">
+    <div class="cv" style="--c:#8C6A2E;aspect-ratio:1"></div><div class="t2" style="margin-top:.6em">Ciepły beton</div><div class="t3">Odcienie · album</div>
+  </div>
+</div></div>
+<ul class="how"><li>Ulubione zawsze <b>na początku ściany</b>, z bursztynową kropką.</li><li><kbd>Menu</kbd> otwiera szybki panel: Szukaj, Teraz gra, Ustawienia.</li><li>Okładki to zdjęcia, więc oko wyłapuje cel szybciej niż czytanie.</li></ul>
+<div class="cons"><b>+</b> Efektowne, minimalistyczne. <i>−</i> Stacje radiowe mają słabe logo, trzeba to obejść kafelkami z inicjałami.</div></section>
+
+<!-- 4 -->
+<section class="card"><div class="head"><span class="num">04</span><h2>Dok ulubionych</h2><span class="tag">Wysiłek: mały</span></div>
+<p class="idea">Pasek w stylu docka, który zastępuje menu boczne. Zawiera ulubione stacje i playlisty, a po <kbd>↓</kbd> jest dostępny z każdego ekranu. Ekran startowy zostaje taki, jaki lubisz.</p>
+<div class="frame"><div class="tv">
+  <div class="abs" style="inset:0;background:linear-gradient(180deg,#2E4A7D55,transparent 60%)"></div>
+  <div class="abs" style="left:3%;top:6%;right:3%"><div class="t3" style="letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:600">Kontynuuj słuchanie</div><div style="font-size:3.2em;font-weight:700;letter-spacing:-.02em">Nocne światła</div><div class="t3" style="font-size:1.1em">Lena Wiatr · utwór 4 z 11</div></div>
+  <div class="abs" style="left:3%;top:42%;display:flex;gap:1.1em"><div style="width:11em"><div class="cv" style="--c:#7D3F4C;aspect-ratio:1"></div><div class="t2" style="margin-top:.4em">Port 14</div></div><div style="width:11em"><div class="cv" style="--c:#3D6E5C;aspect-ratio:1"></div><div class="t2" style="margin-top:.4em">Spokojny poranek</div></div><div style="width:11em"><div class="cv" style="--c:#6B4E8C;aspect-ratio:1"></div><div class="t2" style="margin-top:.4em">Mix dla Ciebie</div></div><div style="width:11em"><div class="cv" style="--c:#8C6A2E;aspect-ratio:1"></div><div class="t2" style="margin-top:.4em">Ciepły beton</div></div></div>
+  <div class="abs" style="left:50%;bottom:20%;transform:translateX(-50%);background:var(--accent);color:#0B0D12;font-weight:700;border-radius:.5em;padding:.15em .7em;font-size:.95em">Klasyka 24</div>
+  <div class="dock"><div class="it" style="background:var(--surface);color:var(--accent)">⌕</div><div class="sep"></div><div class="it" style="background:#7D3F4C">J1</div><div class="it big" style="background:#2E4A7D">KL</div><div class="it" style="background:#3D6E5C">LO</div><div class="it" style="background:#8C6A2E">RW</div><div class="sep"></div><div class="it sq cv" style="--c:#6B4E8C"></div><div class="it sq cv" style="--c:#2E7080"></div><div class="it sq cv" style="--c:#3D6E5C"></div></div>
+</div></div>
+<ul class="how"><li><b>Lewa część</b>: szukaj, w środku stacje (okrągłe), po prawej playlisty (kwadratowe).</li><li>Zmniejsza ekran do jednego miejsca: <b>dok to jedyna nawigacja</b>.</li><li>Biblioteka i Źródła chowają się pod ikoną na końcu doku.</li></ul>
+<div class="cons"><b>+</b> Najtańszy do wdrożenia, działa globalnie. <i>−</i> Dok zabiera kawałek ekranu, można go chować po kilku sekundach.</div></section>
+
+<!-- 5 -->
+<section class="card"><div class="head"><span class="num">05</span><h2>Szukaj na żywo</h2><span class="tag">Wysiłek: średni</span></div>
+<p class="idea">Szukanie, które nie wymaga klawiatury ekranowej. Piszesz z telefonu (kod QR) albo dyktujesz, a wyniki układają się w kolumny: stacje, playlisty, albumy, wykonawcy. Alternatywa to pasek liter A–Z.</p>
+<div class="frame"><div class="tv">
+  <div class="abs" style="left:3%;top:6%;right:3%;display:flex;align-items:center;gap:1.2em">
+    <div style="flex:1;background:var(--surface);border:2px solid var(--accent);border-radius:.8em;padding:.7em 1em;font-size:1.8em;font-weight:600">jaz<span class="acc">|</span><span class="sec" style="font-weight:400;font-size:.55em;float:right;margin-top:.5em">Pisz z telefonu albo dyktuj 🎤</span></div>
+    <div style="text-align:center"><div class="qr" id="qr"></div></div>
+  </div>
+  <div class="cols">
+    <div class="col"><h4>Stacje</h4><div class="row f"><div class="st" style="background:#7D3F4C">J1</div><div><b>Jazz Jeden</b><div class="t3">Radio Browser</div></div></div><div class="row"><div class="st" style="background:#3D6E5C">JF</div><div><b>Jazz FM</b><div class="t3">Tunein</div></div></div><div class="row"><div class="st" style="background:#2E4A7D">SJ</div><div><b>Smooth Jazz</b><div class="t3">Tunein</div></div></div></div>
+    <div class="col"><h4>Playlisty</h4><div class="row"><div class="cv" style="--c:#2E7080"></div><div><b>Jazz na wieczór</b><div class="t3">42 utwory</div></div></div><div class="row"><div class="cv" style="--c:#6B4E8C"></div><div><b>Jazzowy poranek</b><div class="t3">28 utworów</div></div></div></div>
+    <div class="col"><h4>Albumy</h4><div class="row"><div class="cv" style="--c:#8C6A2E"></div><div><b>Jazz Dla Dwojga</b><div class="t3">Pola Sun</div></div></div><div class="row"><div class="cv" style="--c:#2E4A7D"></div><div><b>Jazzowy Port</b><div class="t3">Kwartet Północ</div></div></div></div>
+    <div class="col"><h4>Wykonawcy</h4><div class="row"><div class="st" style="background:#4A4F5C">JK</div><div><b>Jan Kowal Trio</b></div></div><div class="row"><div class="st" style="background:#4A4F5C">JM</div><div><b>Jazz Miasto</b></div></div></div>
+  </div>
+  <div class="abs" style="left:3%;right:3%;bottom:5%;display:flex;justify-content:space-between;color:var(--sec);font-size:.95em;letter-spacing:.3em" id="az"></div>
+</div></div>
+<ul class="how"><li>Wyniki od <b>pierwszej litery</b>, bez przycisku „Szukaj”.</li><li><b>Pasek liter</b> <kbd>←</kbd><kbd>→</kbd> pozwala „przeskoczyć” w górę kolumny bez pisania.</li><li>Ostatnie hasła i najczęstsze jako chipy, gdy pole jest puste.</li></ul>
+<div class="cons"><b>+</b> Rozwiązuje największą bolączkę TV. <i>−</i> QR wymaga prostego serwera w aplikacji (mamy już Ktor).</div></section>
+
+<!-- 6 -->
+<section class="card"><div class="head"><span class="num">06</span><h2>Półka z płytami</h2><span class="tag">Wysiłek: średni</span></div>
+<p class="idea">Cover flow dla biblioteki. Trzy „półki” (Albumy, Playlisty, Radio) zmieniasz <kbd>↑</kbd><kbd>↓</kbd>, a <kbd>←</kbd><kbd>→</kbd> przekartkowuje okładki jak płyty w skrzynce.</p>
+<div class="frame"><div class="tv">
+  <div class="abs" style="left:3%;top:5%;display:flex;gap:.6em"><span class="pill ac">Albumy · 412</span><span class="pill">Playlisty</span><span class="pill">Radio</span></div>
+  <div class="abs" style="right:3%;top:5%;display:flex;gap:.6em"><span class="pill">A–Z</span><span class="pill">Szukaj</span></div>
+  <div class="flow">
+    <div class="cv" style="--c:#6B4E8C;transform:translateX(-26em) rotateY(52deg) scale(.82);opacity:.6"></div>
+    <div class="cv" style="--c:#7D3F4C;transform:translateX(-15em) rotateY(48deg) scale(.9)"></div>
+    <div class="cv" style="--c:#2E4A7D;transform:translateX(-6.5em) rotateY(42deg) scale(.95)"></div>
+    <div class="cv foc" style="--c:#2E7080;transform:translateZ(5em) scale(1.15);z-index:5;box-shadow:0 1.5em 3em #000b"></div>
+    <div class="cv" style="--c:#8C6A2E;transform:translateX(6.5em) rotateY(-42deg) scale(.95)"></div>
+    <div class="cv" style="--c:#3D6E5C;transform:translateX(15em) rotateY(-48deg) scale(.9)"></div>
+    <div class="cv" style="--c:#7D3F4C;transform:translateX(26em) rotateY(-52deg) scale(.82);opacity:.6"></div>
+  </div>
+  <div class="abs" style="left:0;right:0;bottom:6%;text-align:center"><div class="t1">Horyzont</div><div class="t3" style="font-size:1.05em">Kwartet Północ · 2021 · 11 utworów</div><div style="margin-top:.8em;display:inline-flex;gap:.6em"><span class="pill ac">▶ Odtwórz</span><span class="pill">☆ Ulubione</span></div></div>
+</div></div>
+<ul class="how"><li>Najwięcej emocji z <b>okładek</b>, mało tekstu.</li><li>Szybkie skoki liter: przytrzymaj <kbd>←</kbd> i lecisz co 10 pozycji.</li><li>Z półki „Radio” okładki stają się logo stacji.</li></ul>
+<div class="cons"><b>+</b> Przyjemne przeglądanie kolekcji. <i>−</i> Wolniejsze niż siatka przy 400+ albumach, więc najlepsze jako tryb dodatkowy.</div></section>
+
+<!-- 7 -->
+<section class="card"><div class="head"><span class="num">07</span><h2>Nastroje</h2><span class="tag">Wysiłek: średni</span></div>
+<p class="idea">Zamiast „co chcesz posłuchać?” aplikacja pyta „jak jest?”. Cztery duże kafle nastrojów łączą Twoje stacje, playlisty i albumy. Jeden jest podświetlony jako pasujący do pory dnia.</p>
+<div class="frame"><div class="tv">
+  <div class="abs" style="left:3%;top:5%;right:3%;display:flex;align-items:baseline;gap:1em"><span class="t1">Dzień dobry, Łukasz</span><span class="t3" style="margin-left:auto">sobota · 08:12</span></div>
+  <div class="moods">
+    <div class="mood foc" style="--c1:#8C6A2E;--c2:#C0842A"><span class="pill ac why">Teraz pasuje</span><div class="t1">Poranek</div><small>Spokojny poranek · Klasyka 24 · 2 playlisty</small></div>
+    <div class="mood" style="--c1:#2E4A7D;--c2:#2E7080"><div class="t1">Skupienie</div><small>Lo-fi Studio · Ambient · 3 stacje</small></div>
+    <div class="mood" style="--c1:#7D3F4C;--c2:#8C4A2E"><div class="t1">Kolacja</div><small>Jazz Jeden · Jazz na wieczór</small></div>
+    <div class="mood" style="--c1:#6B4E8C;--c2:#3D2E6B"><div class="t1">Impreza</div><small>Rock Wieczorem · Mix dla Ciebie</small></div>
+  </div>
+  <div class="abs" style="left:3%;right:3%;bottom:4%;display:flex;gap:.6em"><span class="pill">Całe radio</span><span class="pill">Playlisty</span><span class="pill">Biblioteka</span><span class="pill">⌕ Szukaj</span></div>
+</div></div>
+<ul class="how"><li><b>Jedno OK</b> i gra losowa mieszanka z danego nastroju.</li><li>Nastroje tworzysz sam, przypinając do nich dowolne rzeczy.</li><li>Domyślnie podpowiedź po godzinie, bez „AI”, zwykła reguła.</li></ul>
+<div class="cons"><b>+</b> Najmniej decyzji, dobre dla domowników. <i>−</i> Wymaga skonfigurowania na początku.</div></section>
+
+<!-- 8 -->
+<section class="card"><div class="head"><span class="num">08</span><h2>Trzy warstwy</h2><span class="tag">Wysiłek: duży</span></div>
+<p class="idea">Środek to zawsze „Teraz gra”. <kbd>←</kbd> odsłania Radio, <kbd>→</kbd> Bibliotekę, <kbd>↑</kbd> szukanie. Nie ma menu, nawigujesz kierunkiem jak w grze.</p>
+<div class="frame"><div class="tv">
+  <div class="side l"><h5>Radio</h5><div class="st" style="background:#7D3F4C">J1</div><div class="st foc" style="background:#2E4A7D">KL</div><div class="st" style="background:#3D6E5C">LO</div><div class="st" style="background:#8C6A2E">RW</div></div>
+  <div class="side r"><h5>Biblioteka</h5><div class="cv" style="--c:#6B4E8C"></div><div class="cv" style="--c:#2E7080"></div><div class="cv" style="--c:#7D3F4C"></div><div class="cv" style="--c:#3D6E5C"></div></div>
+  <div class="abs" style="left:50%;top:4%;transform:translateX(-50%)"><span class="pill">↑ Szukaj i ulubione</span></div>
+  <div class="abs" style="left:21%;right:21%;top:16%;display:flex;gap:2em;align-items:center">
+    <div class="cv" style="--c:#2E4A7D;width:15em;height:15em;flex:none;box-shadow:0 1.4em 3em #0009"></div>
+    <div style="min-width:0;flex:1"><div class="t3" style="color:var(--accent);letter-spacing:.14em;text-transform:uppercase;font-weight:600">Teraz gra</div><div class="t1" style="font-size:2em;margin:.2em 0">Latarnie nad rzeką</div><div class="t3" style="font-size:1.05em">Lena Wiatr · Nocne światła</div><div class="bar" style="margin-top:1.1em"><i style="width:38%"></i></div><div class="t3" style="display:flex;justify-content:space-between;margin-top:.3em"><span>1:24</span><span>3:41</span></div></div>
+  </div>
+  <div class="abs" style="left:21%;right:21%;bottom:6%"><div class="t3" style="text-transform:uppercase;letter-spacing:.12em;font-size:.72em;margin-bottom:.5em">Dalej</div><div style="display:flex;gap:.7em"><div class="row" style="flex:1;margin:0"><div class="cv" style="--c:#7D3F4C"></div><b>Port 14</b></div><div class="row" style="flex:1;margin:0"><div class="cv" style="--c:#3D6E5C"></div><b>Cisza</b></div></div></div>
+</div></div>
+<ul class="how"><li>Nie ma „strony głównej”: <b>wracasz do tego, co gra</b>.</li><li>Boczne panele pokazują 4 ulubione bez wchodzenia głębiej.</li><li>Pełne ekrany (Biblioteka, Radio) otwierasz <kbd>OK</kbd> na panelu.</li></ul>
+<div class="cons"><b>+</b> Bardzo „pilotowe”, zawsze wiesz, gdzie jesteś. <i>−</i> Zmienia całą nawigację i wymaga przepisania części ekranów.</div></section>
+
+</div>
+
+<section class="shared">
+<h3>Dwa mechanizmy, które pasują do każdego układu</h3>
+<p>Niezależnie od motywu proponuję dodać je jako warstwę wspólną, bo rozwiązują to, o co pytasz najbardziej.</p>
+<div class="mech">
+<div><b>Szybkie ulubione pod <kbd>Menu</kbd></b><span>Nakładka z 8 ulubionymi stacjami i playlistami, dostępna z każdego ekranu, także w trakcie przeglądania biblioteki.</span></div>
+<div><b>Długie <kbd>OK</kbd> = dodaj do ulubionych</b><span>Na każdej stacji, albumie czy playliście. Zero wchodzenia w ustawienia.</span></div>
+<div><b>Pamięć fokusu</b><span>Wracasz tam, gdzie byłeś w bibliotece, zamiast na początek listy po każdym odtworzeniu.</span></div>
+<div><b>Pasek liter wszędzie</b><span>Długie listy (412 albumów) przewijane literą zamiast setkami naciśnięć <kbd>↓</kbd>.</span></div>
+</div>
+</section>
+
+<section class="reco">
+<h3>Moja rekomendacja</h3>
+<p>Zostaw obecny ekran startowy i zbuduj wokół niego <b>#4 Dok ulubionych</b> (zastępuje boczne menu), <b>#2 Przyciski 1–9</b> jako stronę w doku i <b>#5 Szukaj na żywo</b> zamiast obecnego wyszukiwania. To trzy małe i średnie zmiany, które razem rozwiązują „szybciej do ulubionych” i „inne wyszukiwanie”. Biblioteka może dostać widok <b>#6 Półka z płytami</b> jako przełącznik obok siatki.</p>
+<p>Jeśli wolisz odważniejszy kierunek, <b>#7 Nastroje</b> jest najbardziej nieszablonowy i najlepiej pasuje do telewizora w salonie, gdzie nikt nie chce przeglądać list.</p>
+</section>
+</div>
+
+<script>
+(function(){
+  // dial ticks
+  var s=document.getElementById('dial'),h='',cx=80,cy=66,R=60;
+  var names=['Klasyka 24','Lo-fi','Jazz Jeden','Rock','Radio 357'];
+  for(var i=0;i<=40;i++){var a=Math.PI*(1+0.1+0.8*i/40),maj=i%8===0,r1=maj?R-7:R-4;
+    h+='<line x1="'+(cx+r1*Math.cos(a)).toFixed(2)+'" y1="'+(cy+r1*Math.sin(a)).toFixed(2)+'" x2="'+(cx+R*Math.cos(a)).toFixed(2)+'" y2="'+(cy+R*Math.sin(a)).toFixed(2)+'" stroke="'+(i===20?'#F5A524':'#2A3140')+'" stroke-width="'+(i===20?1.2:maj?.8:.4)+'"/>';
+    if(maj){var k=i/8,ra=R-13;h+='<text x="'+(cx+ra*Math.cos(a)).toFixed(2)+'" y="'+(cy+ra*Math.sin(a)+1).toFixed(2)+'" fill="'+(k===2?'#F2F4F8':'#9AA3B2')+'" font-size="3.2" font-family="Inter,sans-serif" text-anchor="middle" font-weight="'+(k===2?700:500)+'">'+names[k]+'</text>';}}
+  h+='<circle cx="80" cy="66" r="9" fill="#151922" stroke="#2A3140" stroke-width=".6"/><line x1="80" y1="57" x2="80" y2="12" stroke="#F5A524" stroke-width="1.1" stroke-linecap="round"/>';
+  s.innerHTML=h;
+  // wall
+  var cols=['#2E4A7D','#7D3F4C','#3D6E5C','#6B4E8C','#8C6A2E','#2E7080'],w=document.getElementById('wall'),o='';
+  for(var j=0;j<50;j++)o+='<div class="cv" style="--c:'+cols[(j*5+(j>>3))%6]+'"></div>';
+  w.innerHTML=o;
+  // qr
+  var q=document.getElementById('qr'),p=[1,1,1,0,1,1,1,1,0,1,0,0,0,1,1,1,1,1,1,0,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,1,0,1,1,1,1,1,0,1],qo='';
+  for(var m=0;m<49;m++)qo+='<i class="'+(p[m]?'':'o')+'"></i>';
+  q.innerHTML=qo;
+  // az
+  var az=document.getElementById('az'),t='';
+  'ABCDEFGHIJKLMNOPRSTWZ'.split('').forEach(function(c){t+='<span'+(c==='J'?' style="color:#F5A524;font-weight:700"':'')+'>'+c+'</span>'});
+  az.innerHTML=t;
+})();
+</script>

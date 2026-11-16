@@ -65,3 +65,11 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 - SFix06: własny odtwarzacz rozpoznawany też gdy `player_id` w MA zawiera klucz Sendspin (prefiks/sufiks), nie tylko równość; wpisy o tej samej nazwie dostają w drugiej linii `#<ostatnie 6 znaków id>`. Nic nie jest usuwane z serwera. Czy MA 2.10.12 faktycznie opakowuje id — do potwierdzenia na TV.
 
 - SFix07: w MA 2.10 Sendspin-owy TV to gracz `universal_player` z id `up`+8 hex (nie skrót klucza — sprawdzono MD5/SHA-1/256/512), więc `contains(ownId)` nigdy nie pasuje; własny wpis = brak `cast_uuid`/`ip_address` w `device_info` + `model == Build.MODEL` (remis: wybrany, dostępny, najniższe id), id-match zostaje jako pierwszeństwo. Drugi „Telewizor” to wbudowany Chromecast (`cast_uuid`, `ip_address`) — zostaje na liście z opisem „Chromecast · IP”, nie z `#id`. `PlayerDeviceInfo.address` czyta teraz `ip_address` (wcześniej nie trafiało w pole).
+
+- UI-redesign (16.11.2026): przebudowa interfejsu w obecnym języku wizualnym, bez nowej metafory; pełna specyfikacja i podział na sesje SUI1–SUI9 w `docs/UI-REDESIGN.md`, makiety w `design/concepts/uklady-v2/v3/v4.html`. Runda 1 (`uklady.html`, 8 odważnych układów) odrzucona.
+- UI-redesign: Start = wariant 03B-1 (mini-odtwarzacz na dole, rzędy: ulubione stacje → ulubione playlisty → ostatnio odtwarzane); 03A odrzucony dla spójności.
+- UI-redesign: stacje radiowe mają kwadratowe miniatury w całej aplikacji (ten sam rytm kafli co okładki muzyki).
+- UI-redesign: styl „szkła” z rozmytym tłem z okładki (09A) na wszystkich ekranach, z wyłącznikiem „Jednolite tło”; rozmycie z gotowej bitmapy, bo minSdk 26.
+- UI-redesign: odtwarzacz 40:60; przy radiu w miejscu kolejki ulubione stacje z miniaturami; CH+/CH− = następny utwór / następna ulubiona stacja, kolejność stacji ustawiana w ekranie Radio.
+- UI-redesign: wygaszacz z okładką domyślnie wyłączony — odtwarzacz zostaje na ekranie.
+- UI-redesign: CH± poza aplikacją tylko przez AccessibilityService (ryzyko dla Google Play), osobna ostatnia sesja SUI9 za przełącznikiem w ustawieniach.
