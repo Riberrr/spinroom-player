@@ -74,3 +74,6 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 - UI-redesign: wygaszacz z okładką domyślnie wyłączony — odtwarzacz zostaje na ekranie.
 - UI-redesign: CH± poza aplikacją tylko przez AccessibilityService (ryzyko dla Google Play), osobna ostatnia sesja SUI9 za przełącznikiem w ustawieniach.
 - SUI0: moduły `:feature:radio` i `:feature:playlists` jako stuby (nawigacja jak w HomeScreen), trasy dopiero w SUI2.
+- SUI1: `SpinroomColors.Bg/Surface/SurfaceHigh/Outline/Accent` to teraz composable gettery zależne od motywu (reszta stała); `SpinroomTheme(theme, accent, solidBackground)` przyjmuje id-ki z `Appearance` w `:core:data`.
+- SUI1: tło z treści = Coil `TinyBlurTransformation` (32 px + box blur, cache po URL) + dim 60%, bez `Modifier.blur`; debounce 250 ms oprócz pierwszej wartości.
+- SUI1: nowy kwadratowy `StationTile(name, subtitle, onClick, ...)` obok starego (z `initials`), który zostaje do przepięcia Home w SUI2/SUI3.

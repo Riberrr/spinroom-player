@@ -18,3 +18,10 @@ Layout assumes a 1280×720 dp screen; components use weights so they also hold a
 
 ## Context menu (S14b)
 `FocusSurface/CoverTile/StationTile(onLongClick)` = hold OK. `ItemMenuHost { screen }` (wrap once per screen) provides `LocalItemMenu` — tiles call `LocalItemMenu.current(uri, title)` — and shows `ContextMenu` (Odtwórz następny / Do kolejki / Ulubione). Logic: `ItemMenuViewModel` in `:core:data` (plays on `settings.playerId`; favorite flag via `music/item_by_uri`). Menu strings live in this module.
+
+## Style foundation (SUI1)
+- `SpinroomTheme(theme, accent, solidBackground) { }` — ids from `Appearance` (`:core:data`): themes `grafit` (default), `granat`, `oled`; accents `amber` (default), `mint`, `sky`, `coral`, `lavender`. `SpinroomColors.Bg/Surface/SurfaceHigh/Outline/Accent` are **composable getters** (follow the theme); `Glass` (white 6%), `GlassHigh` (12%), `GlassBorder` are constants. `LocalSolidBackground` mirrors the flag.
+- `GlassSurface(modifier, shape, high)` — non-focusable translucent card/menu/bar. For clickable glass use `FocusSurface(containerColor = SpinroomColors.Glass, focusedContainerColor = SpinroomColors.GlassHigh)`.
+- `ContentBackdrop(imageUrl, modifier, seedColor, solidBackground)` — place first in a full-screen `Box`, content after it. Blurred (32 px bitmap, Coil `TinyBlurTransformation`, cached per URL) + 60% dim, 300 ms crossfade, changes debounced 250 ms (`settleAfterFirst`). Pass the focused item's cover URL (or `seedColor` e.g. `stationColor(name)`). Needs Coil's image loader (the app's).
+- `StationTile(name, subtitle, onClick, size, logoUrl, logo)` — square; no logo → `stationInitials(name)` on `stationColor(name)`. (The older `StationTile(name, provider, initials, …)` chip remains until Home migrates.)
+- `PlaylistMosaic(imageUrls)` 2×2 (<4 URLs → first one, none → placeholder). `ResultRow(title, subtitle, onClick, favorite: Boolean?, thumbnail)` on glass. `FavoriteHeart(filled)`; icons `SpinroomIcons.HeartFilled/HeartOutline`.
