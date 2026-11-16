@@ -41,9 +41,10 @@ private class FakeBackend(val names: List<String>, initial: MaConnectionState = 
     val connectionState = MutableStateFlow(initial)
     val itemCalls = mutableListOf<Int>()
     val pagerTabs = mutableListOf<LibraryTab>()
+    val pagerFilters = mutableListOf<io.github.riberrr.spinroom.core.data.LibraryFilter>()
     override val serverAddress: Flow<String> = address
     override val connection: Flow<MaConnectionState> = connectionState
-    override fun pager(tab: LibraryTab): Flow<PagingData<MediaItem>> { pagerTabs += tab; return emptyFlow() }
+    override fun pager(tab: LibraryTab, filter: io.github.riberrr.spinroom.core.data.LibraryFilter): Flow<PagingData<MediaItem>> { pagerTabs += tab; pagerFilters += filter; return emptyFlow() }
     override suspend fun count(tab: LibraryTab) = if (tab == LibraryTab.Albums) names.size else 7
     override suspend fun itemAt(tab: LibraryTab, offset: Int): MediaItem? {
         itemCalls += offset
@@ -188,5 +189,51 @@ class LibraryViewModelTest {
             as PagingSource.LoadResult.Page
         assertNull(tail.nextKey)
         assertEquals(0, tail.itemsAfter)
+    }
+
+    @Test fun `filters toggle, reload the pager with the new filter and clear`() = runTest {
+        val backend = FakeBackend(names)
+        val vm = LibraryViewModel(backend)
+        backgroundScope.launch { vm.items.collect {} }
+        runCurrent()
+        assertTrue(backend.pagerFilters.last().isEmpty)
+
+        vm.onToggleGenre(FilterOption("5", "Jazz"))
+        vm.onToggleDecade(1990)
+        vm.onToggleFavoritesOnly()
+        runCurrent()
+        val f = backend.pagerFilters.last()
+        assertEquals("5", f.genreId)
+        assertEquals(1990, f.decade)
+        assertTrue(f.favoriteOnly)
+        assertEquals(3, vm.state.value.filter.activeCount)
+
+        vm.onToggleDecade(1990) // second press deselects
+        runCurrent()
+        assertEquals(null, vm.state.value.filter.decade)
+        vm.onClearFilters()
+        runCurrent()
+        assertTrue(backend.pagerFilters.last().isEmpty)
+    }
+
+    @Test fun `letter jump is ignored while a filter is active`() = runTest {
+        val vm = LibraryViewModel(FakeBackend(names))
+        runCurrent()
+        vm.onToggleFavoritesOnly()
+        val target = async { vm.scrollTo.first() }
+        vm.onJumpToLetter("D")
+        runCurrent()
+        assertTrue(target.isActive)
+        target.cancel()
+    }
+
+    @Test fun `preview summarizes tracks`() {
+        val tracks = listOf(
+            MediaItem(name = "A", duration = 200), MediaItem(name = "B", duration = 250), MediaItem(name = "C", duration = null),
+        )
+        val p = previewOf(album("X").toRow("a"), tracks)
+        assertEquals(3, p.trackCount)
+        assertEquals(listOf(1, 2, 3), p.tracks.map { it.number })
+        assertEquals(8, p.totalMinutes) // 450 s -> 7.5 -> 8
     }
 }
