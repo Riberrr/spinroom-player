@@ -18,4 +18,9 @@ adb: `C:/Users/lukas/AppData/Local/Android/Sdk/platform-tools/adb.exe`. Build be
 Na TV lista pokazuje „To urządzenie” na własnym odtwarzaczu (zweryfikowane uiautomator dump), `bash scripts/check.sh` czyste (lint może paść na `local.properties` — środowisko), PR otwarty, nie scalony. W „Wynik”: jakie jest realne id w MA i co sprawdzone na TV.
 
 ## Wynik
-_(uzupełnia sesja)_
+Realne id w MA 2.10.12: własny TV to `up6b461d4c` (provider `universal_player`, device_info bez ip/mac/identifiers), NIE klucz Sendspin ani jego skrót (MD5/SHA-1/256/512 sprawdzone na TV). Drugi „Telewizor” `up31735a7e` to wbudowany Chromecast TV (cast_uuid, ip_address, mac).
+- `resolveOwnPlayerId` (PlayerRows.kt): najpierw dopasowanie po id (equals/contains), potem heurystyka: bez cast_uuid/ip_address, model == `Build.MODEL`, provider != sendspin; remis → wybrany, dostępny, najniższe id. `buildPlayerRows(..., ownModel)`.
+- Model: `PlayerDeviceInfo.address` = `ip_address` (wcześniej zły klucz), `identifiers: JsonElement?`, `isChromecast`. Chromecast ma drugą linię „Chromecast · IP”, bez `#id`.
+- Testy JVM na zanonimizowanych JSON-ach obu wpisów (PlayerRowsTest); `scripts/check.sh` zielone. Logi debug (TEMP-SFIX07) usunięte.
+- Na TV: log `players:`/`rawplayer:` zebrał koordynator; weryfikacja końcowa listy (uiautomator) po instalacji tego PR — do zrobienia przez koordynatora.
+- Pułapka: heurystyka opiera się na modelu zgłaszanym przez Sendspin (`Build.MODEL`); inny TV bez zgodnego modelu nie dostanie „To urządzenie”.

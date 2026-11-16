@@ -63,3 +63,5 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 - SFix05: Back w menu bocznym działa, bo handler powłoki jest komponowany tylko przy fokusie menu (najnowszy handler wygrywa z NavHostem); "Albumy · 0" to puste dane serwera, nie błąd klienta — chip pokazuje 0 po zakończonym pustym ładowaniu.
 
 - SFix06: własny odtwarzacz rozpoznawany też gdy `player_id` w MA zawiera klucz Sendspin (prefiks/sufiks), nie tylko równość; wpisy o tej samej nazwie dostają w drugiej linii `#<ostatnie 6 znaków id>`. Nic nie jest usuwane z serwera. Czy MA 2.10.12 faktycznie opakowuje id — do potwierdzenia na TV.
+
+- SFix07: w MA 2.10 Sendspin-owy TV to gracz `universal_player` z id `up`+8 hex (nie skrót klucza — sprawdzono MD5/SHA-1/256/512), więc `contains(ownId)` nigdy nie pasuje; własny wpis = brak `cast_uuid`/`ip_address` w `device_info` + `model == Build.MODEL` (remis: wybrany, dostępny, najniższe id), id-match zostaje jako pierwszeństwo. Drugi „Telewizor” to wbudowany Chromecast (`cast_uuid`, `ip_address`) — zostaje na liście z opisem „Chromecast · IP”, nie z `#id`. `PlayerDeviceInfo.address` czyta teraz `ip_address` (wcześniej nie trafiało w pole).

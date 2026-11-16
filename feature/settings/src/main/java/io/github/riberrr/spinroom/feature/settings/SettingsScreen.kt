@@ -147,7 +147,9 @@ private fun ServerList(ui: SettingsUiState, onPick: (DiscoveredServer) -> Unit) 
 /** "model · address" from MA's device info; null when MA sends neither. */
 internal fun playerDetail(player: Player, shortId: String? = null): String? {
     val info = player.deviceInfo
-    return listOfNotNull(info?.model, info?.address, shortId?.let { "#$it" })
+    // A built-in Chromecast shares the TV's name and model: label it as such instead of showing a bare id.
+    val first = if (info?.isChromecast == true) "Chromecast" else info?.model
+    return listOfNotNull(first, info?.address, shortId?.let { "#$it" })
         .map { it.trim() }
         .filter { it.isNotEmpty() }
         .distinct()
@@ -160,7 +162,7 @@ internal fun playerDetail(player: Player, shortId: String? = null): String? {
 private fun PlayerList(ui: SettingsUiState, onPick: (Player) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.settings_player_title), color = SpinroomColors.TextSecondary)
-        val rows = remember(ui.players, ui.ownPlayerId, ui.playerId) { buildPlayerRows(ui.players, ui.ownPlayerId, ui.playerId) }
+        val rows = remember(ui.players, ui.ownPlayerId, ui.playerId) { buildPlayerRows(ui.players, ui.ownPlayerId, ui.playerId, android.os.Build.MODEL) }
         if (rows.isEmpty()) Text(stringResource(R.string.settings_player_none), color = SpinroomColors.TextSecondary)
         rows.forEach { row ->
             val player = row.player

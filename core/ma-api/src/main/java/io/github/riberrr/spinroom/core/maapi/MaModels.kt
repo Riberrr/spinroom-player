@@ -119,8 +119,13 @@ data class Player(
 data class PlayerDeviceInfo(
     val model: String? = null,
     val manufacturer: String? = null,
-    val address: String? = null,
-)
+    @SerialName("ip_address") val address: String? = null,
+    /** Raw MA identifiers (uuid, cast_uuid, mac...); shape varies by provider, so kept as JSON. */
+    val identifiers: JsonElement? = null,
+) {
+    /** True for a built-in Chromecast entry (MA gives it a `cast_uuid`), which is not a Sendspin player. */
+    val isChromecast: Boolean get() = identifiers?.toString()?.contains("cast_uuid") == true
+}
 
 @Serializable
 data class QueueItem(
