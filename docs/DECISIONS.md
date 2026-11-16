@@ -61,3 +61,5 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 - SFix04d: ANR przy starcie debug i BindException 8928 nie odtwarzają się na `main` (fallback na 8929 działa); bez zmian w kodzie, tylko opis.
 
 - SFix05: Back w menu bocznym działa, bo handler powłoki jest komponowany tylko przy fokusie menu (najnowszy handler wygrywa z NavHostem); "Albumy · 0" to puste dane serwera, nie błąd klienta — chip pokazuje 0 po zakończonym pustym ładowaniu.
+
+- SFix06: własny odtwarzacz rozpoznawany też gdy `player_id` w MA zawiera klucz Sendspin (prefiks/sufiks), nie tylko równość; wpisy o tej samej nazwie dostają w drugiej linii `#<ostatnie 6 znaków id>`. Nic nie jest usuwane z serwera. Czy MA 2.10.12 faktycznie opakowuje id — do potwierdzenia na TV.

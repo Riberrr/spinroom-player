@@ -16,4 +16,5 @@ adb: `C:/Users/lukas/AppData/Local/Android/Sdk/platform-tools/adb.exe`. Emulator
 `bash scripts/check.sh` czyste (lint może paść na `local.properties` — środowisko; build bez niego: `ANDROID_HOME=C:/Users/lukas/AppData/Local/Android/Sdk`), PR otwarty, nie scalony. W „Wynik” opisz, co sprawdzone testem, a co wymaga próby na TV.
 
 ## Wynik
-_(uzupełnia sesja)_
+Własny odtwarzacz: `isOwnPlayerId` (PlayerRows.kt) dopasowuje `player_id` do `identity.id` przez równość lub zawieranie klucza (warianty z prefiksem/sufiksem), więc dostaje „To urządzenie” i jest pierwszy. Duplikaty nazw: `PlayerRow.shortId` (`#` + 6 ostatnich znaków id) w drugiej linii obok modelu/adresu. Testy JVM: prefiks/sufiks, nie-własne id, duplikaty (`:feature:settings:testDebugUnitTest` zielone).
+Nie zweryfikowane: dokumentacja nie mówi, jak MA nazywa gracza Sendspin; jeśli id w MA jest czymś innym niż klucz (np. hash), dopasowanie nadal nie zadziała — wymaga próby na TV (log `player id set to this TV` vs `players/all`). Emulator niezmieniany, MA go nie widzi (NAT). Dwa wpisy „Telewizor” prawdopodobnie znikną po odinstalowaniu debug (stary wpis nieaktywny jest ukryty, chyba że wybrany).
