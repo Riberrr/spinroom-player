@@ -13,12 +13,8 @@ import io.github.riberrr.spinroom.core.maapi.MaClient
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.MediaTypes
-import io.github.riberrr.spinroom.core.maapi.PlayerQueue
-import io.github.riberrr.spinroom.core.maapi.RecommendationFolder
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
@@ -32,8 +28,6 @@ interface HomeBackend {
     val playerId: Flow<String>
     val serverAddress: Flow<String>
 
-    fun queue(queueId: String): Flow<PlayerQueue>
-
     /** Emits whenever the library changed on the server (favorite toggled, item added/removed). */
     val libraryChanges: Flow<Unit> get() = emptyFlow()
 
@@ -41,9 +35,6 @@ interface HomeBackend {
     suspend fun playlists(): List<MediaItem>
     suspend fun favoriteRadios(): List<MediaItem>
 
-    /** Favorite albums, artists and playlists (not radio). */
-    suspend fun favorites(): List<MediaItem> = emptyList()
-    suspend fun recommendations(): List<RecommendationFolder>
     suspend fun play(queueId: String, uri: String)
 }
 
@@ -62,21 +53,13 @@ class MaHomeBackend @Inject constructor(
     override val playerId = settings.settings.map { it.playerId }
     override val serverAddress = settings.settings.map { it.serverAddress }
 
-    override fun queue(queueId: String) = players.queue(queueId)
-
     override val libraryChanges: Flow<Unit> = client.events
         .filter { it.event == "media_item_updated" || it.event == "media_item_added" || it.event == "media_item_deleted" }
         .map { }
 
     override suspend fun recentlyPlayed() = browse.recentlyPlayed(ROW_LIMIT)
-    override suspend fun playlists() = library.items(MediaTypes.PLAYLISTS, limit = ROW_LIMIT, orderBy = "name")
+    override suspend fun playlists() = library.items(MediaTypes.PLAYLISTS, limit = ROW_LIMIT, favorite = true, orderBy = "name")
     override suspend fun favoriteRadios() = library.items(MediaTypes.RADIOS, limit = ROW_LIMIT, favorite = true, orderBy = "name")
-    override suspend fun favorites(): List<MediaItem> = coroutineScope {
-        listOf(MediaTypes.ALBUMS, MediaTypes.ARTISTS, MediaTypes.PLAYLISTS)
-            .map { type -> async { runCatching { library.items(type, limit = ROW_LIMIT, favorite = true, orderBy = "name") }.getOrDefault(emptyList()) } }
-            .flatMap { it.await() }
-    }
-    override suspend fun recommendations() = browse.recommendations()
     override suspend fun play(queueId: String, uri: String) = players.api.playMedia(queueId, listOf(uri), option = "replace")
 
     private companion object {
