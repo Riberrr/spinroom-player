@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g, SFix04a–d, SFix05–07 (15–16.11.2026, PR #26–#42). Ostatni tag: v1.0.1._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SUI0 (16.11.2026, PR #45); wcześniej SFix03–07. Przebudowa UI trwa wg `docs/UI-SESSIONS.md`. Ostatni tag: v1.0.1._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -21,7 +21,7 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g, SFix04
 - Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione spoza biblioteki, `start_item`).
 
 ## W toku
-- Nic otwartego. Zostaje tag v1.0.2 i test na TV 10.0.0.6: Teraz odtwarzane, mini-odtwarzacz, granie z MA, pilot (patrz koniec `docs/sessions/SFix03-plan.md`).
+- SUI1 (fundament stylu) w toku. Moduły `:feature:radio`, `:feature:playlists` to stuby (SUI0). Zostaje tag v1.0.2 i test na TV 10.0.0.6.
 
 ## Następne
 - Tag v1.0.0 — czeka na 4 sekrety SIGNING_* w GitHub (bez nich release.yml kończy się błędem). Przed instalacją v1.0 odinstalować v0.x z TV. Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
