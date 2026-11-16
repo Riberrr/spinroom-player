@@ -38,7 +38,7 @@ data class MiniPlayerState(
     val durationMs: Long,
 )
 
-private fun formatTime(ms: Long): String {
+internal fun formatTime(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)
     return "%d:%02d".format(s / 60, s % 60)
 }
@@ -103,7 +103,7 @@ fun ProgressBar(positionMs: Long, durationMs: Long, modifier: Modifier = Modifie
 }
 
 @Composable
-private fun RoundIconButton(
+internal fun RoundIconButton(
     icon: ImageVector,
     description: String,
     onClick: () -> Unit,

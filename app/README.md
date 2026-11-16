@@ -8,3 +8,8 @@ Entry point. `MainActivity` starts `SpinroomPlaybackService` (S05) and hosts Com
 - `SpinroomApp` implements `PlaybackHost` (`:core:audio`): Sendspin credentials from `:core:data`, version, notification icon; on the first MA activation it sets `settings.playerId` to this TV's Sendspin client id if no player was chosen. The S03 debug starter (`app/src/debug`) is gone.
 - Network security config allows cleartext (SFix02): MA in the home network is plain `http`/`ws` at a user-typed address.
 - `SpinroomShell`: Up/Down never leave the screen content for the side menu (SFix02); Left opens the menu.
+
+## Shell (SUI2)
+- `SpinroomShell`: menu Start/Radio/Playlisty/Biblioteka/Szukaj + Ustawienia, "Przypięte" = first 5 favorite stations then playlists (`ShellViewModel`; station click plays, playlist opens details). Routes `radio`, `playlists` (stubs from SUI0). Sources reachable from Start only.
+- `ShellDock` = `PlayerDock` bound to the activity-scoped `NowPlayingViewModel` (right list: next 3 queue items, or 4 favorite stations while radio plays).
+- `RemoteKeyDispatcher(handler, bindings)` — keys → `RemoteAction` via `KeyBindings` (default `DefaultKeyBindings`: hold Play/Pause = drawer, CH+/CH− = next/previous track or favorite station). SUI8b swaps `bindings`.

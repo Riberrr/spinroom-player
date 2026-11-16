@@ -31,7 +31,10 @@ import io.github.riberrr.spinroom.core.design.SideMenu
 import io.github.riberrr.spinroom.core.design.SideMenuItem
 import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.design.SpinroomIcons
-import io.github.riberrr.spinroom.feature.nowplaying.NowPlayingMiniPlayer
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
+import io.github.riberrr.spinroom.core.design.PinnedEntry
 
 /**
  * App chrome: side menu on the left, [content] (the nav host) in the middle, mini player at the bottom.
@@ -44,6 +47,14 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val menuFocus = remember { FocusRequester() }
     val contentFocus = remember { FocusRequester() }
     val screenFocus = remember { FocusRequester() }
+    val dockFocus = remember { FocusRequester() }
+    val shell: ShellViewModel = hiltViewModel()
+    val stations by shell.stations.collectAsState()
+    val playlists by shell.playlists.collectAsState()
+    val pinned = remember(stations, playlists) { pinnedOf(stations, playlists) }
+    val radioLabel = stringResource(R.string.pinned_radio)
+    val playlistLabel = stringResource(R.string.pinned_playlist)
+    LaunchedEffect(Unit) { shell.openDrawer.collect { runCatching { dockFocus.requestFocus() } } }
     var menuHasFocus by remember { mutableStateOf(false) }
     var menuOpenedByUser by remember { mutableStateOf(false) }
     var leftEdgeHit by remember { mutableStateOf(false) }
@@ -51,8 +62,9 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
     val items = listOf(
         SideMenuItem(Routes.HOME, stringResource(R.string.menu_home), SpinroomIcons.Home),
+        SideMenuItem(Routes.RADIO, stringResource(R.string.menu_radio), SpinroomIcons.Radio),
+        SideMenuItem(Routes.PLAYLISTS, stringResource(R.string.menu_playlists), SpinroomIcons.Playlists),
         SideMenuItem(Routes.LIBRARY, stringResource(R.string.menu_library), SpinroomIcons.Library),
-        SideMenuItem(Routes.SOURCES, stringResource(R.string.menu_sources), SpinroomIcons.Sources),
         SideMenuItem(Routes.SEARCH, stringResource(R.string.menu_search), SpinroomIcons.Search),
     )
     val bottom = listOf(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
@@ -80,9 +92,17 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 }
             },
             bottomItems = bottom,
+            pinned = pinned.map { PinnedEntry(it.uri, it.name, if (it.isStation) radioLabel else playlistLabel, it.imageUrl, it.isStation) },
+            pinnedTitle = stringResource(R.string.menu_pinned),
+            onSelectPinned = { entry ->
+                val fav = pinned.firstOrNull { it.uri == entry.id } ?: return@SideMenu
+                runCatching { screenFocus.requestFocus() }
+                if (fav.isStation) shell.playStation(fav.uri) else navController.navigate(Routes.details(fav.uri))
+            },
             enterFocusRequester = menuFocus,
             onFocusChange = {
                 menuHasFocus = it
+                if (it) shell.refresh()
                 if (it && !menuOpenedByUser) {
                     // Focus fell into the menu because a focused control vanished: keep it in the content.
                     runCatching { contentFocus.requestFocus() }
@@ -127,7 +147,11 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 // Only the screen is restored; the mini player sits outside so it is never the restore target.
                 Column(Modifier.weight(1f).focusRequester(screenFocus).focusRestorer()) { content() }
                 if (route != Routes.NOW_PLAYING) {
-                    NowPlayingMiniPlayer(onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } })
+                    ShellDock(
+                        barFocus = dockFocus,
+                        onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } },
+                        onCollapse = { runCatching { screenFocus.requestFocus() } },
+                    )
                 }
             }
         }

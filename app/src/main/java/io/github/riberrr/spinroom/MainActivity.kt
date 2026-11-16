@@ -10,6 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.activity.viewModels
+import io.github.riberrr.spinroom.feature.nowplaying.NowPlayingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.riberrr.spinroom.core.audio.service.SpinroomPlaybackService
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
@@ -20,6 +22,18 @@ class MainActivity : ComponentActivity() {
     private var inputTick by mutableIntStateOf(0)
     private var screensaver by mutableStateOf(false)
     private var swallowKeyUp = false
+    private val shell: ShellViewModel by viewModels()
+    private val nowPlaying: NowPlayingViewModel by viewModels()
+
+    private val remote = RemoteKeyDispatcher(object : RemoteHandler {
+        private val ui get() = nowPlaying.state.value
+        override val radioPlaying get() = ui.hasTrack && ui.isRadio
+        override fun openDrawer() = shell.requestDrawer()
+        override fun nextTrack() = nowPlaying.onNext()
+        override fun previousTrack() = nowPlaying.onPrevious()
+        override fun nextStation() { if (!shell.stepStation(ui.mediaUri, ui.mediaName, true)) nowPlaying.onNext() }
+        override fun previousStation() { if (!shell.stepStation(ui.mediaUri, ui.mediaName, false)) nowPlaying.onPrevious() }
+    })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +63,7 @@ class MainActivity : ComponentActivity() {
             swallowKeyUp = false
             return true
         }
+        if (remote.dispatch(KeyPress(event.keyCode, event.action == KeyEvent.ACTION_DOWN, event.repeatCount))) return true
         return super.dispatchKeyEvent(event)
     }
 }

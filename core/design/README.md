@@ -25,3 +25,8 @@ Layout assumes a 1280×720 dp screen; components use weights so they also hold a
 - `ContentBackdrop(imageUrl, modifier, seedColor, solidBackground)` — place first in a full-screen `Box`, content after it. Blurred (32 px bitmap, Coil `TinyBlurTransformation`, cached per URL) + 60% dim, 300 ms crossfade, changes debounced 250 ms (`settleAfterFirst`). Pass the focused item's cover URL (or `seedColor` e.g. `stationColor(name)`). Needs Coil's image loader (the app's).
 - `StationTile(name, subtitle, onClick, size, logoUrl, logo)` — square; no logo → `stationInitials(name)` on `stationColor(name)`. (The older `StationTile(name, provider, initials, …)` chip remains until Home migrates.)
 - `PlaylistMosaic(imageUrls)` 2×2 (<4 URLs → first one, none → placeholder). `ResultRow(title, subtitle, onClick, favorite: Boolean?, thumbnail)` on glass. `FavoriteHeart(filled)`; icons `SpinroomIcons.HeartFilled/HeartOutline`.
+
+## Shell (SUI2)
+- `SideMenu(…, pinned: List<PinnedEntry>, pinnedTitle, onSelectPinned)` — expanded menu shows a "Przypięte" list (thumb + title + subtitle); more compact rows so 5 pinned + 5 items + settings fit 540 dp. Icons `SpinroomIcons.Radio`, `Playlists`.
+- `PlayerDock(state, coverUrl, isRadio, favorite, entries, entriesTitle, onPrevious/onPlayPause/onNext/onFavorite/onOpenNowPlaying/onEntryClick, onCollapse, barFocus, labels, onExpandedChange)` — 80 dp glass bar; focus entering it unfolds a 240 dp panel over the content (blurred cover backdrop, controls left, `DockEntry` list right). Owns "expanded" = focus inside; `onCollapse` (Back, `DOCK_IDLE_MS` = 8 s idle) must move focus out. `DockEntry`, `DockLabels`.
+- `EntryThumb(name, imageUrl, isStation)` — small square thumbnail with station initials / cover placeholder fallback.
