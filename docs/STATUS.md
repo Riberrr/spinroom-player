@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + raport SFix03v (15.11.2026, PR #26–#38, SFix04a–d). Ostatni tag: v1.0.1._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g, SFix04a–d, SFix05–07 (15–16.11.2026, PR #26–#42). Ostatni tag: v1.0.1._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -21,7 +21,7 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + rapor
 - Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione spoza biblioteki, `start_item`).
 
 ## W toku
-- Nic otwartego. Kandydaci na SFix05 (Back z menu w Ustawieniach, „Albumy · 0”) i test na TV 10.0.0.6 — patrz koniec `docs/sessions/SFix03-plan.md`.
+- Nic otwartego. Zostaje tag v1.0.2 i test na TV 10.0.0.6: Teraz odtwarzane, mini-odtwarzacz, granie z MA, pilot (patrz koniec `docs/sessions/SFix03-plan.md`).
 
 ## Następne
 - Tag v1.0.0 — czeka na 4 sekrety SIGNING_* w GitHub (bez nich release.yml kończy się błędem). Przed instalacją v1.0 odinstalować v0.x z TV. Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
@@ -35,6 +35,6 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SFix03a–g + rapor
 - `docs/DECISIONS.md` — konflikty przy każdym równoległym PR, rozwiązywać sumą linii.
 - `Text` poza `Surface` jest czarny. Emulator: gęstość 480 → 1280 dp. Bit +x dla `gradlew`/`scripts/*.sh`.
 - Autostart wymaga jednego ręcznego uruchomienia po instalacji; Android 15+ blokuje start usługi z BOOT_COMPLETED.
-- Debug i release naraz: port Sendspin 8928 — SFix03a dodał wybór wolnego portu; debug na emulatorze nadal ANR-uje przy starcie (SFix04d). Emulator: Wi-Fi po restarcie `cmd wifi connect-network AndroidWifi open`; VPN na hoście blokują jego sieć.
+- Debug i release naraz: port Sendspin 8928 — SFix03a dodał wybór wolnego portu; debug na emulatorze nadal ANR-uje przy starcie (SFix04d). MA nadaje własnemu graczowi id `up`+hex (nie klucz Sendspin) — własny wpis po `device_info`. Emulator: Wi-Fi po restarcie `cmd wifi connect-network AndroidWifi open`; VPN na hoście blokują jego sieć.
 - Sygnał testowy kalibracji przez MA niesprawdzony (TV nie był zalogowany).
 - Przytrzymanie OK na pilocie i usuwanie ulubionych spoza biblioteki niesprawdzone.
