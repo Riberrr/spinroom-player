@@ -32,6 +32,27 @@ class PlayerRowsTest {
         assertEquals(listOf("tv", "a"), rows.map { it.player.playerId })
     }
 
+    @Test fun ownIdMatchedWithPrefixOrSuffix() {
+        val key = "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-AbCdE"
+        for (id in listOf(key, "sendspin-$key", "ma_${key}_1")) {
+            val rows = buildPlayerRows(listOf(p("other", "Salon"), p(id, "Telewizor")), ownId = key, selectedId = "other")
+            assertEquals(id, rows[0].player.playerId)
+            assertTrue(rows[0].isOwn)
+            assertFalse(rows[1].isOwn)
+        }
+    }
+
+    @Test fun unrelatedIdNotOwn() {
+        assertFalse(isOwnPlayerId("abc", "abcd"))
+        assertFalse(isOwnPlayerId("abc", ""))
+    }
+
+    @Test fun duplicateNamesGetShortId() {
+        val rows = buildPlayerRows(listOf(p("id-111111", "Telewizor"), p("id-222222", "Telewizor"), p("x", "Salon")), ownId = "", selectedId = "")
+        assertEquals(listOf("111111", "222222"), rows.filter { it.player.name == "Telewizor" }.map { it.shortId })
+        assertEquals(null, rows.first { it.player.name == "Salon" }.shortId)
+    }
+
     @Test fun blankOwnIdMarksNothing() {
         val rows = buildPlayerRows(listOf(p("", "Bez id")), ownId = "", selectedId = "z")
         assertFalse(rows.single().isOwn)

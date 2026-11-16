@@ -145,9 +145,9 @@ private fun ServerList(ui: SettingsUiState, onPick: (DiscoveredServer) -> Unit) 
 }
 
 /** "model · address" from MA's device info; null when MA sends neither. */
-internal fun playerDetail(player: Player): String? {
-    val info = player.deviceInfo ?: return null
-    return listOfNotNull(info.model, info.address)
+internal fun playerDetail(player: Player, shortId: String? = null): String? {
+    val info = player.deviceInfo
+    return listOfNotNull(info?.model, info?.address, shortId?.let { "#$it" })
         .map { it.trim() }
         .filter { it.isNotEmpty() }
         .distinct()
@@ -176,7 +176,7 @@ private fun PlayerList(ui: SettingsUiState, onPick: (Player) -> Unit) {
                 Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                     Text(player.name.ifBlank { player.playerId }, color = SpinroomColors.TextPrimary)
                     // Second line tells apart players with the same name (e.g. two "Telewizor"), from MA's device info.
-                    playerDetail(player)?.let {
+                    playerDetail(player, row.shortId)?.let {
                         Text(it, color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
                     }
                     note?.let {
