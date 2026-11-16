@@ -20,7 +20,7 @@ W fali 2 tylko SUI2 zmienia `:core:design`; SUI3 i SUI5 zgłaszają braki w „W
 | ✓ | Sesja | Plik | Zależy od | Model | Effort |
 | --- | --- | --- | --- | --- | --- |
 | ✓ | SUI0 Moduły Radio i Playlisty | `SUI0-modules.md` | — | haiku | low |
-| | SUI1 Fundament stylu | `SUI1-design-foundation.md` | — | **opus** | high |
+| ✓ | SUI1 Fundament stylu | `SUI1-design-foundation.md` | — | **opus** | high |
 | | SUI2 Szkielet, menu, wysuwany odtwarzacz, pilot | `SUI2-shell.md` | SUI0, SUI1 | **opus** | high |
 | | SUI3 Start 03B-1 | `SUI3-home.md` | SUI1 | sonnet | medium |
 | | SUI5 Playlisty + Biblioteka + filtry | `SUI5-playlists-library.md` | SUI0, SUI1 | sonnet | medium |
