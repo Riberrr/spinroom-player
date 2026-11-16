@@ -78,6 +78,8 @@ dependencies {
     implementation(project(":feature:sources"))
     implementation(project(":feature:search"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:radio"))
+    implementation(project(":feature:playlists"))
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.android)

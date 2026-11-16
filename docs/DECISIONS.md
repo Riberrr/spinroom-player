@@ -73,3 +73,4 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 - UI-redesign: odtwarzacz 40:60; przy radiu w miejscu kolejki ulubione stacje z miniaturami; CH+/CH− = następny utwór / następna ulubiona stacja, kolejność stacji ustawiana w ekranie Radio.
 - UI-redesign: wygaszacz z okładką domyślnie wyłączony — odtwarzacz zostaje na ekranie.
 - UI-redesign: CH± poza aplikacją tylko przez AccessibilityService (ryzyko dla Google Play), osobna ostatnia sesja SUI9 za przełącznikiem w ustawieniach.
+- SUI0: moduły `:feature:radio` i `:feature:playlists` jako stuby (nawigacja jak w HomeScreen), trasy dopiero w SUI2.

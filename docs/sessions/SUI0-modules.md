@@ -10,4 +10,9 @@
 `bash scripts/check.sh` czyste, PR otwarty. Bez testów na emulatorze.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Działa: `:feature:radio` (`RadioScreen`) i `:feature:playlists` (`PlaylistsScreen`) jako stuby na tle `SpinroomColors.Bg`, teksty „Radio” / „Playlisty” z `strings.xml`. Oba w `settings.gradle.kts`; `app/build.gradle.kts` ma na nie zależności. Każdy ma `build.gradle.kts` i README.
+- Publiczne API: `RadioScreen(modifier, onOpenNowPlaying, onOpenSources, onOpenDetails, onOpenSettings)` i `PlaylistsScreen(...)` z tymi samymi parametrami co `HomeScreen`. Trasy nie są podpięte w `:app` (SUI2).
+- Weryfikacja: `assembleDebug assembleRelease testDebugUnitTest` zielone. `lintDebug` pada wyłącznie przez lokalny `local.properties` (reguła PropertyEscape na ścieżce Windows). Nie wynika z kodu; plik nie jest commitowany.
+- Pułapka: `ANDROID_HOME` nie wystarcza, gdy lint czyta `local.properties`; trzeba go usunąć albo zmienić ścieżkę na czystym środowisku.
+- Emulator nie używany (sesja bez testów wyglądu).
+- Dalej: SUI2 wypełnia ekrany i podpina trasy.

@@ -32,4 +32,5 @@ include(":core:design", ":core:sendspin", ":core:audio", ":core:ma-api", ":core:
 include(
     ":feature:nowplaying", ":feature:home", ":feature:library", ":feature:details",
     ":feature:sources", ":feature:search", ":feature:settings",
+    ":feature:radio", ":feature:playlists",
 )
