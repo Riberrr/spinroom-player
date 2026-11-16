@@ -55,6 +55,7 @@ Fala 7  S15 wydajność ──► S16 wydanie  ══► tag v1.0.0
 | ✅ | S15 Wydajność | `S15-performance.md` | wszystkie ekrany | Sonnet | — |
 | ✅ | S16 Wydanie 1.0 | `S16-release.md` | S15 | Sonnet | **v1.0.0** |
 | — | SFix Poprawki z testów na TV | `SFix-template.md` | dowolna | Sonnet | patch `x.y.z` |
+| — | SUI — przebudowa UI → docs/UI-SESSIONS.md | `UI-SESSIONS.md` | S16 | wg tabeli | **v1.1.0** |
 
 ## Twoje zadania (poza Claude)
 
