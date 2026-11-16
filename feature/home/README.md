@@ -1,25 +1,23 @@
 # :feature:home
 
-Screen "Start". Package `io.github.riberrr.spinroom.feature.home`. Follows the screen pattern from `:feature:nowplaying/README.md`.
+Screen "Start" (variant 03B-1). Package `io.github.riberrr.spinroom.feature.home`. Follows the screen pattern from `:feature:nowplaying/README.md`.
 Depends on `:core:design`, `:core:data` (+ Coil 3 for covers).
 
 ## Public API
-- `HomeScreen(modifier, onOpenNowPlaying, onOpenSources, onOpenDetails(itemUri), viewModel)` — stateful, route `home`. Callbacks are wired in `SpinroomNavHost`.
+- `HomeScreen(modifier, onOpenNowPlaying, onOpenSources, onOpenDetails(itemUri), onOpenSettings, onOpenRadio, onOpenPlaylists, viewModel)` — stateful, route `home`.
+  `onOpenRadio` defaults to `onOpenSources`, `onOpenPlaylists` to a no-op until `:app` wires the Radio / Playlists routes (SUI2).
 - `HomeContent(state, actions)` — stateless UI with `@Preview`s; `HomeActions` bundles the callbacks.
 - `HomeViewModel` (Hilt) over `HomeBackend` (interface + `MaHomeBackend` + `HomeModule`).
+- `HomeRow` / `DEFAULT_ROW_ORDER` / `HomeUiState.visibleRows` — row order (TODO(SUI8a): read it from the appearance preferences).
 
 ## Behaviour
-- Top row: "Kontynuuj słuchanie" card (current item of the chosen player's queue, live; click = now playing; hidden when nothing plays),
-  "Radio" card and "YouTube Music" card (both open `sources`; the latter only when YouTube Music recommendations exist).
-- Rows: recently played (`music/recently_played_items`), playlists (library, by name), favorite stations (library radios, `favorite=true`),
-  "Polecane z YouTube Music" (flattened `music/recommendations` folders whose provider contains `ytmusic`; row hidden otherwise).
-- Tiles open details (`Routes.details(uri)`); station tiles play immediately with `play_media(option=replace)` on `settings.playerId` (no-op without a player).
-- Loads when the connection becomes `Connected` and on retry; each row fails independently, error state only if all calls fail.
-- Refresh: quiet reload on `ON_RESUME` and on MA `media_item_*` events (debounced); failed rows keep their old content.
-- States: no server saved → "Połącz się z serwerem" + button to Settings (`onOpenSettings`); connecting → "Łączę z serwerem…"; failed → error with retry.
-- Focus: last focused tile key is kept in `rememberSaveable` and restored after Back; the first top card is focused only on the first entry.
-- Stations: logo from the item image, caption = provider name from `provider_mappings` (none if unknown).
-- Greeting is a plain "Dzień dobry" (MA gives no user name); the connection chip shows connected/offline.
-
-## Not verified against a live server
-Shape of `recently_played_items` / `recommendations` items, the `ytmusic` provider id, and library `order_by` values.
+- Header "Dzień dobry" (MA gives no user name) + glass connection chip.
+- Rows in `rowOrder`: favorite stations (square `StationTile`, name only), favorite playlists (`PlaylistMosaic` + name), recently played (only when non-empty).
+  Stations and playlists end with a "Wszystkie … →" tile. An empty favorites row shows a hint ("Dodaj stację do ulubionych").
+- Stations and playlists are sorted by name (case-insensitive). Playlists are favorites only (`favorite=true`).
+- Initial focus: first favorite station (else its "all" tile); OK plays the station on `settings.playerId`. Hold OK = shared context menu (`ItemMenuHost`).
+- Backdrop: `ContentBackdrop` follows the focused tile (cover URL, or the station color without a logo).
+- The old top cards (continue listening, Radio, YouTube Music) and the favorites / YouTube rows are gone; the mini player belongs to the shell.
+- Loads when `Connected` and on retry; each row fails independently, error only if all calls fail; quiet reload on resume and on `media_item_*` events.
+- States: no server → "Połącz się z serwerem"; connecting → "Łączę z serwerem…"; failed → error with retry.
+- Focus of the last tile is kept in `rememberSaveable` and restored after Back.
