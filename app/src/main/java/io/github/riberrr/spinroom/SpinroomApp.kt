@@ -42,6 +42,11 @@ class SpinroomApp : Application(), PlaybackHost, SingletonImageLoader.Factory {
 
     override val softwareVersion: String get() = BuildConfig.VERSION_NAME
 
+    override fun onCreate() {
+        super.onCreate()
+        io.github.riberrr.spinroom.core.data.GlobalKeysSupport.available = BuildConfig.GLOBAL_KEYS
+    }
+
     override val notificationIcon: Int get() = R.drawable.ic_launcher_monochrome
 
     override val audioCalibrationMs: Flow<Int> get() = latency.calibrationMs

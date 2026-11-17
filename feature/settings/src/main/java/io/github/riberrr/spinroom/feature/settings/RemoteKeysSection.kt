@@ -1,6 +1,14 @@
 package io.github.riberrr.spinroom.feature.settings
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import io.github.riberrr.spinroom.core.data.GlobalKeysSupport
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
@@ -117,7 +125,7 @@ internal fun RemoteKeysSection(ui: SettingsUiState, vm: SettingsViewModel) {
         )
         else -> {
             Column(Modifier.widthIn(max = 760.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                GlobalSwitchRow()
+                GlobalSwitchRow(ui, vm)
                 ui.keys.items.forEach { a -> KeyRow(a, onClick = { edited = a }) }
                 AddRow(onClick = { step = AddStep.Pick })
                 if (ui.keys.items != io.github.riberrr.spinroom.core.data.KeyAssignments.DEFAULTS) {
@@ -144,16 +152,69 @@ internal fun RemoteKeysSection(ui: SettingsUiState, vm: SettingsViewModel) {
     }
 }
 
-/** "Działaj poza aplikacją": stored preference lives in the repository; the switch stays off until SUI9 ships the service. */
+/** True when the SUI9 accessibility service is switched on in the system settings. */
+private fun serviceEnabled(context: Context): Boolean {
+    val flat = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES).orEmpty()
+    val me = ComponentName(context.packageName, GlobalKeysSupport.SERVICE_CLASS)
+    return flat.split(':').any { ComponentName.unflattenFromString(it) == me }
+}
+
+/** Opens the system accessibility settings (TVs differ: fall back to the main settings screen). */
+private fun openAccessibilitySettings(context: Context) {
+    val intents = listOf(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), Intent(Settings.ACTION_SETTINGS))
+    for (i in intents) if (runCatching { context.startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess) return
+}
+
+/** "Działaj poza aplikacją" (SUI9): the preference plus the system switch of the accessibility service, re-read on return. */
 @Composable
-private fun GlobalSwitchRow() {
-    GlassSurface(Modifier.fillMaxWidth()) {
-        Row(Modifier.padding(horizontal = 20.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.keys_global_title), color = SpinroomColors.TextSecondary)
-                Text(stringResource(R.string.keys_global_hint), color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+private fun GlobalSwitchRow(ui: SettingsUiState, vm: SettingsViewModel) {
+    if (!GlobalKeysSupport.available) return
+    val context = LocalContext.current
+    var serviceOn by remember { mutableStateOf(serviceEnabled(context)) }
+    var showHelp by remember { mutableStateOf(false) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { serviceOn = serviceEnabled(context) }
+    val active = ui.keysGlobal && serviceOn
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FocusSurface(
+            onClick = {
+                if (active) {
+                    vm.setKeysGlobal(false); showHelp = false
+                } else {
+                    vm.setKeysGlobal(true)
+                    if (!serviceOn) { showHelp = true; openAccessibilitySettings(context) }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = SpinroomColors.Glass,
+            focusedContainerColor = SpinroomColors.GlassHigh,
+            focusedScale = 1.01f,
+        ) {
+            Row(Modifier.padding(horizontal = 20.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.keys_global_title), color = SpinroomColors.TextPrimary)
+                    Text(stringResource(R.string.keys_global_hint), color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                }
+                Pill(
+                    stringResource(
+                        when {
+                            active -> R.string.keys_global_on
+                            ui.keysGlobal -> R.string.keys_global_needs_service
+                            else -> R.string.keys_global_off
+                        },
+                    ),
+                    highlighted = active,
+                )
             }
-            Pill(stringResource(R.string.keys_soon), highlighted = false)
+        }
+        if (showHelp || (ui.keysGlobal && !serviceOn)) {
+            GlassSurface(Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.keys_global_help),
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+                    color = SpinroomColors.TextSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
     }
 }

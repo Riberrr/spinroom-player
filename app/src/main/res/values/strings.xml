@@ -25,4 +25,17 @@
     <string name="dock_favorite">Ulubione</string>
     <string name="dock_stations">Ulubione stacje</string>
     <string name="dock_up_next">Dalej w kolejce</string>
+
+    <!-- SUI9: sterowanie spoza aplikacji -->
+    <string name="global_service_label">Spinroom — przyciski pilota</string>
+    <string name="global_service_description">Pozwala przyciskom CH+ i CH− (oraz innym wybranym w Ustawieniach Spinroom) sterować muzyką, gdy na telewizorze jest inna aplikacja. Usługa tylko słyszy przyciski pilota: nie czyta ekranu ani tego, co wpisujesz, a inne przyciski przepuszcza bez zmian.</string>
+    <string name="global_card_channel">Przyciski pilota</string>
+    <string name="global_key_ch_up">CH +</string>
+    <string name="global_key_ch_down">CH −</string>
+    <string name="global_key_other">Pilot</string>
+    <string name="global_card_station">ulubiona stacja %1$d z %2$d</string>
+    <string name="global_card_next">następny utwór</string>
+    <string name="global_card_previous">poprzedni utwór</string>
+    <string name="global_card_paused">wstrzymano</string>
+    <string name="global_card_resumed">wznowiono</string>
 </resources>

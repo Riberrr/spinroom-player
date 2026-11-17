@@ -71,6 +71,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        AppForeground.visible = true
+    }
+
+    override fun onStop() {
+        AppForeground.visible = false
+        super.onStop()
+    }
+
     /** Any key restarts the idle timer; the key that wakes the screensaver is consumed (it only wakes). */
     @SuppressLint("RestrictedApi") // false positive: overriding androidx.core ComponentActivity.dispatchKeyEvent
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {

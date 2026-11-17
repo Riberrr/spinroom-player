@@ -90,6 +90,7 @@ class SpinroomPlaybackService : MediaSessionService() {
         r.snapshot.collect { s ->
             player.update(s)
             notification.post(s)
+            PlaybackActivity.publish(s)
         }
     }
 
@@ -114,6 +115,7 @@ class SpinroomPlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         stopped = true
+        PlaybackActivity.reset()
         main.cancel()
         val r = receiver
         receiver = null
