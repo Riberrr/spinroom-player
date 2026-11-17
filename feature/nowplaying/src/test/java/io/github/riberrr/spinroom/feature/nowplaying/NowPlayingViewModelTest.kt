@@ -38,6 +38,12 @@ private class FakeBackend : PlayerBackend {
     val commands = mutableListOf<String>()
     var failFavorite = false
 
+    val stationsState = MutableStateFlow<List<io.github.riberrr.spinroom.core.data.Station>>(emptyList())
+    override val favoriteStations = stationsState
+    override val playerBackground = MutableStateFlow("blur")
+    override suspend fun refreshStations() {}
+    override suspend fun playStation(queueId: String, uri: String) { commands += "station:$uri" }
+
     override val connection = connectionState
     override val selectedPlayerId = selected
     override val serverAddress = address
@@ -119,7 +125,7 @@ class NowPlayingViewModelTest {
         assertEquals(84_000L, s.positionMs)
         assertTrue(s.isPlaying)
         assertTrue(s.coverUrl!!.contains("/imageproxy?path=cover0.jpg"))
-        assertEquals(listOf(1, 2, 3), s.upcoming.map { it.index })
+        assertEquals(listOf(1, 2, 3, 4), s.upcoming.map { it.index })
         assertEquals(5, s.queue.size)
         assertTrue(s.queue[0].isCurrent)
         assertEquals(201_000L, s.queue[1].durationMs)
@@ -247,5 +253,54 @@ class NowPlayingViewModelTest {
         vm.onNext(); vm.onPlayPause()
         runCurrent()
         assertTrue(backend.commands.isEmpty())
+    }
+
+    private fun station(i: Int) = io.github.riberrr.spinroom.core.data.Station("library://radio/$i", "Stacja $i", null)
+
+    private fun radioItem(i: Int) = QueueItem(
+        queueId = "tv", queueItemId = "r$i", name = "Artysta - Piosenka", index = 0,
+        mediaItem = MediaItem(itemId = "$i", provider = "library", mediaType = "radio", name = "Stacja $i", uri = "library://radio/$i"),
+    )
+
+    private fun TestScope.radio(current: Int): NowPlayingViewModel {
+        backend.selected.value = "tv"
+        backend.stationsState.value = List(3) { station(it + 1) }
+        backend.itemsState.value = listOf(radioItem(current))
+        backend.queueState.value = PlayerQueue(queueId = "tv", state = "playing", currentIndex = 0, items = 1, currentItem = radioItem(current))
+        return viewModel().also { runCurrent() }
+    }
+
+    @Test fun radioShowsStationsAndMusicDoesNot() = vmTest {
+        val music = playing()
+        assertFalse(music.state.value.isRadio)
+        assertTrue(music.state.value.stations.none { it.isCurrent })
+
+        val vm = radio(2)
+        val s = vm.state.value
+        assertTrue(s.isRadio)
+        assertEquals(listOf(1, 2, 3), s.stations.map { it.number })
+        assertEquals(listOf(false, true, false), s.stations.map { it.isCurrent })
+        assertEquals("Artysta - Piosenka", s.stations[1].nowPlaying)
+    }
+
+    @Test fun radioNextFromLastStationWrapsToFirst() = vmTest {
+        val vm = radio(3)
+        vm.onStepStation(forward = true)
+        runCurrent()
+        assertEquals(listOf("station:library://radio/1"), backend.commands)
+    }
+
+    @Test fun radioPreviousFromFirstWrapsToLast() = vmTest {
+        val vm = radio(1)
+        vm.onStepStation(forward = false)
+        runCurrent()
+        assertEquals(listOf("station:library://radio/3"), backend.commands)
+    }
+
+    @Test fun stepWithoutFavoritesFallsBackToQueue() = vmTest {
+        val vm = playing()
+        vm.onStepStation(forward = true)
+        runCurrent()
+        assertEquals(listOf("next:tv"), backend.commands)
     }
 }

@@ -20,4 +20,8 @@
 - PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Działa (testy JVM + build): układ 40:60, pigułki Sendspin/głośność, tło wg „Wyglądu”, 4 następne utwory z OK-skokiem, radio z panelem ulubionych stacji, ⏮⏭ po ulubionych (zawija), `keepScreenOn`. Wygaszacz był już domyślnie wyłączony (`look.screensaver`).
+- API: `NowPlayingActions.onStepStation/onPlayStation`, `StationRow`, `NowPlayingUiState.stations/radioMeta/playerBackground`; `PlayerBackend` + `favoriteStations/refreshStations/playStation/playerBackground`. `ShellViewModel` (CH±, dock) przepięty na `FavoriteStationsRepository`.
+- Braki: linia radia pokazuje tylko źródło i opis (API MA nie daje miasta/języka/jakości); brak pigułki formatu; tryb tła „color” używa koloru z nazwy, nie z okładki.
+- Zrzuty z emulatora NIE zrobione: emulator nie ma odtwarzacza MA (nic nie gra), a build `.debug` wywala się tam przy starcie usługi odtwarzania. Do sprawdzenia wzrokowo na TV (są `@Preview` muzyka/radio/kolejka).
+- Pułapka: `lintDebug` w worktree failuje na `local.properties` (PropertyEscape), nie na kodzie.

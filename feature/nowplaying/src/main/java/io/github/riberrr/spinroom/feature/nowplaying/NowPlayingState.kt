@@ -1,5 +1,6 @@
 package io.github.riberrr.spinroom.feature.nowplaying
 
+import io.github.riberrr.spinroom.core.data.Appearance
 import io.github.riberrr.spinroom.core.design.MiniPlayerState
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 
@@ -22,6 +23,17 @@ data class QueueRow(
     val artist: String,
     val durationMs: Long,
     val coverUrl: String?,
+    val isCurrent: Boolean,
+)
+
+/** One favorite station in the radio panel. [number] is its place in the favorites order (also the CH+/CH- order). */
+data class StationRow(
+    val number: Int,
+    val uri: String,
+    val name: String,
+    val imageUrl: String?,
+    /** What the station plays now; known only for the current station. */
+    val nowPlaying: String,
     val isCurrent: Boolean,
 )
 
@@ -49,6 +61,12 @@ data class NowPlayingUiState(
     val mediaUri: String = "",
     val mediaName: String = "",
     val volume: Int? = null,
+    /** Radio: favorite stations in the user's order (replaces the queue panel). */
+    val stations: List<StationRow> = emptyList(),
+    /** Radio: "source · description" line shown instead of the progress bar. */
+    val radioMeta: String = "",
+    /** [Appearance.BG_BLUR], [Appearance.BG_COLOR] or [Appearance.BG_SOLID]. */
+    val playerBackground: String = Appearance.BG_BLUR,
     /** Next few tracks after the current one (preview card). */
     val upcoming: List<QueueRow> = emptyList(),
     /** Whole queue (expanded view). */
