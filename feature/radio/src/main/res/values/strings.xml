@@ -16,6 +16,7 @@
     <string name="radio_chip_language">Język</string>
     <string name="radio_chip_genre">Gatunek</string>
     <string name="radio_chip_country">Kraj</string>
+    <string name="radio_lang_polish">polski</string>
     <string name="radio_chip_all">wszystkie</string>
     <string name="radio_chip_pick_language">Wybierz język</string>
     <string name="radio_chip_pick_genre">Wybierz gatunek</string>
