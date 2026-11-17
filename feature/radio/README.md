@@ -1,7 +1,15 @@
 # :feature:radio
 
-Screen "Radio" — stub from SUI0. Package `io.github.riberrr.spinroom.feature.radio`.
-Depends only on `:core:design`. The body is a placeholder; SUI2 replaces it.
+Screen "Radio" (SUI4). Package `io.github.riberrr.spinroom.feature.radio`. Depends on `:core:design`, `:core:data`.
 
 ## Public API
-- `RadioScreen(modifier, onOpenNowPlaying, onOpenSources, onOpenDetails, onOpenSettings)` — same navigation callbacks as `HomeScreen`. Not yet routed in `:app` (SUI2 wires it).
+- `RadioScreen(modifier, onOpenNowPlaying, onOpenSources, onOpenDetails, onOpenSettings, viewModel)` — callbacks kept for the shell's signature (unused: stations play in place). Routed in `:app` as `radio`.
+- `RadioContent(state, actions)` — stateless UI (previews: browse, search).
+
+## What it does
+- Favorite stations as numbered square tiles (number = `CH±` order). Hold OK → "Przesuń" (←/→ move, OK or Back finish) / "Usuń z ulubionych". Order lives in `FavoriteStationsRepository` (`:core:data`).
+- Browse list (2 columns of `ResultRow`) for **one** filter (Język / Gatunek / Kraj chip, or Popularne); the server cannot combine filters. Chosen filter is remembered, default language Polish. Hold OK on a row = add/remove favorite.
+- Search stations (field "Szukaj stacji…"): favorites hide, `OnScreenKeyboard` slides in from the left, results on the right; a physical keyboard types immediately; Back closes. Name search only, filters hidden while searching.
+
+## Not available from the API
+- The track playing now per station and the station's genre/city (Radio Browser items carry neither through MA) — rows show the active filter value instead.
