@@ -24,6 +24,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -81,6 +82,9 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     // Composed only while the menu has focus: a handler added on entering the composition is the newest one, so it
     // runs before the NavHost's own (registered earlier), which would otherwise pop the screen.
     if (menuHasFocus) BackHandler { runCatching { screenFocus.requestFocus() } }
+    // Back on Start leaves the app for real (finish), instead of parking the task (Android 12+) with the last screen restored.
+    val activity = LocalContext.current as? android.app.Activity
+    BackHandler(enabled = route == Routes.HOME && !menuHasFocus) { activity?.finish() }
 
     Row(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
         SideMenu(
@@ -106,7 +110,10 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             onSelectPinned = { entry ->
                 val fav = pinned.firstOrNull { it.uri == entry.id } ?: return@SideMenu
                 runCatching { screenFocus.requestFocus() }
-                if (fav.isStation) shell.playStation(fav.uri) else navController.navigate(Routes.details(fav.uri))
+                if (fav.isStation) shell.playStation(fav.uri) else navController.navigate(Routes.details(fav.uri)) {
+                    // Opening another item from the menu replaces the details on screen, so Back returns to where we came from.
+                    if (route == Routes.DETAILS) popUpTo(Routes.DETAILS) { inclusive = true }
+                }
             },
             enterFocusRequester = menuFocus,
             onFocusChange = {

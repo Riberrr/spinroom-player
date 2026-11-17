@@ -27,6 +27,7 @@ private class FakeBackend : DetailsBackend {
         "library://album/1" to MediaItem(itemId = "1", mediaType = "album", name = "Horyzont", uri = "library://album/1", year = 2024, artists = listOf(MediaItem(name = "Kwartet"))),
         "library://artist/2" to MediaItem(itemId = "2", mediaType = "artist", name = "Kwartet", uri = "library://artist/2"),
         "library://playlist/3" to MediaItem(itemId = "3", mediaType = "playlist", name = "Mix", uri = "library://playlist/3"),
+        "ytm://track/9" to MediaItem(itemId = "9", mediaType = "track", name = "Single", uri = "ytm://track/9", duration = 200, artists = listOf(MediaItem(name = "Art"))),
     )
     data class Play(val player: String, val uris: List<String>, val option: String, val shuffle: Boolean?, val start: String?)
     val plays = mutableListOf<Play>()
@@ -66,6 +67,16 @@ class DetailsViewModelTest {
         assertEquals(9, s.totalMinutes)
         assertEquals(listOf(1, 2, 3), s.tracks.map { it.number })
         assertTrue(s.albums.isEmpty())
+    }
+
+    @Test fun single_track_shows_itself_without_album_tracks() = runTest {
+        val vm = vm("ytm://track/9")
+        advanceUntilIdle()
+        val s = vm.state.value
+        assertEquals(DetailsStatus.Content, s.status)
+        assertEquals(DetailsKind.Track, s.kind)
+        assertEquals(listOf("ytm://track/9"), s.tracks.map { it.uri })
+        assertEquals(1, s.trackCount)
     }
 
     @Test fun artist_has_albums_and_top_tracks() = runTest {

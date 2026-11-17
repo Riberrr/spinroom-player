@@ -7,6 +7,7 @@
     <string name="details_kind_album">ALBUM</string>
     <string name="details_kind_artist">WYKONAWCA</string>
     <string name="details_kind_playlist">PLAYLISTA</string>
+    <string name="details_kind_track">UTWÓR</string>
     <string name="details_tracks_count">%1$d utworów</string>
     <string name="details_minutes">%1$d min</string>
     <string name="details_top_tracks">Popularne utwory</string>

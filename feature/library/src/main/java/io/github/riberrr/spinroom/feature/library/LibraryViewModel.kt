@@ -11,6 +11,7 @@ import io.github.riberrr.spinroom.core.data.SourceOption
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
+import io.github.riberrr.spinroom.core.maapi.coverImage
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -200,7 +201,7 @@ internal fun MediaItem.toRow(serverAddress: String): LibraryRow {
         uri = uri ?: "library://$type/$itemId",
         title = name,
         subtitle = if (mediaType == "album" || mediaType == "track") artistLine else "",
-        coverUrl = if (serverAddress.isBlank()) null else ImageUrls.url(serverAddress, bestImage, THUMB_PX),
+        coverUrl = if (serverAddress.isBlank()) null else ImageUrls.url(serverAddress, coverImage, THUMB_PX),
         year = year,
         favorite = favorite,
         mediaType = mediaType,

@@ -65,6 +65,7 @@ import coil3.size.Size
 import io.github.riberrr.spinroom.core.design.ContentBackdrop
 import io.github.riberrr.spinroom.core.design.CoverPlaceholder
 import io.github.riberrr.spinroom.core.design.CoverTile
+import io.github.riberrr.spinroom.core.design.PlaylistMosaic
 import io.github.riberrr.spinroom.core.design.EmptyState
 import io.github.riberrr.spinroom.core.design.ErrorState
 import io.github.riberrr.spinroom.core.design.FavoriteHeart
@@ -182,7 +183,7 @@ fun LibraryContent(
     val restoreIndex = remember { (state.focus as? LibraryFocus.Item)?.index }
     var restored by remember { mutableStateOf(restoreIndex == null) }
     var filterOpen by remember { mutableStateOf(false) }
-    var backdropUrl by remember { mutableStateOf<String?>(null) }
+    var backdropUrl by remember(state.tab) { mutableStateOf<String?>(null) }
     val hasContent = status == LibraryStatus.Content
     val listMode = state.listMode
 
@@ -221,7 +222,7 @@ fun LibraryContent(
             .fillMaxSize()
             .onPreviewKeyEvent { e -> if (canJump) letterOf(e)?.let { actions.onJumpToLetter(it.toString()); true } ?: false else false },
     ) {
-        ContentBackdrop(imageUrl = if (hasContent) backdropUrl else null)
+        ContentBackdrop(imageUrl = if (hasContent) backdropUrl ?: itemAt(0)?.coverUrl else null)
 
         Column(Modifier.fillMaxSize().padding(start = 48.dp, end = 32.dp, top = 32.dp)) {
             Text(stringResource(R.string.library_title), style = MaterialTheme.typography.displaySmall, color = SpinroomColors.TextPrimary)
@@ -401,7 +402,7 @@ private fun CoverGrid(
                         .then(if (index == focusIndex) Modifier.focusRequester(itemFocus) else Modifier)
                         .then(if (index == jumpTarget) Modifier.focusRequester(jumpFocus) else Modifier),
                     onLongClick = { menu(row.uri, row.title) },
-                    cover = { Cover(row.coverUrl) },
+                    cover = { Cover(row.coverUrl, row.mediaType) },
                 )
             }
         }
@@ -456,7 +457,7 @@ private fun ListPane(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        Box(Modifier.size(52.dp).clip(RoundedCornerShape(8.dp))) { Cover(row.coverUrl) }
+                        Box(Modifier.size(52.dp).clip(RoundedCornerShape(8.dp))) { Cover(row.coverUrl, row.mediaType) }
                         Column(Modifier.weight(1f)) {
                             Text(row.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             if (row.subtitle.isNotBlank()) {
@@ -482,7 +483,7 @@ private fun PreviewPane(preview: PreviewState, actions: LibraryActions, modifier
         val row = preview.row ?: return@GlassSurface
         Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Bottom) {
-                Box(Modifier.size(132.dp).clip(RoundedCornerShape(12.dp))) { Cover(row.coverUrl) }
+                Box(Modifier.size(132.dp).clip(RoundedCornerShape(12.dp))) { Cover(row.coverUrl, row.mediaType) }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         stringResource(row.kindRes).uppercase(), style = MaterialTheme.typography.labelMedium, color = SpinroomColors.Accent,
@@ -550,9 +551,9 @@ private fun previewMeta(row: LibraryRow, preview: PreviewState): String {
 private fun pluralStringTracks(n: Int): String = stringResource(R.string.preview_tracks, n)
 
 @Composable
-private fun Cover(url: String?) {
+private fun Cover(url: String?, mediaType: String = "") {
     if (url == null) {
-        CoverPlaceholder(Modifier.fillMaxSize())
+        if (mediaType == "playlist") PlaylistMosaic(emptyList(), Modifier.fillMaxSize()) else CoverPlaceholder(Modifier.fillMaxSize())
         return
     }
     val request = ImageRequest.Builder(LocalContext.current)

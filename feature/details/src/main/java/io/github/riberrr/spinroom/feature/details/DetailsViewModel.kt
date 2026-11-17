@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
 import io.github.riberrr.spinroom.core.maapi.MediaItem
+import io.github.riberrr.spinroom.core.maapi.coverImage
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,9 +41,11 @@ class DetailsViewModel @Inject constructor(private val backend: DetailsBackend) 
                 val kind = when (loaded.mediaType) {
                     "artist" -> DetailsKind.Artist
                     "playlist" -> DetailsKind.Playlist
+                    // A single track (e.g. from "Ostatnio odtwarzane") has no album_tracks: show just itself.
+                    "track" -> DetailsKind.Track
                     else -> DetailsKind.Album
                 }
-                val trackItems = backend.tracks(loaded)
+                val trackItems = if (kind == DetailsKind.Track) listOf(loaded) else backend.tracks(loaded)
                 tracks = trackItems
                 val albums = if (kind == DetailsKind.Artist) backend.artistAlbums(loaded) else emptyList()
                 _state.value = DetailsUiState(
@@ -125,7 +128,7 @@ class DetailsViewModel @Inject constructor(private val backend: DetailsBackend) 
 }
 
 private fun cover(address: String, item: MediaItem, px: Int): String? =
-    if (address.isBlank()) null else ImageUrls.url(address, item.bestImage, px)
+    if (address.isBlank()) null else ImageUrls.url(address, item.coverImage, px)
 
 internal fun MediaItem.toRow(number: Int, kind: DetailsKind) = TrackRow(
     uri = uri ?: "library://track/$itemId",
