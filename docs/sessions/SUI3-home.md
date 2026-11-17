@@ -21,4 +21,12 @@
 - PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+**Wynik (SUI3, gałąź `sui3-home`):**
+- Start wg 03B-1: nagłówek + szklana pigułka połączenia, rzędy Ulubione stacje (kwadratowe `StationTile`), Ulubione playlisty (`PlaylistMosaic`), Ostatnio odtwarzane (tylko gdy są), kafel „Wszystkie … →” na końcu stacji i playlist, tło `ContentBackdrop` z zaznaczonego kafla.
+- Fokus startowy na pierwszej ulubionej stacji; `OK` odtwarza na `settings.playerId`; przytrzymanie `OK` = wspólne menu kontekstowe (`ItemMenuHost`). Puste ulubione → podpowiedź „Dodaj stację/playlistę do ulubionych”.
+- Usunięte: karty Radio / YouTube Music / Kontynuuj, rzędy Ulubione i Polecane (razem z ich wywołaniami API). Playlisty = tylko ulubione (`favorite=true`), stacje i playlisty sortowane po nazwie.
+- API: `HomeScreen(..., onOpenRadio, onOpenPlaylists)` — `:app` ma je podpiąć po dodaniu tras (SUI2); `onOpenRadio` domyślnie = `onOpenSources`, `onOpenPlaylists` domyślnie nic nie robi. `HomeRow`, `DEFAULT_ROW_ORDER`, `HomeUiState.visibleRows`.
+- TODO(SUI8a): kolejność rzędów czytana z preferencji (dziś stała `DEFAULT_ROW_ORDER`).
+- Nie zrobione: „Przesuń” w menu kontekstowym (wymaga zmiany `ContextMenu` w `:core:design` i zapisu kolejności; poza zakresem tej fali). Imię w powitaniu: MA nie daje nazwy użytkownika, zostaje samo „Dzień dobry”.
+- Brak w `:core:design`: stary `StationTile(name, provider, initials, …)` nadal istnieje obok nowego; po SUI2 można go usunąć. `PlaylistMosaic` dostaje jedną okładkę (MA nie zwraca czterech), więc mozaika wypełnia kafel jednym obrazem.
+- Pułapki: na emulatorze `OK` na stacji odpala `SpinroomPlaybackService` i apka padła (`ForegroundServiceDidNotStartInTimeException`) — to `:core:audio`, nie Start. Lint w moim worktree padał na `local.properties` (PropertyEscape), więc `check.sh -x lintDebug`; build i testy zielone. Zrzuty: układ zgodny z makietą, ale kolejny shell (menu boczne) jest jeszcze stary.
