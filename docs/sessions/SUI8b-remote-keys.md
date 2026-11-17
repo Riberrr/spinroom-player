@@ -19,4 +19,8 @@
 Na emulatorze: dodany skrót (np. zielony przycisk → Szukaj) działa po `adb shell input keyevent 184`. PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+**Działa (JVM + build):** `KeyAssignments`/`KeyRules`/`KeyBindingsRepository`/`KeyGestureDetector`/`KeyCaptureGate` w `:core:data` (testy: serializacja, kolizje, blokady, tap/hold), `AssignedKeyBindings` + rozszerzony `RemoteKeyDispatcher` w `:app` (testy), sekcja „Przyciski pilota” w `:feature:settings` (lista, edycja zasięgu/usuwanie, Dodaj skrót z ekranem „Naciśnij przycisk…”, ostrzeżenia, Przywróć domyślne). `check.sh` przechodzi.
+**NIE sprawdzone na urządzeniu:** emulator-5554 był przeciążony (system_server ~100% CPU, app ginie z `ForegroundServiceDidNotStartInTimeException` zanim ekran się pokaże, także po `kill-all`), a instalacja na TV została zablokowana przez uprawnienia. Scenariusz „zielony → Szukaj, `adb shell input keyevent 184`” i wygląd ekranu trzeba obejrzeć ręcznie. Uwaga: wariant debug ma id `io.github.riberrr.spinroom.debug` (pakiet bez `.debug` to starszy build).
+**API:** `KeyBindingsRepository.assignments/globalEnabled/update/reset`; `RemoteHandler` +`playPause/toggleFavorite/openRoute/playFavoriteStation`; `ShellViewModel.requestRoute/playStationNumber/navigate`.
+**Pułapki:** overlay uczenia klawisza nie jest `Dialog` (Dialog omija `dispatchKeyEvent`); `KeyCaptureGate` wyłącza skróty tylko w trakcie uczenia. Ulubiona stacja nr N bierze kolejność z `ShellViewModel` (kolejność MA), nie z `FavoriteStationsRepository` (SUI4) — do przełączenia razem z CH±.
+**Dalej:** SUI9 (usługa „poza aplikacją”) odczyta `global` i `globalEnabled`; włączyć przełącznik.

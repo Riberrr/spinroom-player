@@ -26,3 +26,7 @@ Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (
 
 ## Player name (SUI8a)
 - `PlayerName` (walidacja ≤40 znaków, podpowiedzi), `PlayerNameStore` (nazwa TV w DataStore), `PlayerRenamer` (MA `config/players/save`, tylko admin), `HomeLayoutSettings`/`HomeLayout`/`HomeRows` (kolejność i widoczność rzędów Startu), `Appearance.playerBackground` (blur/color/solid). DI: `SettingsExtrasModule`.
+
+## Remote keys (SUI8b)
+- `KeyAssignments` (lista `KeyAssignment(keyCode, long, action, arg, global)`, `DEFAULTS`, `with/without/collidingWith/find`) + `KeyRules.classify(keyCode, long)` → `Ok/Warn/Blocked` (Home/Wstecz/głośność/strzałki blokowane, OK tylko długo, klawisze TV ostrzeżenie) + `KeyAction` (NEXT, PREVIOUS, PLAY_PAUSE, OPEN_DRAWER, FAVORITE, OPEN_RADIO/PLAYLISTS/SEARCH, STATION 1–9).
+- `KeyBindingsRepository` (DataStore): `assignments`, `globalEnabled`, `update{}`, `reset()`, `setGlobalEnabled()`. `KeyGestureDetector` (tap/hold z surowych zdarzeń), `KeyCaptureGate` (aktywny, gdy ekran uczy klawisza). DI: `SettingsExtrasModule`.

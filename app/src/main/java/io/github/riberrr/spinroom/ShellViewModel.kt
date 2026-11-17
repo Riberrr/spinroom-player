@@ -72,6 +72,22 @@ class ShellViewModel @Inject constructor(
         }
     }
 
+    private val _navigate = MutableSharedFlow<String>(extraBufferCapacity = 1)
+
+    /** Emits a route when a remote shortcut asked to open a screen (SUI8b). */
+    val navigate: SharedFlow<String> = _navigate
+
+    fun requestRoute(route: String) {
+        _navigate.tryEmit(route)
+    }
+
+    /** Remote shortcut "ulubiona stacja nr N" (1-based); false when there is no such favorite. */
+    fun playStationNumber(n: Int): Boolean {
+        val target = _stations.value.getOrNull(n - 1) ?: return false
+        playStation(target.uri)
+        return true
+    }
+
     fun requestDrawer() {
         _openDrawer.tryEmit(Unit)
     }

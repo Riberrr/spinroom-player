@@ -1,5 +1,8 @@
 package io.github.riberrr.spinroom
 
+import io.github.riberrr.spinroom.core.data.KeyAction
+import io.github.riberrr.spinroom.core.data.KeyAssignment
+import io.github.riberrr.spinroom.core.data.KeyAssignments
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -13,6 +16,10 @@ class RemoteKeyDispatcherTest {
         override fun previousTrack() { calls += "prevTrack" }
         override fun nextStation() { calls += "nextStation" }
         override fun previousStation() { calls += "prevStation" }
+        override fun playPause() { calls += "playPause" }
+        override fun toggleFavorite() { calls += "favorite" }
+        override fun openRoute(route: String) { calls += "open:$route" }
+        override fun playFavoriteStation(n: Int) { calls += "station$n" }
     }
 
     private val playPause = DefaultKeyBindings.KEYCODE_MEDIA_PLAY_PAUSE
@@ -75,6 +82,48 @@ class RemoteKeyDispatcherTest {
         assertFalse(d.dispatch(KeyPress(chUp, true, 0)))
         assertTrue(d.dispatch(KeyPress(100, true, 0)))
         assertEquals(listOf("nextTrack"), h.calls)
+    }
+
+    @Test fun assignedBindingsDriveTheDispatcher() {
+        val h = Fake()
+        val list = KeyAssignments(listOf(
+            KeyAssignment(184, false, KeyAction.OPEN_SEARCH),
+            KeyAssignment(8, false, KeyAction.STATION, arg = 3),
+        ))
+        val d = RemoteKeyDispatcher(h, AssignedKeyBindings(list))
+        assertTrue(d.dispatch(KeyPress(184, true, 0)))
+        assertTrue(d.dispatch(KeyPress(8, true, 0)))
+        assertFalse(d.dispatch(KeyPress(chUp, true, 0))) // defaults are gone once the user removed them
+        assertEquals(listOf("open:search", "station3"), h.calls)
+    }
+
+    @Test fun keyWithShortAndHoldRunsShortOnReleaseOnly() {
+        val h = Fake()
+        val list = KeyAssignments(listOf(
+            KeyAssignment(184, false, KeyAction.PLAY_PAUSE),
+            KeyAssignment(184, true, KeyAction.FAVORITE),
+        ))
+        val d = RemoteKeyDispatcher(h, AssignedKeyBindings(list))
+        assertTrue(d.dispatch(KeyPress(184, true, 0)))
+        assertTrue(d.dispatch(KeyPress(184, false, 0)))
+        assertTrue(d.dispatch(KeyPress(184, true, 0)))
+        assertTrue(d.dispatch(KeyPress(184, true, 1)))
+        assertTrue(d.dispatch(KeyPress(184, false, 0)))
+        assertEquals(listOf("playPause", "favorite"), h.calls)
+    }
+
+    @Test fun holdOkIsBoundByDefaultToFavorite() {
+        val h = Fake(); val d = RemoteKeyDispatcher(h)
+        assertFalse(d.dispatch(KeyPress(23, true, 0))) // short OK still reaches the UI
+        assertTrue(d.dispatch(KeyPress(23, true, 1)))
+        assertTrue(d.dispatch(KeyPress(23, false, 0)))
+        assertEquals(listOf("favorite"), h.calls)
+    }
+
+    @Test fun redKeyOpensRadioByDefault() {
+        val h = Fake(); val d = RemoteKeyDispatcher(h)
+        assertTrue(d.dispatch(KeyPress(183, true, 0)))
+        assertEquals(listOf("open:radio"), h.calls)
     }
 
     @Test fun cycleWrapsAndHandlesNotFound() {
