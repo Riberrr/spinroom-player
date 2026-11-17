@@ -83,7 +83,11 @@
 
     <!-- SUI8b: przyciski pilota -->
     <string name="keys_global_title">Działaj poza aplikacją</string>
-    <string name="keys_global_hint">CH+ i CH− sterują muzyką także na innych ekranach TV. Wymaga zgody w ustawieniach telewizora.</string>
+    <string name="keys_global_hint">CH+ i CH− sterują muzyką także w innych aplikacjach, gdy w Spinroom coś gra lub jest wstrzymane.</string>
+    <string name="keys_global_on">włączone</string>
+    <string name="keys_global_off">wyłączone</string>
+    <string name="keys_global_needs_service">wymaga zgody</string>
+    <string name="keys_global_help">Otworzyły się ustawienia dostępności telewizora. Wybierz „Spinroom — przyciski pilota” i włącz usługę (zaakceptuj komunikat). Potem wróć do Spinroom. Usługa słyszy tylko przyciski pilota, nie czyta ekranu. Jeśli nie widzisz tych ustawień, poszukaj ich w: Ustawienia telewizora → Ułatwienia dostępu.</string>
     <string name="keys_soon">wkrótce</string>
     <string name="keys_scope_app">w aplikacji</string>
     <string name="keys_scope_global">wszędzie</string>

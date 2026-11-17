@@ -27,6 +27,20 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- SUI9: remote keys outside the app. Off in a Play build (-PglobalKeys=false), see app/README.md. -->
+        <service
+            android:name=".GlobalKeysService"
+            android:enabled="${globalKeysEnabled}"
+            android:exported="true"
+            android:label="@string/global_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/global_keys_service" />
+        </service>
         <receiver android:name=".BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

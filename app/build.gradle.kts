@@ -29,6 +29,11 @@ android {
         targetSdk = 36
         versionCode = appVersionCode
         versionName = appVersion
+        // SUI9: accessibility service for remote keys outside the app. A Google Play build ships without it:
+        // `-PglobalKeys=false` removes it from the manifest and BuildConfig.GLOBAL_KEYS hides the switch in settings.
+        val globalKeys = (findProperty("globalKeys") as String?)?.toBooleanStrictOrNull() ?: true
+        manifestPlaceholders["globalKeysEnabled"] = globalKeys.toString()
+        buildConfigField("boolean", "GLOBAL_KEYS", globalKeys.toString())
     }
 
     val storePath = signingValue("storeFile", "SIGNING_STORE_FILE")
