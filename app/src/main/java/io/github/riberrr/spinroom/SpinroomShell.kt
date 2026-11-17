@@ -35,7 +35,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -94,7 +93,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     // runs before the NavHost's own (registered earlier), which would otherwise pop the screen.
     if (menuHasFocus) BackHandler { runCatching { screenFocus.requestFocus() } }
     // Back on Start leaves the app for real (finish), instead of parking the task (Android 12+) with the last screen restored.
-    val activity = LocalContext.current as? android.app.Activity
+    val activity = androidx.activity.compose.LocalActivity.current
     BackHandler(enabled = route == Routes.HOME && !menuHasFocus) { activity?.finish() }
 
     Row(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
