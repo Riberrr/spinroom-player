@@ -1,4 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="radio_title">Radio</string>
+    <string name="radio_favorites_count">%1$d ulubionych</string>
+    <string name="radio_hint_hold">Przytrzymaj OK, aby dodać stację do ulubionych</string>
+    <string name="radio_no_favorites_title">Nie masz jeszcze ulubionych stacji</string>
+    <string name="radio_no_favorites_message">Przytrzymaj OK na stacji poniżej, aby dodać ją do ulubionych.</string>
+    <string name="radio_search_hint">Szukaj stacji…</string>
+    <string name="radio_search_crumb">Radio</string>
+    <string name="radio_search_title">Szukaj stacji</string>
+    <string name="radio_search_only">tylko radio</string>
+    <string name="radio_space">Spacja</string>
+    <string name="radio_delete">Usuń</string>
+    <string name="radio_symbols">123</string>
+    <string name="radio_letters">abc</string>
+    <string name="radio_chip_language">Język</string>
+    <string name="radio_chip_genre">Gatunek</string>
+    <string name="radio_chip_country">Kraj</string>
+    <string name="radio_chip_all">wszystkie</string>
+    <string name="radio_chip_pick_language">Wybierz język</string>
+    <string name="radio_chip_pick_genre">Wybierz gatunek</string>
+    <string name="radio_chip_pick_country">Wybierz kraj</string>
+    <string name="radio_popular">Popularne</string>
+    <string name="radio_all_option">Wszystkie (popularne)</string>
+    <string name="radio_options_loading">Wczytuję…</string>
+    <string name="radio_stations_count">%1$d stacji</string>
+    <string name="radio_search_idle">Wpisz nazwę stacji</string>
+    <string name="radio_search_empty">Nie znalazłem takiej stacji</string>
+    <string name="radio_loading">Wczytuję stacje…</string>
+    <string name="radio_error">Nie udało się wczytać stacji</string>
+    <string name="radio_retry">Spróbuj ponownie</string>
+    <string name="radio_empty_title">Brak stacji</string>
+    <string name="radio_empty_message">Zmień język, gatunek lub kraj.</string>
+    <string name="radio_menu_move">Przesuń</string>
+    <string name="radio_menu_remove">Usuń z ulubionych</string>
+    <string name="radio_moving">Przesuwanie</string>
+    <string name="radio_move_hint">Strzałkami ← → zmień miejsce, OK kończy</string>
+    <string name="radio_notice_added">Dodano do ulubionych</string>
+    <string name="radio_notice_removed">Usunięto z ulubionych</string>
+    <string name="radio_notice_no_player">Odtwarzacz telewizora jeszcze się nie zgłosił</string>
+    <string name="radio_notice_failed">Coś poszło nie tak</string>
+    <string name="radio_provider">Radio Browser</string>
 </resources>

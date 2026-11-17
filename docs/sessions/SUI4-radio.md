@@ -16,4 +16,9 @@
 Na emulatorze: zrzut ekranu Radio i zrzut szukania „jaz” z wynikami. PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Działa na emulatorze (zrzuty: Radio, szukanie „jaz”, przesuwanie stacji): ulubione 1…n, „Przesuń/Usuń” po przytrzymaniu OK, chipy Język/Gatunek/Kraj + Popularne, lista 2-kolumnowa, szukanie tylko w radiu z klawiaturą ekranową i fizyczną.
+- API danych: `FavoriteStationsRepository` w `:core:data` (opis w jego README) — `favorites` (kolejność), `move/remove/add`, `step` dla CH±. SUI2 (`ShellViewModel`) nadal ma własną listę w kolejności MA — do przepięcia na to repozytorium (koordynator/SUI7).
+- Filtry MA: `music/browse radiobrowser://category/{language|country|tag}/<małe litery>` lub `popularity/popular`; jeden wymiar naraz, cała lista w jednej odpowiedzi (600–1000 stacji, bez stronicowania). Dlatego aktywny jest jeden chip, wybór innego zastępuje poprzedni, „wszystkie” = Popularne. Łączenia filtrów nie robimy po stronie aplikacji. Szukanie = `music/search` (nazwa, limit 30), bez filtrów — chipy chowają się w trybie szukania.
+- Niedostępne z API: utwór grany teraz i gatunek/miasto stacji (podtytuł wiersza = wartość aktywnego filtra).
+- Nowe: `RadioApi` (`:core:ma-api`), `OnScreenKeyboard` w `:core:design` (Szukaj może go przejąć zamiast własnej kopii).
+- Pułapki: serce na liście = przytrzymanie OK (osobny cel fokusu w `ResultRow` nie istnieje). `lintDebug` w worktree failuje na `local.properties` (PropertyEscape, plik poza repo) — nie na kodzie; build, release i testy przechodzą. Chip „Popularne” przy wąskim ekranie bywa przycięty.
