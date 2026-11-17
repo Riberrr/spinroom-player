@@ -2,7 +2,7 @@ package io.github.riberrr.spinroom.feature.home
 
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 
-/** One square tile (album, playlist, mix, …). [uri] null = nothing to open. */
+/** One square tile (album, playlist, …). [uri] null = nothing to open. */
 data class HomeTile(
     val key: String,
     val title: String,
@@ -22,34 +22,29 @@ data class StationTileState(
     val coverUrl: String? = null,
 )
 
-/** What is playing on the chosen player, for the large "continue listening" card. */
-data class ContinueCard(
-    val title: String,
-    val artist: String,
-    val coverUrl: String?,
-    val progress: Float,
-    val position: Int,
-    val total: Int,
-)
+/** Rows of the Start screen. */
+enum class HomeRow { Stations, Playlists, Recent }
+
+/** Fixed order until the appearance preferences (SUI8a) provide one. TODO(SUI8a): read the order from the preferences. */
+val DEFAULT_ROW_ORDER: List<HomeRow> = listOf(HomeRow.Stations, HomeRow.Playlists, HomeRow.Recent)
 
 data class HomeUiState(
     val connection: MaConnectionState = MaConnectionState.Disconnected,
     val loading: Boolean = true,
     val failed: Boolean = false,
-    val continueCard: ContinueCard? = null,
     val recent: List<HomeTile> = emptyList(),
-    val favorites: List<HomeTile> = emptyList(),
     val playlists: List<HomeTile> = emptyList(),
     val stations: List<StationTileState> = emptyList(),
-    val recommended: List<HomeTile> = emptyList(),
+    val rowOrder: List<HomeRow> = DEFAULT_ROW_ORDER,
     val hasPlayer: Boolean = false,
+    /** True after the first load with at least one successful call: rows (empty ones with a hint) replace the spinner. */
+    val loaded: Boolean = false,
     /** No server address/token saved: offer Settings instead of a spinner. */
     val notConfigured: Boolean = false,
 ) {
     val isConnected: Boolean get() = connection is MaConnectionState.Connected
-    val hasContent: Boolean
-        get() = continueCard != null || recent.isNotEmpty() || favorites.isNotEmpty() || playlists.isNotEmpty() || stations.isNotEmpty() || recommended.isNotEmpty()
 
-    /** Only when the YouTube Music provider is installed and returned recommendations. */
-    val showYoutube: Boolean get() = recommended.isNotEmpty()
+    /** Stations and playlists are always shown (empty = a hint to add favorites); "recent" only when it has items. */
+    val visibleRows: List<HomeRow>
+        get() = rowOrder.distinct().filter { it != HomeRow.Recent || recent.isNotEmpty() }
 }

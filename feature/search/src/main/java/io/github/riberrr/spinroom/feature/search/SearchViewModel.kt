@@ -7,7 +7,10 @@ import io.github.riberrr.spinroom.core.maapi.ImageUrls
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.SearchResults
 import javax.inject.Inject
+import io.github.riberrr.spinroom.core.data.LibraryFilter
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.FlowPreview
@@ -52,6 +55,80 @@ class SearchViewModel internal constructor(
         viewModelScope.launch { runSearch(query.value) }
     }
     fun onVoiceUnavailable() = _state.update { it.copy(notice = SearchUiState.Notice.NO_VOICE) }
+    fun onSubmit() {
+        if (query.value.isNotBlank()) viewModelScope.launch { runSearch(query.value) }
+    }
+
+    fun onPhysicalInput(input: PhysicalInput) = when (input) {
+        is PhysicalInput.Text -> onType(input.text)
+        PhysicalInput.Backspace -> onBackspace()
+        PhysicalInput.Submit -> onSubmit()
+    }
+
+    private val checked = HashSet<String>()
+
+    /** A row got focus: ask MA whether it is really a favorite (provider hits arrive with `favorite = false`). */
+    fun onSelect(row: SearchRow) {
+        val uri = row.uri
+        if (row.item.favorite || !checked.add(uri)) return
+        viewModelScope.launch {
+            val fav = try {
+                backend.isFavorite(uri)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                null
+            }
+            // Never override what the user just did here.
+            if (fav == true) _state.update { if (uri in it.favorites) it else it.copy(favorites = it.favorites + (uri to true)) }
+        }
+    }
+
+    fun onPanel(open: Boolean) = _state.update { it.copy(panelOpen = open) }
+    fun onToggleFavoritesOnly() = updateFilters { it.copy(favoriteOnly = !it.favoriteOnly) }
+    fun onToggleDecade(decade: Int) = updateFilters { it.copy(decade = if (it.decade == decade) null else decade) }
+    fun onToggleSource(domain: String) = updateFilters { it.copy(provider = if (it.provider == domain) null else domain) }
+    fun onClearFilters() = updateFilters { LibraryFilter() }
+    private fun updateFilters(f: (LibraryFilter) -> LibraryFilter) = _state.update { it.copy(filters = f(it.filters)) }
+
+    /** Heart button / long OK: flips the favorite flag and shows the undo message. */
+    fun onToggleFavorite(row: SearchRow) = setFavorite(row.uri, row.title, !_state.value.isFavorite(row), showToast = true)
+
+    fun onUndo() {
+        val t = _state.value.toast ?: return
+        toastJob?.cancel()
+        _state.update { it.copy(toast = null) }
+        setFavorite(t.uri, t.title, !t.added, showToast = false)
+    }
+
+    private var toastJob: Job? = null
+
+    private fun setFavorite(uri: String, title: String, value: Boolean, showToast: Boolean) {
+        val before = _state.value.favorites[uri]
+        _state.update { it.copy(favorites = it.favorites + (uri to value)) }
+        if (showToast) {
+            _state.update { it.copy(toast = FavoriteToast(uri, title, value)) }
+            toastJob?.cancel()
+            toastJob = viewModelScope.launch {
+                delay(TOAST_MS)
+                _state.update { it.copy(toast = null) }
+            }
+        }
+        viewModelScope.launch {
+            val ok = try {
+                backend.setFavorite(uri, value)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                false
+            }
+            if (!ok) _state.update {
+                val restored = if (before == null) it.favorites - uri else it.favorites + (uri to before)
+                it.copy(favorites = restored, toast = it.toast?.takeIf { t -> t.uri != uri }, notice = SearchUiState.Notice.FAVORITE_FAILED)
+            }
+        }
+    }
+
     fun onNoticeShown() = _state.update { it.copy(notice = null) }
 
     /** Tracks and radio stations play right away; the rest is opened in details by the screen. */
@@ -118,6 +195,7 @@ class SearchViewModel internal constructor(
 
     companion object {
         const val DEBOUNCE_MS = 400L
+        const val TOAST_MS = 5_000L
 
         /** `ytmusic--x1y2` / `filesystem_local--ab` → readable source; unknown domains are prettified. */
         fun sourceLabel(provider: String): String = when (val domain = provider.substringBefore("--")) {

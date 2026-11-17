@@ -4,17 +4,13 @@ import androidx.lifecycle.viewModelScope
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.MediaItemImage
-import io.github.riberrr.spinroom.core.maapi.PlayerQueue
 import io.github.riberrr.spinroom.core.maapi.ProviderMapping
-import io.github.riberrr.spinroom.core.maapi.QueueItem
-import io.github.riberrr.spinroom.core.maapi.RecommendationFolder
 import io.github.riberrr.spinroom.core.maapi.ServerInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
@@ -33,12 +29,9 @@ import org.junit.Test
 private class FakeBackend : HomeBackend {
     val connectionState = MutableStateFlow<MaConnectionState>(MaConnectionState.Disconnected)
     val player = MutableStateFlow("")
-    val queueState = MutableStateFlow<PlayerQueue?>(null)
     var recent: List<MediaItem> = emptyList()
     var playlistItems: List<MediaItem> = emptyList()
     var radios: List<MediaItem> = emptyList()
-    var favs: List<MediaItem> = emptyList()
-    var recs: List<RecommendationFolder> = emptyList()
     var failAll = false
     val played = mutableListOf<Pair<String, String>>()
 
@@ -48,14 +41,11 @@ private class FakeBackend : HomeBackend {
     val changes = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 8)
     override val serverAddress: Flow<String> = address
     override val libraryChanges: Flow<Unit> = changes
-    override fun queue(queueId: String): Flow<PlayerQueue> = queueState.filterNotNull()
 
     private fun <T> guard(v: T): T = if (failAll) error("offline") else v
     override suspend fun recentlyPlayed() = guard(recent)
     override suspend fun playlists() = guard(playlistItems)
     override suspend fun favoriteRadios() = guard(radios)
-    override suspend fun favorites() = guard(favs)
-    override suspend fun recommendations() = guard(recs)
     override suspend fun play(queueId: String, uri: String) { played += queueId to uri }
 }
 
@@ -93,32 +83,6 @@ class HomeViewModelTest {
         assertNotNull(s.recent.single().coverUrl)
         assertTrue(s.playlists.single().isPlaylist)
         assertEquals("JJ", s.stations.single().initials)
-        assertFalse(s.showYoutube)
-        vm.viewModelScopeCancel()
-    }
-
-    @Test fun `favorites row filled from favorite items`() = runTest(dispatcher) {
-        val b = FakeBackend().apply { favs = listOf(album("7", "Port 14", "Kwartet Północ")) }
-        val vm = HomeViewModel(b)
-        b.connectionState.value = connected()
-        runCurrent()
-        assertEquals("Port 14", vm.state.value.favorites.single().title)
-        vm.viewModelScopeCancel()
-    }
-
-    @Test fun `youtube row only from ytmusic provider`() = runTest(dispatcher) {
-        val mix = MediaItem(itemId = "m", provider = "ytmusic", mediaType = "playlist", name = "Mix dla Ciebie", uri = "ytmusic://playlist/m")
-        val b = FakeBackend().apply {
-            recs = listOf(
-                RecommendationFolder(itemId = "a", provider = "library", name = "Random", items = listOf(album("2", "X", "Y"))),
-                RecommendationFolder(itemId = "b", provider = "ytmusic", name = "Mixes", items = listOf(mix)),
-            )
-        }
-        val vm = HomeViewModel(b)
-        b.connectionState.value = connected()
-        runCurrent()
-        assertEquals(listOf("Mix dla Ciebie"), vm.state.value.recommended.map { it.title })
-        assertTrue(vm.state.value.showYoutube)
         vm.viewModelScopeCancel()
     }
 
@@ -134,27 +98,6 @@ class HomeViewModelTest {
         runCurrent()
         assertFalse(vm.state.value.failed)
         assertEquals(1, vm.state.value.recent.size)
-        vm.viewModelScopeCancel()
-    }
-
-    @Test fun `continue card follows player queue`() = runTest(dispatcher) {
-        val b = FakeBackend()
-        val vm = HomeViewModel(b)
-        b.player.value = "tv"
-        b.queueState.value = PlayerQueue(
-            queueId = "tv", items = 11, currentIndex = 3, elapsedTime = 60.0,
-            currentItem = QueueItem(name = "Nocne światła", duration = 240, mediaItem = album("1", "Nocne światła", "Lena Wiatr").copy(duration = 240)),
-        )
-        runCurrent()
-        val card = vm.state.value.continueCard
-        assertNotNull(card)
-        assertEquals(4, card!!.position)
-        assertEquals(11, card.total)
-        assertEquals(0.25f, card.progress, 0.001f)
-        assertEquals("Lena Wiatr", card.artist)
-        b.queueState.value = PlayerQueue(queueId = "tv")
-        runCurrent()
-        assertNull(vm.state.value.continueCard)
         vm.viewModelScopeCancel()
     }
 
@@ -197,25 +140,25 @@ class HomeViewModelTest {
     }
 
     @Test fun `library change and resume refresh rows quietly`() = runTest(dispatcher) {
-        val b = FakeBackend().apply { favs = listOf(album("1", "A", "X")) }
+        val b = FakeBackend().apply { radios = listOf(radio("1", "A")) }
         val vm = HomeViewModel(b)
         b.connectionState.value = connected()
         runCurrent()
-        assertEquals(1, vm.state.value.favorites.size)
-        b.favs = emptyList()
+        assertEquals(1, vm.state.value.stations.size)
+        b.radios = emptyList()
         b.changes.tryEmit(Unit)
         advanceTimeBy(1_000)
         runCurrent()
-        assertTrue(vm.state.value.favorites.isEmpty())
-        b.favs = listOf(album("2", "B", "Y"), album("3", "C", "Z"))
+        assertTrue(vm.state.value.stations.isEmpty())
+        b.radios = listOf(radio("2", "B"), radio("3", "C"))
         vm.onResume()
         runCurrent()
-        assertEquals(2, vm.state.value.favorites.size)
+        assertEquals(2, vm.state.value.stations.size)
         // a failing silent refresh keeps the old rows
         b.failAll = true
         vm.onResume()
         runCurrent()
-        assertEquals(2, vm.state.value.favorites.size)
+        assertEquals(2, vm.state.value.stations.size)
         assertFalse(vm.state.value.loading)
         vm.viewModelScopeCancel()
     }
@@ -234,11 +177,66 @@ class HomeViewModelTest {
         val vm = HomeViewModel(b)
         b.connectionState.value = connected()
         runCurrent()
-        val (a, c) = vm.state.value.stations
+        val (c, a) = vm.state.value.stations // sorted by name: "Bez mapy" first
         assertEquals("Radio Browser", a.provider)
         assertNotNull(a.coverUrl)
         assertEquals("", c.provider)
         assertNull(c.coverUrl)
         vm.viewModelScopeCancel()
+    }
+}
+
+private fun radio(id: String, name: String) = MediaItem(itemId = id, provider = "radiobrowser", mediaType = "radio", name = name, uri = "library://radio/$id")
+private fun playlist(id: String, name: String) = MediaItem(itemId = id, provider = "library", mediaType = "playlist", name = name, uri = "library://playlist/$id")
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class HomeRowsTest {
+    private val dispatcher = StandardTestDispatcher()
+
+    @Before fun setUp() = Dispatchers.setMain(dispatcher)
+    @After fun tearDown() = Dispatchers.resetMain()
+
+    @Test fun `stations and playlists are sorted by name ignoring case`() = runTest(dispatcher) {
+        val b = FakeBackend().apply {
+            radios = listOf(radio("1", "radio 357"), radio("2", "Jazz Jeden"), radio("3", "Klasyka 24"))
+            playlistItems = listOf(playlist("1", "Impreza"), playlist("2", "do samochodu"), playlist("3", "Niedziela"))
+        }
+        val vm = HomeViewModel(b)
+        b.connectionState.value = MaConnectionState.Connected(ServerInfo(), authenticated = true)
+        runCurrent()
+        assertEquals(listOf("Jazz Jeden", "Klasyka 24", "radio 357"), vm.state.value.stations.map { it.name })
+        assertEquals(listOf("do samochodu", "Impreza", "Niedziela"), vm.state.value.playlists.map { it.title })
+        vm.viewModelScope.cancel()
+    }
+
+    @Test fun `empty favorites still show stations and playlists rows, recent only with items`() = runTest(dispatcher) {
+        val b = FakeBackend()
+        val vm = HomeViewModel(b)
+        b.connectionState.value = MaConnectionState.Connected(ServerInfo(), authenticated = true)
+        runCurrent()
+        val s = vm.state.value
+        assertTrue(s.loaded)
+        assertTrue(s.stations.isEmpty() && s.playlists.isEmpty())
+        assertEquals(listOf(HomeRow.Stations, HomeRow.Playlists), s.visibleRows)
+        b.recent = listOf(album("1", "A", "B"))
+        vm.onResume()
+        runCurrent()
+        assertEquals(DEFAULT_ROW_ORDER, vm.state.value.visibleRows)
+        vm.viewModelScope.cancel()
+    }
+
+    @Test fun `row order follows rowOrder`() {
+        val s = HomeUiState(rowOrder = listOf(HomeRow.Recent, HomeRow.Playlists, HomeRow.Stations, HomeRow.Playlists), recent = listOf(HomeTile("k", "t", "", null, null)))
+        assertEquals(listOf(HomeRow.Recent, HomeRow.Playlists, HomeRow.Stations), s.visibleRows)
+    }
+
+    @Test fun `failed load without any success is not loaded`() = runTest(dispatcher) {
+        val b = FakeBackend().apply { failAll = true }
+        val vm = HomeViewModel(b)
+        b.connectionState.value = MaConnectionState.Connected(ServerInfo(), authenticated = true)
+        runCurrent()
+        assertFalse(vm.state.value.loaded)
+        assertTrue(vm.state.value.failed)
+        vm.viewModelScope.cancel()
     }
 }

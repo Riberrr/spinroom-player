@@ -19,6 +19,7 @@ android {
 dependencies {
     implementation(project(":core:design"))
     implementation(project(":core:data"))
+    implementation(project(":feature:library"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
