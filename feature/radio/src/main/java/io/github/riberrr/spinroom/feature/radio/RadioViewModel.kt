@@ -180,10 +180,32 @@ class RadioViewModel @Inject constructor(
         _state.update { it.copy(searchLoading = true, searchFailed = false) }
         runCatchingCancellable { repo.search(text) }
             .onSuccess { items ->
-                val rows = toRows(items, "")
-                _state.update { it.copy(searchRows = rows, searchLoading = false) }
+                val polish = polishIds()
+                allHits = orderSearchResults(items, { repo.favoriteFor(it) != null }, polish)
+                applySearchRows()
             }
             .onFailure { _state.update { it.copy(searchLoading = false, searchFailed = true) } }
+    }
+
+    private var allHits: List<SearchHit> = emptyList()
+    private var polishCache: Set<String>? = null
+
+    /** Ids of Polish stations (Radio Browser, language Polish), fetched once; empty when that fails. */
+    private suspend fun polishIds(): Set<String> =
+        polishCache ?: runCatchingCancellable { idsOf(repo.stations(RadioFilter.Language("polish"))) }.getOrNull()?.also { polishCache = it } ?: emptySet()
+
+    private suspend fun applySearchRows() {
+        val onlyPolish = _state.value.polishOnly
+        val polishLabel = filterValueLabel(RadioFilter.Language("polish"))
+        val rows = allHits.filter { !onlyPolish || it.polish }.map { hit ->
+            RadioRow(hit.item, hit.item.name, repo.imageUrl(hit.item), if (hit.polish) polishLabel else "")
+        }
+        _state.update { it.copy(searchRows = rows, searchLoading = false) }
+    }
+
+    fun onTogglePolishOnly() {
+        _state.update { it.copy(polishOnly = !it.polishOnly) }
+        viewModelScope.launch { applySearchRows() }
     }
 
     fun onRetrySearch() {

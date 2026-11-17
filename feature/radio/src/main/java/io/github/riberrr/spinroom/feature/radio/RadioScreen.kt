@@ -110,12 +110,13 @@ data class RadioActions(
     val onRetry: () -> Unit = {},
     val onRetrySearch: () -> Unit = {},
     val onNoticeShown: () -> Unit = {},
+    val onTogglePolishOnly: () -> Unit = {},
 ) {
     companion object {
         fun of(vm: RadioViewModel) = RadioActions(
             vm::play, vm::toggleFavorite, vm::openMenu, vm::closeMenu, vm::startMove, vm::stopMove, vm::moveBy, vm::removeMenuStation,
             vm::openPicker, vm::closePicker, vm::pickOption, vm::onPopular, vm::openSearch, vm::closeSearch,
-            vm::onType, vm::onBackspace, vm::onToggleSymbols, vm::onRetry, vm::onRetrySearch, vm::onNoticeShown,
+            vm::onType, vm::onBackspace, vm::onToggleSymbols, vm::onRetry, vm::onRetrySearch, vm::onNoticeShown, vm::onTogglePolishOnly,
         )
     }
 }
@@ -210,7 +211,19 @@ fun RadioContent(state: RadioUiState, actions: RadioActions, modifier: Modifier 
             }
             Column(Modifier.weight(1f).fillMaxHeight()) {
                 if (searching) {
-                    Row(Modifier.padding(bottom = 14.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.padding(bottom = 14.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        FocusSurface(
+                            onClick = actions.onTogglePolishOnly, shape = CircleShape, focusedScale = 1.06f,
+                            containerColor = SpinroomColors.Glass, focusedContainerColor = SpinroomColors.GlassHigh,
+                        ) {
+                            Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.radio_chip_language) + ": ", color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.labelLarge)
+                                Text(
+                                    stringResource(if (state.polishOnly) R.string.radio_lang_polish else R.string.radio_chip_all),
+                                    color = SpinroomColors.TextPrimary, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, maxLines = 1,
+                                )
+                            }
+                        }
                         Text(
                             stringResource(R.string.radio_stations_count, state.searchRows.size),
                             color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodyMedium,
