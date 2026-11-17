@@ -55,6 +55,15 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val radioLabel = stringResource(R.string.pinned_radio)
     val playlistLabel = stringResource(R.string.pinned_playlist)
     LaunchedEffect(Unit) { shell.openDrawer.collect { runCatching { dockFocus.requestFocus() } } }
+    LaunchedEffect(Unit) {
+        shell.navigate.collect { target ->
+            navController.navigate(target) {
+                popUpTo(Routes.HOME) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
     var menuHasFocus by remember { mutableStateOf(false) }
     var menuOpenedByUser by remember { mutableStateOf(false) }
     var leftEdgeHit by remember { mutableStateOf(false) }

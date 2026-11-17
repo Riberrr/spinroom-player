@@ -9,6 +9,10 @@ import io.github.riberrr.spinroom.core.data.AppearanceSettings
 import io.github.riberrr.spinroom.core.data.AuthRepository
 import io.github.riberrr.spinroom.core.data.HomeLayout
 import io.github.riberrr.spinroom.core.data.HomeLayoutSettings
+import io.github.riberrr.spinroom.core.data.KeyAssignment
+import io.github.riberrr.spinroom.core.data.KeyAssignments
+import io.github.riberrr.spinroom.core.data.KeyBindingsRepository
+import io.github.riberrr.spinroom.core.data.KeyCaptureGate
 import io.github.riberrr.spinroom.core.data.PlayerName
 import io.github.riberrr.spinroom.core.data.PlayerNameStore
 import io.github.riberrr.spinroom.core.data.PlayerRenamer
@@ -69,6 +73,9 @@ data class SettingsUiState(
     val homeLayout: HomeLayout = HomeLayout(),
     /** Name the user chose for this TV; null = none yet (MA shows the device name). */
     val playerName: String? = null,
+    /** Remote shortcuts (SUI8b) and the "Działaj poza aplikacją" preference. */
+    val keys: KeyAssignments = KeyAssignments(),
+    val keysGlobal: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -85,6 +92,8 @@ class SettingsViewModel @Inject constructor(
     private val homeLayoutSettings: HomeLayoutSettings,
     private val playerNameStore: PlayerNameStore,
     private val renamer: PlayerRenamer,
+    private val keyBindings: KeyBindingsRepository,
+    private val captureGate: KeyCaptureGate,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsUiState())
@@ -112,6 +121,8 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { appearanceSettings.appearance.collect { a -> _state.update { it.copy(appearance = a) } } }
         viewModelScope.launch { homeLayoutSettings.layout.collect { l -> _state.update { it.copy(homeLayout = l) } } }
         viewModelScope.launch { playerNameStore.name.collect { n -> _state.update { it.copy(playerName = n) } } }
+        viewModelScope.launch { keyBindings.assignments.collect { k -> _state.update { it.copy(keys = k) } } }
+        viewModelScope.launch { keyBindings.globalEnabled.collect { g -> _state.update { it.copy(keysGlobal = g) } } }
         viewModelScope.launch { connection.state.collect { c -> _state.update { it.copy(connection = c) } } }
         viewModelScope.launch {
             discovery.servers()
@@ -136,6 +147,18 @@ class SettingsViewModel @Inject constructor(
     fun setScreensaver(on: Boolean) { viewModelScope.launch { appearanceSettings.setScreensaver(on) } }
     fun moveRow(id: String, delta: Int) { viewModelScope.launch { homeLayoutSettings.update { it.moved(id, delta) } } }
     fun toggleRow(id: String) { viewModelScope.launch { homeLayoutSettings.update { it.toggled(id) } } }
+
+    fun addKey(a: KeyAssignment) { viewModelScope.launch { keyBindings.update { it.with(a) } } }
+    fun removeKey(a: KeyAssignment) { viewModelScope.launch { keyBindings.update { it.without(a) } } }
+    fun toggleKeyScope(a: KeyAssignment) { viewModelScope.launch { keyBindings.update { it.with(a.copy(global = !a.global)) } } }
+    fun resetKeys() { viewModelScope.launch { keyBindings.reset() } }
+
+    /** True while the "press a button" step is up: the activity then stops running shortcuts. */
+    fun setKeyCapture(on: Boolean) = captureGate.set(on)
+
+    override fun onCleared() {
+        captureGate.set(false)
+    }
 
     /** Saves the name locally and renames the TV's player in MA. Returns false when [raw] is invalid. */
     fun renamePlayer(raw: String): Boolean {

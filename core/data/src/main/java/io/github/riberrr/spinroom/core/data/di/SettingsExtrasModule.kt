@@ -7,6 +7,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.riberrr.spinroom.core.data.HomeLayoutSettings
+import io.github.riberrr.spinroom.core.data.KeyBindingsRepository
+import io.github.riberrr.spinroom.core.data.KeyCaptureGate
 import io.github.riberrr.spinroom.core.data.PlayerNameStore
 import io.github.riberrr.spinroom.core.data.PlayerRenamer
 import io.github.riberrr.spinroom.core.maapi.MaClient
@@ -19,4 +21,6 @@ object SettingsExtrasModule {
     @Provides @Singleton fun playerNameStore(store: DataStore<Preferences>) = PlayerNameStore(store)
     @Provides @Singleton fun playerRenamer(c: MaClient) = PlayerRenamer(c)
     @Provides @Singleton fun homeLayoutSettings(store: DataStore<Preferences>) = HomeLayoutSettings(store)
+    @Provides @Singleton fun keyBindingsRepository(store: DataStore<Preferences>) = KeyBindingsRepository(store)
+    @Provides @Singleton fun keyCaptureGate() = KeyCaptureGate()
 }

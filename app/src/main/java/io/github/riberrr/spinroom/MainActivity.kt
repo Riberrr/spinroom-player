@@ -28,6 +28,8 @@ import io.github.riberrr.spinroom.feature.nowplaying.ScreensaverLayer
 class MainActivity : ComponentActivity() {
     @Inject lateinit var appearanceSettings: AppearanceSettings
     @Inject lateinit var playerNameStore: io.github.riberrr.spinroom.core.data.PlayerNameStore
+    @Inject lateinit var keyBindingsRepository: io.github.riberrr.spinroom.core.data.KeyBindingsRepository
+    @Inject lateinit var keyCaptureGate: io.github.riberrr.spinroom.core.data.KeyCaptureGate
     private var inputTick by mutableIntStateOf(0)
     private var screensaver by mutableStateOf(false)
     private var swallowKeyUp = false
@@ -42,6 +44,10 @@ class MainActivity : ComponentActivity() {
         override fun previousTrack() = nowPlaying.onPrevious()
         override fun nextStation() { if (!shell.stepStation(ui.mediaUri, ui.mediaName, true)) nowPlaying.onNext() }
         override fun previousStation() { if (!shell.stepStation(ui.mediaUri, ui.mediaName, false)) nowPlaying.onPrevious() }
+        override fun playPause() = nowPlaying.onPlayPause()
+        override fun toggleFavorite() = nowPlaying.onFavorite()
+        override fun openRoute(route: String) = shell.requestRoute(route)
+        override fun playFavoriteStation(n: Int) { shell.playStationNumber(n) }
     })
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +56,9 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             // A new TV name takes effect after a player restart (the first value is the one already in use).
             playerNameStore.name.drop(1).collect { SpinroomPlaybackService.restart(this@MainActivity) }
+        }
+        lifecycleScope.launch {
+            keyBindingsRepository.assignments.collect { remote.bindings = AssignedKeyBindings(it) }
         }
         setContent {
             val look by appearanceSettings.appearance.collectAsState(initial = Appearance())
@@ -77,7 +86,8 @@ class MainActivity : ComponentActivity() {
             swallowKeyUp = false
             return true
         }
-        if (remote.dispatch(KeyPress(event.keyCode, event.action == KeyEvent.ACTION_DOWN, event.repeatCount))) return true
+        // While settings learns a new key, the existing shortcuts stay quiet so the key reaches the capture overlay.
+        if (!keyCaptureGate.active.value && remote.dispatch(KeyPress(event.keyCode, event.action == KeyEvent.ACTION_DOWN, event.repeatCount))) return true
         return super.dispatchKeyEvent(event)
     }
 }

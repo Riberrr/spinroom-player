@@ -89,7 +89,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
                     Button(stringResource(R.string.latency_entry), onClick = { showLatency = true })
                 }
                 SettingsCategory.Appearance -> AppearanceSection(ui, viewModel)
-                SettingsCategory.Remote -> Text(stringResource(R.string.remote_soon), color = SpinroomColors.TextSecondary)
+                SettingsCategory.Remote -> RemoteKeysSection(ui, viewModel)
                 SettingsCategory.Home -> HomeRowsSection(ui.homeLayout, viewModel)
                 SettingsCategory.About -> Button(stringResource(R.string.about_open), onClick = { showAbout = true })
             }
