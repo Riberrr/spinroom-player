@@ -53,6 +53,9 @@ class HomeViewModel @Inject constructor(private val backend: HomeBackend) : View
             backend.libraryChanges.debounce(LIBRARY_DEBOUNCE_MS).collect { refresh() }
         }
         viewModelScope.launch {
+            backend.playerName.collect { n -> _state.update { it.copy(playerName = n) } }
+        }
+        viewModelScope.launch {
             backend.playerId.collect { id ->
                 playerId = id
                 _state.update { it.copy(hasPlayer = id.isNotBlank()) }

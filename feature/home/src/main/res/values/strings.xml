@@ -13,7 +13,8 @@
     <string name="home_stations_empty">Dodaj stację do ulubionych</string>
     <string name="home_playlists_empty">Dodaj playlistę do ulubionych</string>
     <string name="home_playlist_label">Playlista</string>
-    <string name="home_connected">Połączono z serwerem</string>
+    <string name="home_connected">Połączono</string>
+    <string name="home_connected_named">%1$s · połączono</string>
     <string name="home_offline">Brak połączenia z serwerem</string>
     <string name="home_error_title">Nie udało się wczytać ekranu</string>
     <string name="home_error_message">Sprawdź, czy serwer Music Assistant jest włączony, i spróbuj ponownie.</string>
