@@ -101,3 +101,4 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 - SUI9: karta w rogu to `TYPE_ACCESSIBILITY_OVERLAY` (usługa ułatwień dostępu go ma bez `SYSTEM_ALERT_WINDOW`, więc brak dodatkowej zgody); gdy system odmówi okna, zwykłe powiadomienie. Odstępstwo od planu (SYSTEM_ALERT_WINDOW) uzasadnione prostszą zgodą.
 - SUI9: build do Google Play bez usługi: `-PglobalKeys=false` (usuwa usługę z manifestu przez `manifestPlaceholders`, `BuildConfig.GLOBAL_KEYS=false` chowa przełącznik przez `GlobalKeysSupport.available`).
 SFix-UI1: link „Wszystkie …→” w nagłówku sekcji Startu zamiast kafla; kafle stacji 84 dp; chip z nazwą odtwarzacza; ImeAction.Next w polach Ustawień
+- SFix-UI2: search dedupes by name+uri, orders favorites→Polish→rest; only a Polish/all toggle (no genre/country data per station in search).
