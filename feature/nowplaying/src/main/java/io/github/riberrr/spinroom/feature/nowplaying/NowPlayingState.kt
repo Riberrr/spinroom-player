@@ -43,6 +43,11 @@ data class NowPlayingUiState(
     val shuffle: Boolean = false,
     val repeat: RepeatMode = RepeatMode.OFF,
     val favorite: Boolean = false,
+    /** Current item is a radio station (SUI2: dock shows favorite stations, CH+/CH- switch stations). */
+    val isRadio: Boolean = false,
+    /** Uri and name of the current media item (to find the playing station among the favorites). */
+    val mediaUri: String = "",
+    val mediaName: String = "",
     val volume: Int? = null,
     /** Next few tracks after the current one (preview card). */
     val upcoming: List<QueueRow> = emptyList(),

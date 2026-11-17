@@ -144,6 +144,9 @@ class NowPlayingViewModel internal constructor(
                 shuffle = q.shuffleEnabled,
                 repeat = RepeatMode.fromApi(q.repeatMode),
                 favorite = favorite,
+                isRadio = media?.mediaType == "radio",
+                mediaUri = media?.uri.orEmpty(),
+                mediaName = media?.name.orEmpty(),
                 queue = rows,
                 upcoming = rows.filter { r -> r.index > currentIndex }.take(UPCOMING_COUNT),
             )

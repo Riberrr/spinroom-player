@@ -12,6 +12,8 @@ import io.github.riberrr.spinroom.feature.details.DetailsScreen
 import io.github.riberrr.spinroom.feature.home.HomeScreen
 import io.github.riberrr.spinroom.feature.library.LibraryScreen
 import io.github.riberrr.spinroom.feature.nowplaying.NowPlayingScreen
+import io.github.riberrr.spinroom.feature.playlists.PlaylistsScreen
+import io.github.riberrr.spinroom.feature.radio.RadioScreen
 import io.github.riberrr.spinroom.feature.search.SearchScreen
 import io.github.riberrr.spinroom.feature.settings.SettingsScreen
 import io.github.riberrr.spinroom.feature.sources.SourcesScreen
@@ -19,6 +21,8 @@ import io.github.riberrr.spinroom.feature.sources.SourcesScreen
 object Routes {
     const val HOME = "home"
     const val NOW_PLAYING = "nowplaying"
+    const val RADIO = "radio"
+    const val PLAYLISTS = "playlists"
     const val LIBRARY = "library"
     const val SOURCES = "sources"
     const val SEARCH = "search"
@@ -44,6 +48,15 @@ fun SpinroomNavHost(navController: NavHostController = rememberNavController()) 
                 )
             }
             composable(Routes.NOW_PLAYING) { NowPlayingScreen() }
+            composable(Routes.RADIO) {
+                RadioScreen(
+                    onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) },
+                    onOpenSources = { navController.navigate(Routes.SOURCES) },
+                    onOpenDetails = { uri -> navController.navigate(Routes.details(uri)) },
+                    onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                )
+            }
+            composable(Routes.PLAYLISTS) { PlaylistsScreen() }
             composable(Routes.LIBRARY) { LibraryScreen(onOpenItem = { navController.navigate(Routes.details(it)) }) }
             composable(Routes.SOURCES) { SourcesScreen() }
             composable(Routes.SEARCH) { SearchScreen(onOpenDetails = { uri -> navController.navigate(Routes.details(uri)) }) }

@@ -21,4 +21,7 @@
 Na emulatorze (2–3 zrzuty): menu rozwija się i zwija, przypięte działają, panel odtwarzacza otwiera się z Biblioteki, a `Wstecz` wraca na ten sam kafel. `check.sh` czyste, PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+**Działa:** menu boczne (ikony → po `←` etykiety + „Przypięte”: 5 ulubionych stacji/playlist), trasy `radio`/`playlists`, dolny `PlayerDock` (pasek → panel 240 dp przy wejściu fokusem; `Wstecz` lub 8 s bez ruchu zwija i wraca na ten sam kafel), `RemoteKeyDispatcher` (hold Play/Pause = panel, CH+/CH− = utwór lub ulubiona stacja w radiu).
+**API:** `PlayerDock`, `DockEntry`, `DockLabels`, `EntryThumb`, `SideMenu(pinned…)` w `:core:design`; `RemoteKeyDispatcher`, `KeyBindings`, `RemoteHandler`, `ShellViewModel` w `:app`. `NowPlayingUiState` +`isRadio/mediaUri/mediaName` (drobna zmiana w `:feature:nowplaying`).
+**Pułapki:** emulator = 960×540 dp, wszystko liczone pod to; zmiana `canFocus` fokusowanego paska dawała pętlę i OOM — pasek zostaje pod panelem; Play/Pause w emulatorze testowany `adb shell input keyevent --longpress 85`; na emulatorze brak własnego odtwarzacza w MA, więc dock sprawdzony na tymczasowym fake stanie (usunięty), nie na prawdziwym odtwarzaniu; CH+/CH− i stacje w docku nieprzetestowane na żywo (tylko JVM). „Źródła” usunięte z menu, dostępne ze Startu.
+**Dalej:** SUI8b podmienia `KeyBindings`; ekran Radio/Playlisty (SUI4/5) powinny dodać link „Wszystkie źródła”.

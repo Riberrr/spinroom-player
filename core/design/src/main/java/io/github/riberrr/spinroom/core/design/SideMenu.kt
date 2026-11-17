@@ -28,6 +28,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Icon
@@ -35,6 +36,9 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 
 data class SideMenuItem(val id: String, val label: String, val icon: ImageVector)
+
+/** A pinned favorite (station or playlist) in the expanded menu. [isStation] picks initials-on-color as the fallback thumbnail. */
+data class PinnedEntry(val id: String, val title: String, val subtitle: String, val imageUrl: String?, val isStation: Boolean)
 
 /**
  * Left navigation rail. Collapsed it shows only icons (88 dp); while any item has focus it expands
@@ -51,6 +55,9 @@ fun SideMenu(
     bottomItems: List<SideMenuItem> = emptyList(),
     enterFocusRequester: FocusRequester? = null,
     onFocusChange: (Boolean) -> Unit = {},
+    pinned: List<PinnedEntry> = emptyList(),
+    pinnedTitle: String = "",
+    onSelectPinned: (PinnedEntry) -> Unit = {},
 ) {
     var hasFocus by remember { mutableStateOf(false) }
     val requesters = remember { mutableMapOf<String, FocusRequester>() }
@@ -65,7 +72,7 @@ fun SideMenu(
                 .fillMaxHeight()
                 .wrapContentWidth(Alignment.Start, unbounded = true)
                 .width(width)
-                .background(SpinroomColors.Surface)
+                .background(SpinroomColors.Surface.copy(alpha = if (hasFocus) 0.94f else 1f))
                 .onFocusChanged {
                     hasFocus = it.hasFocus
                     onFocusChange(it.hasFocus)
@@ -81,15 +88,40 @@ fun SideMenu(
                     }
                 }
                 .focusGroup()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items.forEach { item ->
                 MenuEntry(item, item.id == selectedId, hasFocus, { onSelect(item.id) }, Modifier.focusRequester(requesters.getOrPut(item.id) { FocusRequester() }))
             }
+            if (hasFocus && pinned.isNotEmpty()) {
+                Text(
+                    pinnedTitle.uppercase(), Modifier.padding(start = 12.dp, top = 8.dp, bottom = 2.dp),
+                    style = MaterialTheme.typography.labelMedium, color = SpinroomColors.TextSecondary, maxLines = 1,
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                    pinned.forEach { entry -> PinnedRow(entry) { onSelectPinned(entry) } }
+                }
+            }
             Box(Modifier.weight(1f))
             bottomItems.forEach { item ->
                 MenuEntry(item, item.id == selectedId, hasFocus, { onSelect(item.id) }, Modifier.focusRequester(requesters.getOrPut(item.id) { FocusRequester() }))
+            }
+        }
+    }
+}
+
+@Composable
+private fun PinnedRow(entry: PinnedEntry, onClick: () -> Unit) {
+    FocusSurface(
+        onClick, Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
+        containerColor = Color.Transparent, focusedContainerColor = SpinroomColors.GlassHigh, focusedScale = 1.0f,
+    ) {
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+            EntryThumb(entry.title, entry.imageUrl, entry.isStation, Modifier.size(30.dp))
+            Column(Modifier.padding(start = 12.dp)) {
+                Text(entry.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(entry.subtitle, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -105,8 +137,8 @@ private fun MenuEntry(item: SideMenuItem, selected: Boolean, expanded: Boolean, 
         focusedContainerColor = SpinroomColors.SurfaceHigh,
         focusedScale = 1.0f,
     ) {
-        Row(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(item.icon, item.label, Modifier.size(28.dp), tint = if (selected) SpinroomColors.Accent else SpinroomColors.TextSecondary)
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(item.icon, item.label, Modifier.size(26.dp), tint = if (selected) SpinroomColors.Accent else SpinroomColors.TextSecondary)
             if (expanded) {
                 Text(item.label, Modifier.padding(start = 16.dp), style = MaterialTheme.typography.titleSmall, maxLines = 1)
             }
