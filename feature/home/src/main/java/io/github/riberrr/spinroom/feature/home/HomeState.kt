@@ -37,6 +37,8 @@ data class HomeUiState(
     val stations: List<StationTileState> = emptyList(),
     val rowOrder: List<HomeRow> = DEFAULT_ROW_ORDER,
     val hasPlayer: Boolean = false,
+    /** Name of this TV as a player; shown in the status chip. */
+    val playerName: String? = null,
     /** True after the first load with at least one successful call: rows (empty ones with a hint) replace the spinner. */
     val loaded: Boolean = false,
     /** No server address/token saved: offer Settings instead of a spinner. */

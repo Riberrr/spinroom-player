@@ -28,6 +28,9 @@ interface HomeBackend {
     val playerId: Flow<String>
     val serverAddress: Flow<String>
 
+    /** Name of this TV as a player (from Settings); null = default. */
+    val playerName: Flow<String?> get() = kotlinx.coroutines.flow.flowOf(null)
+
     /** Emits whenever the library changed on the server (favorite toggled, item added/removed). */
     val libraryChanges: Flow<Unit> get() = emptyFlow()
 
@@ -45,6 +48,7 @@ class MaHomeBackend @Inject constructor(
     private val library: LibraryApi,
     private val client: MaClient,
     settings: SettingsStore,
+    playerNames: io.github.riberrr.spinroom.core.data.PlayerNameStore,
     connectionManager: ConnectionManager,
 ) : HomeBackend {
     init { connectionManager.start() }
@@ -52,6 +56,7 @@ class MaHomeBackend @Inject constructor(
     override val connection = connectionManager.state
     override val playerId = settings.settings.map { it.playerId }
     override val serverAddress = settings.settings.map { it.serverAddress }
+    override val playerName: Flow<String?> = playerNames.name
 
     override val libraryChanges: Flow<Unit> = client.events
         .filter { it.event == "media_item_updated" || it.event == "media_item_added" || it.event == "media_item_deleted" }

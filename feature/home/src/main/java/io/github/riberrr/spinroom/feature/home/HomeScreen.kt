@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,7 +54,6 @@ import io.github.riberrr.spinroom.core.design.GlassSurface
 import io.github.riberrr.spinroom.core.design.ItemMenuHost
 import io.github.riberrr.spinroom.core.design.LocalItemMenu
 import io.github.riberrr.spinroom.core.design.PlaylistMosaic
-import io.github.riberrr.spinroom.core.design.SectionRow
 import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
 import io.github.riberrr.spinroom.core.design.StationTile
@@ -60,7 +61,10 @@ import io.github.riberrr.spinroom.core.design.stationColor
 import io.github.riberrr.spinroom.core.design.stationInitials
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 
-private val TILE_SIZE = 148.dp
+private val TILE_SIZE = 100.dp
+
+/** Station tiles: 8 per row on a 960 dp TV screen (mockup 03B). */
+private val STATION_SIZE = 84.dp
 
 /** Actions the screen can trigger; previews pass no-ops. Navigation targets come from `:app`. */
 data class HomeActions(
@@ -169,7 +173,10 @@ private fun Rows(state: HomeUiState, actions: HomeActions, onBackdrop: (Backdrop
 }
 
 private fun LazyListScope.stationsRow(state: HomeUiState, actions: HomeActions, memory: FocusMemory) = item(key = "row:stations") {
-    SectionRow(stringResource(R.string.home_stations)) {
+    HomeSection(
+        stringResource(R.string.home_stations), stringResource(R.string.home_all_stations), actions.onOpenRadio,
+        with(memory) { Modifier.track("all:stations") },
+    ) {
         if (state.stations.isEmpty()) item(key = "hint:stations") { EmptyHint(stringResource(R.string.home_stations_empty)) }
         items(state.stations, key = { it.key }) { s ->
             val menu = LocalItemMenu.current
@@ -177,6 +184,7 @@ private fun LazyListScope.stationsRow(state: HomeUiState, actions: HomeActions, 
                 StationTile(
                     name = s.name,
                     subtitle = "",
+                    size = STATION_SIZE,
                     onClick = { actions.onPlayStation(s) },
                     modifier = Modifier.track("st:${s.key}", BackdropTarget(s.coverUrl, stationColor(s.name))),
                     onLongClick = s.uri?.let { u -> { menu(u, s.name) } },
@@ -184,14 +192,14 @@ private fun LazyListScope.stationsRow(state: HomeUiState, actions: HomeActions, 
                 )
             }
         }
-        item(key = "all:stations") {
-            with(memory) { AllTile(stringResource(R.string.home_all_stations), actions.onOpenRadio, Modifier.track("all:stations")) }
-        }
     }
 }
 
 private fun LazyListScope.playlistsRow(state: HomeUiState, actions: HomeActions, memory: FocusMemory) = item(key = "row:playlists") {
-    SectionRow(stringResource(R.string.home_playlists)) {
+    HomeSection(
+        stringResource(R.string.home_playlists), stringResource(R.string.home_all_playlists), actions.onOpenPlaylists,
+        with(memory) { Modifier.track("all:playlists") },
+    ) {
         if (state.playlists.isEmpty()) item(key = "hint:playlists") { EmptyHint(stringResource(R.string.home_playlists_empty)) }
         items(state.playlists, key = { it.key }) { p ->
             val menu = LocalItemMenu.current
@@ -207,14 +215,11 @@ private fun LazyListScope.playlistsRow(state: HomeUiState, actions: HomeActions,
                 Text(p.title, Modifier.padding(top = 10.dp), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        item(key = "all:playlists") {
-            with(memory) { AllTile(stringResource(R.string.home_all_playlists), actions.onOpenPlaylists, Modifier.track("all:playlists")) }
-        }
     }
 }
 
 private fun LazyListScope.recentRow(state: HomeUiState, actions: HomeActions, memory: FocusMemory) = item(key = "row:recent") {
-    SectionRow(stringResource(R.string.home_recent)) {
+    HomeSection(stringResource(R.string.home_recent)) {
         items(state.recent, key = { it.key }) { t ->
             with(memory) { Tile(t, actions, Modifier.track("recent:${t.key}", BackdropTarget(t.coverUrl, null))) }
         }
@@ -238,7 +243,11 @@ private fun Header(state: HomeUiState) {
                 val dot = if (state.isConnected) SpinroomColors.Success else SpinroomColors.TextSecondary
                 Box(Modifier.size(10.dp).background(dot, CircleShape))
                 Text(
-                    stringResource(if (state.isConnected) R.string.home_connected else R.string.home_offline),
+                    when {
+                        !state.isConnected -> stringResource(R.string.home_offline)
+                        state.playerName != null -> stringResource(R.string.home_connected_named, state.playerName)
+                        else -> stringResource(R.string.home_connected)
+                    },
                     style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary,
                 )
             }
@@ -246,16 +255,35 @@ private fun Header(state: HomeUiState) {
     }
 }
 
-/** Last tile of a row: opens the full Radio / Playlists screen. */
+/** Section title with an optional "see all" link on the right (mockup 03B), then a horizontally scrolling row. */
 @Composable
-private fun AllTile(label: String, onClick: () -> Unit, modifier: Modifier) {
-    FocusSurface(
-        onClick, modifier.size(TILE_SIZE), focusedScale = 1.08f,
-        containerColor = SpinroomColors.Glass, focusedContainerColor = SpinroomColors.GlassHigh,
-    ) {
-        Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
-            Text(label, style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center)
+private fun HomeSection(
+    title: String,
+    linkLabel: String? = null,
+    onLink: () -> Unit = {},
+    linkModifier: Modifier = Modifier,
+    content: LazyListScope.() -> Unit,
+) {
+    Column {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 48.dp).padding(bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+            if (linkLabel != null) {
+                FocusSurface(
+                    onLink, linkModifier, shape = RoundedCornerShape(8.dp), focusedScale = 1.05f,
+                    containerColor = Color.Transparent, focusedContainerColor = SpinroomColors.GlassHigh,
+                ) {
+                    Text(
+                        linkLabel, Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary,
+                    )
+                }
+            }
         }
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 48.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            content = content,
+        )
     }
 }
 

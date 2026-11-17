@@ -126,11 +126,11 @@ internal fun SettingsTextField(
                 visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = if (secret) KeyboardType.Password else keyboardType,
-                    imeAction = ImeAction.Done,
+                    imeAction = ImeAction.Next,
                     autoCorrectEnabled = false,
                     showKeyboardOnFocus = false,
                 ),
-                keyboardActions = KeyboardActions(onDone = { finish() }),
+                keyboardActions = KeyboardActions(onNext = { finish(FocusDirection.Down) }, onDone = { finish() }),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(input)
