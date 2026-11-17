@@ -18,3 +18,9 @@ Package `io.github.riberrr.spinroom.feature.library`. Structure follows "Wzorzec
 - Pager and counts run only once the server is connected and authenticated; counts for all tabs reload each time that happens (they fail silently while offline).
 - Letter rail is shown only when the grid has items.
 - Not yet: "Ulubione" tab, sort/source filters from the mockup (not in S10 scope).
+
+## SUI5: list + preview, filters
+- Chips „Siatka / Lista” (remembered in `ViewModePrefs`), „Filtry · n” and „Wyczyść filtry”. List mode = glass rows (thumbnail, title, artist, year) + `PreviewPane` (cover, metadata, Odtwórz / Losowo / ♡, first 8 tracks of an album or playlist loaded 250 ms after selection settles). `ContentBackdrop` follows the focused cover in both modes.
+- `FilterPanel` (public, `FilterPanelActions`, `FilterChip`) slides in on `←` from the first grid column or any list row; Back closes it. Genre / Dekada / Źródło / Tylko ulubione; results update at once. Candidate to move to `:core:design` when SUI6 uses it.
+- Filter model: `LibraryFilter` in `:core:data`. Active filter ⇒ plain (non-counted) pager, letter rail hidden, letter jump disabled.
+- Physical keyboard: unmodified A–Z jumps to the first item of that letter and focuses it (`letterOf`).

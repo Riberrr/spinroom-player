@@ -58,7 +58,7 @@ fun SpinroomNavHost(navController: NavHostController = rememberNavController()) 
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 )
             }
-            composable(Routes.PLAYLISTS) { PlaylistsScreen() }
+            composable(Routes.PLAYLISTS) { PlaylistsScreen(onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) }, onOpenDetails = { uri -> navController.navigate(Routes.details(uri)) }) }
             composable(Routes.LIBRARY) { LibraryScreen(onOpenItem = { navController.navigate(Routes.details(it)) }) }
             composable(Routes.SOURCES) { SourcesScreen() }
             composable(Routes.SEARCH) { SearchScreen(onOpenDetails = { uri -> navController.navigate(Routes.details(uri)) }) }
