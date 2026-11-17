@@ -27,10 +27,10 @@ W fali 2 tylko SUI2 zmienia `:core:design`; SUI3 i SUI5 zgłaszają braki w „W
 | ✓ | SUI4 Radio | `SUI4-radio.md` | SUI1, SUI2 | sonnet | high |
 | ✓ | SUI6 Szukaj | `SUI6-search.md` | SUI1, SUI5 | sonnet | medium |
 | ✓ | SUI8a Ustawienia, nazwa, Wygląd | `SUI8a-settings.md` | SUI1 | sonnet | medium |
-| | SUI7 Odtwarzacz 40:60 | `SUI7-now-playing.md` | SUI1, SUI2, SUI4 | sonnet | high |
-| | SUI8b Przyciski pilota | `SUI8b-remote-keys.md` | SUI2, SUI8a | sonnet | medium |
-| | SUI9 CH± poza aplikacją | `SUI9-global-keys.md` | SUI7, SUI8b | **opus** | high |
-| | SUIv Przegląd na emulatorze | `SUIv-verify.md` | wszystkie | sonnet | low |
+| ✓ | SUI7 Odtwarzacz 40:60 | `SUI7-now-playing.md` | SUI1, SUI2, SUI4 | sonnet | high |
+| ✓ | SUI8b Przyciski pilota | `SUI8b-remote-keys.md` | SUI2, SUI8a | sonnet | medium |
+| ✓ | SUI9 CH± poza aplikacją | `SUI9-global-keys.md` | SUI7, SUI8b | **opus** | high |
+| ✓ | SUIv Przegląd na emulatorze | `SUIv-verify.md` | wszystkie | sonnet | low |
 | | SFix-UI… poprawki z SUIv | `SFix-template.md` | SUIv | haiku (drobne) / sonnet | low–medium |
 
 Dobór modelu: **Haiku** do mechanicznych zmian (szkielety modułów, teksty, drobne SFix z jasnym opisem), **Sonnet** do ekranów, **Opus** tylko tam, gdzie błąd kosztuje wszystkich (fundament stylu, nawigacja i fokus w powłoce, usługa systemowa). Gdy sesja Sonnet utknie dwa razy na tym samym, koordynator może ją zakończyć i uruchomić tę samą sesję na Opus z jednym zdaniem o problemie.
