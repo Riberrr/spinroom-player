@@ -29,6 +29,8 @@ data class RadioUiState(
     val query: String = "",
     val symbols: Boolean = false,
     val searchRows: List<RadioRow> = emptyList(),
+    /** Search shows only Polish stations (default: all, Polish first). */
+    val polishOnly: Boolean = false,
     val searchLoading: Boolean = false,
     val searchFailed: Boolean = false,
     /** Context menu of a favorite tile. */
