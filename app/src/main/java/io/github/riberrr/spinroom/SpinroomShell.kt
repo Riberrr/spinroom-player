@@ -3,7 +3,18 @@ package io.github.riberrr.spinroom
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.unit.dp
+import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Text
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -83,10 +94,11 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     if (menuHasFocus) BackHandler { runCatching { screenFocus.requestFocus() } }
 
     Row(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
+        Box(Modifier.width(88.dp).fillMaxHeight().zIndex(1f)) {
         SideMenu(
             // → from the menu enters the screen itself (restored/first control). The default focus search would pick the
             // geometrically nearest button instead: the mini player, for the bottom "Ustawienia" item.
-            modifier = Modifier.onPreviewKeyEvent { event ->
+            modifier = Modifier.padding(top = 44.dp).onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight && menuHasFocus) {
                     runCatching { screenFocus.requestFocus() }.isSuccess
                 } else false
@@ -101,7 +113,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 }
             },
             bottomItems = bottom,
-            pinned = pinned.map { PinnedEntry(it.uri, it.name, if (it.isStation) radioLabel else playlistLabel, it.imageUrl, it.isStation) },
+            pinned = pinned.take(MAX_PINNED).map { PinnedEntry(it.uri, it.name, if (it.isStation) radioLabel else playlistLabel, it.imageUrl, it.isStation) },
             pinnedTitle = stringResource(R.string.menu_pinned),
             onSelectPinned = { entry ->
                 val fav = pinned.firstOrNull { it.uri == entry.id } ?: return@SideMenu
@@ -119,6 +131,8 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 if (!it) menuOpenedByUser = false
             },
         )
+            MenuLogo(Modifier.align(Alignment.TopCenter).padding(top = 8.dp))
+        }
         Column(
             Modifier
                 .weight(1f)
@@ -166,3 +180,14 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         }
     }
 }
+
+/** App mark above the menu rail (mockup 03B): accent square with a note; no text, so the rail's width does not matter. */
+@Composable
+private fun MenuLogo(modifier: Modifier = Modifier) {
+    Box(modifier.size(32.dp).background(SpinroomColors.Accent, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
+        Text("♪", color = SpinroomColors.Bg, style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+/** The logo takes a row of the rail: with more pinned entries the expanded rail would push "Ustawienia" off screen. */
+private const val MAX_PINNED = 4

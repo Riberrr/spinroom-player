@@ -17,3 +17,5 @@ Wg `SFix-template.md`.
 - Ustawienia, Enter w polu tekstowym: `ImeAction.Next` + `onNext` przenosi do następnego elementu (sprawdzone na emulatorze: Adres → następny przycisk, okno nazwy się nie otwiera).
 - Lewo z listy kategorii: na emulatorze działa już na tym kodzie (otwiera szynę) — nie udało się odtworzyć; jeśli na TV nadal zawodzi, to inny stan fokusu (do sprawdzenia na TV).
 - Poza zakresem: logo w szynie menu (`:core:design` SideMenu / `:app`) — do osobnej poprawki. Test emulatora: apk debug ma pakiet `.debug`.
+- Logo w szynie (`:app`, `SpinroomShell.kt`): akcentowy kwadrat z nutą nad szyną (jak 03B), szyna przesunięta o 44 dp w dół; przypięte w rozwiniętej szynie ograniczone do 4 (`MAX_PINNED`), bo inaczej „Ustawienia” wypadają poza ekran. Zweryfikowane na emulatorze (zwinięta i rozwinięta).
+- Punkt 3: kod `SettingsScreen` nie obsługuje Lewo; powłoka (`SpinroomShell`) otwiera szynę, gdy Lewo nie ma dokąd iść — na emulatorze działa. Nie sprawdzone na TV (zasada: bez wybudzania ekranu TV); jeśli zawodzi na TV, zacząć od sprawdzenia, który element ma fokus.
