@@ -84,3 +84,6 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 - SUI5: z aktywnym filtrem Biblioteka używa listy bez placeholderów (łączna liczba nieznana), więc skok do litery działa tylko bez filtra.
 - SUI5: w Playlistach OK = Odtwórz, a przyciski „Odtwórz / Losowo / Szczegóły” pod kafelkiem są osiągalne przez ↓ (→ zostaje nawigacją po siatce, inaczej nie da się przejść do następnej kolumny).
 - SUI5: `←` na pierwszej kolumnie / wierszu listy otwiera panel filtrów (menu boczne nadal osiągalne z rzędu zakładek); Wstecz zamyka panel.
+- SUI6: Szukaj używa `FilterPanel` z `:feature:library` (zależność modułu `:feature:search` od `:feature:library`, do przeniesienia do `:core:design` w następnej fali); filtry (ulubione, dekada, źródło) działają po stronie klienta na wynikach, bo wyniki wyszukiwania nie niosą gatunku.
+- SUI6: wyniki z providerów przychodzą z `favorite=false`, więc prawdziwy stan ulubionych sprawdzamy leniwie (`item_by_uri`) po zaznaczeniu wiersza; zmiana użytkownika zawsze wygrywa. Długie OK na wyniku = serce (zastępuje menu kontekstowe w Szukaj), „Cofnij” przez ~5 s.
+- SUI6: SUI4 jeszcze niescalone, więc nowa ulubiona stacja idzie tylko do ulubionych MA (bez kolejności z SUI4).
