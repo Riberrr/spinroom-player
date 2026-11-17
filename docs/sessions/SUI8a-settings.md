@@ -22,4 +22,10 @@
 - PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Ustawienia w dwóch kolumnach (`SettingsCategory`): Połączenie (serwer, logowanie, nazwa odtwarzacza, lista graczy), Odtwarzanie (start z TV, opóźnienie), Wygląd, Przyciski pilota (zaślepka dla SUI8b), Ekran główny, O aplikacji. Fokus na kategorii pokazuje jej treść.
+- Wygląd: tło odtwarzacza (blur/color/solid, nowe `Appearance.playerBackground`), motyw, 5 akcentów, wygaszacz (domyślnie wyłączony), podgląd. `MainActivity` czyta `AppearanceSettings` (motyw i akcent zmieniają się od razu w całej aplikacji); wygaszacz włącza się tylko przy fladze.
+- Ekran główny: `HomeLayoutSettings` (`HomeRows` stations/playlists/recent, kolejność + widoczność). **Do zrobienia przez Start:** `HomeViewModel/HomeScreen` mają czytać `HomeLayout`; NowPlaying ma czytać `playerBackground` (nie robiłem, poza zakresem).
+- Nazwa odtwarzacza: walidacja `PlayerName.validate` (1–40 znaków po trim). Mechanizm: zapis w `PlayerNameStore`; `PlaybackHost.playerName()` → `SendspinReceiver` wysyła ją w `client/hello.name` i mDNS `name`; `MainActivity` restartuje usługę po zmianie. Dodatkowo próba `config/players/save` (tylko admin MA; konto TV dostaje „no permission”, to tylko log).
+- Sprawdzone na emulatorze: log `started as "Kuchnia"` i mDNS `Kuchnia`. **Niesprawdzone:** czy MA pokazuje nową nazwę, bo MA nie łączy się z emulatorem (gracz TV w MA to inne urządzenie). Do sprawdzenia na TV 10.0.0.6; MA może zachować starą nazwę dla już zarejestrowanego gracza.
+- Pułapki: lint na lokalnym `local.properties` z `sdk.dir` zgłasza PropertyEscape (nie dotyczy repo); debug ma applicationId `.debug`; menu boczne ma teraz ~10 pozycji do „Ustawień”.
+- Zmiany poza zakresem (minimalne, do przejrzenia): `:app` (`MainActivity`, `SpinroomApp`), `:core:audio` (`PlaybackHost.playerName`, `SendspinReceiver.customName`, `SpinroomPlaybackService.restart`).

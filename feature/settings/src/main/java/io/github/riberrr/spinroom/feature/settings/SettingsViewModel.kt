@@ -4,7 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.riberrr.spinroom.core.data.Appearance
+import io.github.riberrr.spinroom.core.data.AppearanceSettings
 import io.github.riberrr.spinroom.core.data.AuthRepository
+import io.github.riberrr.spinroom.core.data.HomeLayout
+import io.github.riberrr.spinroom.core.data.HomeLayoutSettings
+import io.github.riberrr.spinroom.core.data.PlayerName
+import io.github.riberrr.spinroom.core.data.PlayerNameStore
+import io.github.riberrr.spinroom.core.data.PlayerRenamer
 import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.LibraryRepository
 import io.github.riberrr.spinroom.core.data.PlayerRepository
@@ -58,6 +65,10 @@ data class SettingsUiState(
     val playerId: String = "",
     /** MA player id of this TV (its Sendspin client id); empty until known. */
     val ownPlayerId: String = "",
+    val appearance: Appearance = Appearance(),
+    val homeLayout: HomeLayout = HomeLayout(),
+    /** Name the user chose for this TV; null = none yet (MA shows the device name). */
+    val playerName: String? = null,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -70,6 +81,10 @@ class SettingsViewModel @Inject constructor(
     private val discovery: MaServerDiscovery,
     private val playerRepository: PlayerRepository,
     private val sendspinCredentials: SendspinCredentials,
+    private val appearanceSettings: AppearanceSettings,
+    private val homeLayoutSettings: HomeLayoutSettings,
+    private val playerNameStore: PlayerNameStore,
+    private val renamer: PlayerRenamer,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsUiState())
@@ -94,6 +109,9 @@ class SettingsViewModel @Inject constructor(
                 .flatMapLatest { ready -> if (ready) playerRepository.players().catch { emit(emptyList()) } else flowOf(emptyList()) }
                 .collect { list -> _state.update { it.copy(players = list) } }
         }
+        viewModelScope.launch { appearanceSettings.appearance.collect { a -> _state.update { it.copy(appearance = a) } } }
+        viewModelScope.launch { homeLayoutSettings.layout.collect { l -> _state.update { it.copy(homeLayout = l) } } }
+        viewModelScope.launch { playerNameStore.name.collect { n -> _state.update { it.copy(playerName = n) } } }
         viewModelScope.launch { connection.state.collect { c -> _state.update { it.copy(connection = c) } } }
         viewModelScope.launch {
             discovery.servers()
@@ -111,6 +129,32 @@ class SettingsViewModel @Inject constructor(
     fun onPassword(v: String) = _state.update { it.copy(password = v) }
     fun onPickServer(server: DiscoveredServer) = _state.update { it.copy(address = server.address) }
     fun onPickPlayer(player: Player) { viewModelScope.launch { settings.setPlayerId(player.playerId) } }
+
+    fun setTheme(id: String) { viewModelScope.launch { appearanceSettings.setTheme(id) } }
+    fun setAccent(id: String) { viewModelScope.launch { appearanceSettings.setAccent(id) } }
+    fun setPlayerBackground(id: String) { viewModelScope.launch { appearanceSettings.setPlayerBackground(id) } }
+    fun setScreensaver(on: Boolean) { viewModelScope.launch { appearanceSettings.setScreensaver(on) } }
+    fun moveRow(id: String, delta: Int) { viewModelScope.launch { homeLayoutSettings.update { it.moved(id, delta) } } }
+    fun toggleRow(id: String) { viewModelScope.launch { homeLayoutSettings.update { it.toggled(id) } } }
+
+    /** Saves the name locally and renames the TV's player in MA. Returns false when [raw] is invalid. */
+    fun renamePlayer(raw: String): Boolean {
+        val name = (PlayerName.validate(raw) as? PlayerName.Result.Ok)?.name ?: return false
+        viewModelScope.launch {
+            playerNameStore.set(name)
+            val id = _state.value.ownPlayerId
+            if (id.isEmpty()) return@launch
+            try {
+                renamer.rename(id, name)
+                Log.i(TAG, "player renamed in MA")
+            } catch (e: CancellationException) {
+                if (e !is TimeoutCancellationException) throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "rename failed: ${e.javaClass.simpleName}: ${e.message}")
+            }
+        }
+        return true
+    }
 
     fun onAutostart() {
         val next = !_state.value.autostart

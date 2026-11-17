@@ -5,8 +5,15 @@ import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import io.github.riberrr.spinroom.core.data.Appearance
+import io.github.riberrr.spinroom.core.data.AppearanceSettings
+import javax.inject.Inject
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,6 +26,8 @@ import io.github.riberrr.spinroom.feature.nowplaying.ScreensaverLayer
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var appearanceSettings: AppearanceSettings
+    @Inject lateinit var playerNameStore: io.github.riberrr.spinroom.core.data.PlayerNameStore
     private var inputTick by mutableIntStateOf(0)
     private var screensaver by mutableStateOf(false)
     private var swallowKeyUp = false
@@ -38,11 +47,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SpinroomPlaybackService.start(this) // the TV is a Sendspin player whenever the app has run
+        lifecycleScope.launch {
+            // A new TV name takes effect after a player restart (the first value is the one already in use).
+            playerNameStore.name.drop(1).collect { SpinroomPlaybackService.restart(this@MainActivity) }
+        }
         setContent {
-            SpinroomTheme {
+            val look by appearanceSettings.appearance.collectAsState(initial = Appearance())
+            SpinroomTheme(theme = look.theme, accent = look.accent) {
                 Box {
                     SpinroomNavHost()
-                    ScreensaverLayer(inputTick, screensaver, onIdle = { screensaver = true })
+                    ScreensaverLayer(inputTick, screensaver, onIdle = { if (look.screensaver) screensaver = true })
                 }
             }
         }
