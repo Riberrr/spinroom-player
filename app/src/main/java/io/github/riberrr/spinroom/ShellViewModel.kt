@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.riberrr.spinroom.core.data.ConnectionManager
+import io.github.riberrr.spinroom.core.data.FavoriteStationsRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
 import io.github.riberrr.spinroom.core.maapi.LibraryApi
@@ -35,6 +36,7 @@ class ShellViewModel @Inject constructor(
     private val library: LibraryApi,
     private val queues: PlayerQueueApi,
     private val settings: SettingsStore,
+    private val stationFavorites: FavoriteStationsRepository,
     connection: ConnectionManager,
 ) : ViewModel() {
     private val _stations = MutableStateFlow<List<Favorite>>(emptyList())
@@ -52,6 +54,10 @@ class ShellViewModel @Inject constructor(
         viewModelScope.launch {
             connection.state.collect { if (it is MaConnectionState.Connected) refresh() }
         }
+        // Stations come from the SUI4 repository, so the dock and CH+/CH- follow the user's order.
+        viewModelScope.launch {
+            stationFavorites.favorites.collect { list -> _stations.value = list.map { Favorite(it.uri, it.name, it.imageUrl, true) } }
+        }
     }
 
     /** Pinned = first [PINNED_COUNT] of stations followed by playlists. */
@@ -60,8 +66,7 @@ class ShellViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             val address = settings.settings.first().serverAddress
-            runCatching { library.items(MediaTypes.RADIOS, limit = 30, favorite = true) }
-                .onSuccess { items -> _stations.value = items.mapNotNull { it.toFavorite(address, true) } }
+            runCatching { stationFavorites.refresh() }
             runCatching { library.items(MediaTypes.PLAYLISTS, limit = 30, favorite = true) }
                 .onSuccess { items -> _playlists.value = items.mapNotNull { it.toFavorite(address, false) } }
         }

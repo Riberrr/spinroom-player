@@ -35,3 +35,6 @@ Tests build models by hand; replace with recorded fixtures once they exist.
 
 ## Screensaver (S14a)
 `ScreensaverLayer(inputTick, visible, onIdle)` is stacked over the nav host in `MainActivity`: after `SCREENSAVER_IDLE_MS` (60 s) without a key and with a known track it shows `ScreensaverContent` (cover + title + artist on black, slow Lissajous drift via `driftOffset`, 85% alpha). `MainActivity.dispatchKeyEvent` bumps `inputTick` and consumes the key that wakes it.
+
+## SUI7 (40:60, radio)
+Cover 40% / details 60%. Radio (`state.isRadio`): "źródło · opis" line instead of the progress bar, `StationsPanel` (number, square thumb, name, now-playing text; current highlighted) instead of the queue, ⏮⏭ = `onStepStation(forward)` (wraps; falls back to the queue without favorites), OK on a row = `onPlayStation(uri)`. Music: 4 upcoming rows, OK jumps (`onPlayIndex`). Backdrop = `ContentBackdrop` per `Appearance.playerBackground`. `keepScreenOn` while the screen is shown. `PlayerBackend` gained `favoriteStations`, `refreshStations`, `playStation`, `playerBackground`.

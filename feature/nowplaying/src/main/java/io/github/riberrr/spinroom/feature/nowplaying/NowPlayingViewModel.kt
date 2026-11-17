@@ -3,7 +3,9 @@ package io.github.riberrr.spinroom.feature.nowplaying
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.riberrr.spinroom.core.data.Station
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
+import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.Player
 import io.github.riberrr.spinroom.core.maapi.PlayerQueue
@@ -26,7 +28,7 @@ import kotlinx.coroutines.launch
 
 private const val COVER_PX = 600
 private const val ROW_COVER_PX = 96
-private const val UPCOMING_COUNT = 3
+private const val UPCOMING_COUNT = 4
 
 /**
  * State and actions of the now-playing screen and the mini player (one instance, shared through the activity).
@@ -57,8 +59,22 @@ class NowPlayingViewModel internal constructor(
 
     private data class Source(val id: String, val address: String)
 
+    private var favoriteStations: List<Station> = emptyList()
+    private var nowPlayingText = ""
+
     init {
-        viewModelScope.launch { backend.connection.collect { c -> _state.update { it.copy(connection = c) } } }
+        viewModelScope.launch {
+            backend.connection.collect { c ->
+                _state.update { it.copy(connection = c) }
+                if (c is MaConnectionState.Connected) runCatching { backend.refreshStations() }
+            }
+        }
+        viewModelScope.launch {
+            backend.favoriteStations.catch { emit(emptyList()) }.collect { favoriteStations = it; publishStations() }
+        }
+        viewModelScope.launch {
+            backend.playerBackground.catch { }.collect { bg -> _state.update { it.copy(playerBackground = bg) } }
+        }
         viewModelScope.launch {
             combine(backend.selectedPlayerId, backend.players().catch { emit(emptyList()) }.onStart { emit(emptyList()) }) { id, players -> id to players }
                 .collect { (id, players) -> onPlayers(id, players) }
@@ -149,7 +165,32 @@ class NowPlayingViewModel internal constructor(
                 mediaName = media?.name.orEmpty(),
                 queue = rows,
                 upcoming = rows.filter { r -> r.index > currentIndex }.take(UPCOMING_COUNT),
+                radioMeta = if (media?.mediaType == "radio") radioMeta(media) else "",
             )
+        }
+        // The stream's "now playing" text: the queue item name when it differs from the station name.
+        nowPlayingText = current?.name.orEmpty().takeIf { n -> media?.mediaType == "radio" && !n.equals(media.name, true) }.orEmpty()
+        publishStations()
+    }
+
+    private fun radioMeta(media: MediaItem): String {
+        val source = sourceLabel(media.providerMappings.firstOrNull()?.providerDomain ?: media.provider)
+        return listOf(source, media.metadata?.description.orEmpty().lineSequence().firstOrNull().orEmpty()).filter { it.isNotBlank() }.joinToString(" · ")
+    }
+
+    /** Favorite stations in the user's order, the playing one marked (by uri, else by name: the queue may carry another provider's uri). */
+    private fun publishStations() {
+        _state.update { s ->
+            val byUri = favoriteStations.indexOfFirst { it.uri == s.mediaUri }
+            val currentIdx = when {
+                !s.isRadio -> -1
+                byUri >= 0 -> byUri
+                s.mediaName.isBlank() -> -1
+                else -> favoriteStations.indexOfFirst { it.name.equals(s.mediaName, true) }
+            }
+            s.copy(stations = favoriteStations.mapIndexed { i, st ->
+                StationRow(i + 1, st.uri, st.name, st.imageUrl, if (i == currentIdx) nowPlayingText else "", i == currentIdx)
+            })
         }
     }
 
@@ -216,6 +257,18 @@ class NowPlayingViewModel internal constructor(
     }
 
     fun onPlayIndex(index: Int) = command { backend.playIndex(it, index) }
+
+    fun onPlayStation(uri: String) = command { backend.playStation(it, uri) }
+
+    /** Radio ⏮/⏭: previous/next favorite station (wraps). Without favorites falls back to the queue. */
+    fun onStepStation(forward: Boolean) {
+        val target = stationStepIndex(_state.value.stations, forward)?.let { _state.value.stations[it] }
+        when {
+            target != null -> onPlayStation(target.uri)
+            forward -> onNext()
+            else -> onPrevious()
+        }
+    }
     fun onToggleQueue() = _state.update { it.copy(queueExpanded = !it.queueExpanded) }
     fun onCollapseQueue() = _state.update { it.copy(queueExpanded = false) }
     fun onOpenPicker() = _state.update { it.copy(pickerOpen = true) }
@@ -225,4 +278,23 @@ class NowPlayingViewModel internal constructor(
         _state.update { it.copy(pickerOpen = false) }
         viewModelScope.launch { backend.selectPlayer(playerId) }
     }
+}
+
+/** Index of the station to switch to from the current one (wraps); first/last when the playing station is not a favorite; null if empty. */
+internal fun stationStepIndex(stations: List<StationRow>, forward: Boolean): Int? {
+    if (stations.isEmpty()) return null
+    val current = stations.indexOfFirst { it.isCurrent }
+    return when {
+        current < 0 -> if (forward) 0 else stations.lastIndex
+        forward -> (current + 1) % stations.size
+        else -> (current - 1 + stations.size) % stations.size
+    }
+}
+
+/** "Radio Browser" for `radiobrowser`, else the domain with a capital letter. */
+internal fun sourceLabel(domain: String): String = when (domain.lowercase()) {
+    "" -> ""
+    "radiobrowser" -> "Radio Browser"
+    "tunein" -> "TuneIn"
+    else -> domain.replaceFirstChar { it.uppercase() }
 }

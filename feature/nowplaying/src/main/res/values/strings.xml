@@ -2,7 +2,7 @@
 <resources>
     <string name="nowplaying_label">Teraz odtwarzane</string>
     <string name="nowplaying_up_next">Następne w kolejce</string>
-    <string name="nowplaying_show_queue">↓ pokaż całą kolejkę (%1$d)</string>
+    <string name="nowplaying_show_queue">↓ cała kolejka</string>
     <string name="nowplaying_hide_queue">↑ zwiń kolejkę</string>
     <string name="nowplaying_queue_title">Kolejka</string>
     <string name="nowplaying_queue_empty">Kolejka jest pusta</string>
@@ -21,4 +21,9 @@
     <string name="nowplaying_repeat">Powtarzanie</string>
     <string name="nowplaying_favorite">Ulubione</string>
     <string name="nowplaying_volume">Głośność</string>
+    <string name="nowplaying_label_radio">Radio na żywo</string>
+    <string name="nowplaying_live">Na żywo</string>
+    <string name="nowplaying_stations">Ulubione stacje</string>
+    <string name="nowplaying_stations_empty">Brak ulubionych stacji. Dodaj je w Radiu.</string>
+    <string name="nowplaying_station_playing">gra teraz</string>
 </resources>

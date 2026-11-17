@@ -4,7 +4,10 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.github.riberrr.spinroom.core.data.AppearanceSettings
 import io.github.riberrr.spinroom.core.data.ConnectionManager
+import io.github.riberrr.spinroom.core.data.FavoriteStationsRepository
+import io.github.riberrr.spinroom.core.data.Station
 import io.github.riberrr.spinroom.core.data.LibraryRepository
 import io.github.riberrr.spinroom.core.data.PlayerRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
@@ -31,6 +34,17 @@ interface PlayerBackend {
     /** Server address as typed by the user, used for image URLs. */
     val serverAddress: Flow<String>
 
+    /** Favorite stations in the user's order (SUI4). */
+    val favoriteStations: Flow<List<Station>>
+
+    /** Now Playing background kind from Wygląd. */
+    val playerBackground: Flow<String>
+
+    suspend fun refreshStations()
+
+    /** Plays a station by its library uri on [queueId]. */
+    suspend fun playStation(queueId: String, uri: String)
+
     fun queue(queueId: String): Flow<PlayerQueue>
     fun queueItems(queueId: String): Flow<List<QueueItem>>
     fun players(): Flow<List<Player>>
@@ -50,9 +64,17 @@ class MaPlayerBackend @Inject constructor(
     private val players: PlayerRepository,
     private val settings: SettingsStore,
     private val library: LibraryRepository,
+    private val stations: FavoriteStationsRepository,
+    appearance: AppearanceSettings,
     connectionManager: ConnectionManager,
 ) : PlayerBackend {
     init { connectionManager.start() }
+
+    override val favoriteStations = stations.favorites
+    override val playerBackground = appearance.appearance.map { it.playerBackground }
+
+    override suspend fun refreshStations() = stations.refresh()
+    override suspend fun playStation(queueId: String, uri: String) = players.api.playMedia(queueId, listOf(uri), "play")
 
     override val connection = connectionManager.state
     override val selectedPlayerId = settings.settings.map { it.playerId }
