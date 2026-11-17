@@ -1,7 +1,7 @@
 package io.github.riberrr.spinroom.feature.details
 
 /** Kind of item shown on the details screen. */
-enum class DetailsKind { Album, Artist, Playlist }
+enum class DetailsKind { Album, Artist, Playlist, Track }
 
 enum class DetailsStatus { Loading, Content, Error }
 

@@ -92,6 +92,9 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     // Composed only while the menu has focus: a handler added on entering the composition is the newest one, so it
     // runs before the NavHost's own (registered earlier), which would otherwise pop the screen.
     if (menuHasFocus) BackHandler { runCatching { screenFocus.requestFocus() } }
+    // Back on Start leaves the app for real (finish), instead of parking the task (Android 12+) with the last screen restored.
+    val activity = androidx.activity.compose.LocalActivity.current
+    BackHandler(enabled = route == Routes.HOME && !menuHasFocus) { activity?.finish() }
 
     Row(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
         Box(Modifier.width(88.dp).fillMaxHeight().zIndex(1f)) {
@@ -118,7 +121,10 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             onSelectPinned = { entry ->
                 val fav = pinned.firstOrNull { it.uri == entry.id } ?: return@SideMenu
                 runCatching { screenFocus.requestFocus() }
-                if (fav.isStation) shell.playStation(fav.uri) else navController.navigate(Routes.details(fav.uri))
+                if (fav.isStation) shell.playStation(fav.uri) else navController.navigate(Routes.details(fav.uri)) {
+                    // Opening another item from the menu replaces the details on screen, so Back returns to where we came from.
+                    if (route == Routes.DETAILS) popUpTo(Routes.DETAILS) { inclusive = true }
+                }
             },
             enterFocusRequester = menuFocus,
             onFocusChange = {

@@ -47,6 +47,7 @@ import coil3.request.crossfade
 import coil3.size.Size
 import io.github.riberrr.spinroom.core.design.ItemMenuHost
 import io.github.riberrr.spinroom.core.design.LocalItemMenu
+import io.github.riberrr.spinroom.core.design.ContentBackdrop
 import io.github.riberrr.spinroom.core.design.CoverPlaceholder
 import io.github.riberrr.spinroom.core.design.CoverTile
 import io.github.riberrr.spinroom.core.design.ErrorState
@@ -113,7 +114,8 @@ private val DetailsMessage.labelRes: Int
 
 @Composable
 fun DetailsContent(state: DetailsUiState, actions: DetailsActions, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxSize().background(SpinroomColors.Bg)) {
+    Box(modifier.fillMaxSize()) {
+        ContentBackdrop(imageUrl = state.coverUrl.takeIf { state.status == DetailsStatus.Content })
         when (state.status) {
             DetailsStatus.Loading -> Text(
                 stringResource(R.string.details_loading),
@@ -150,8 +152,8 @@ private fun Loaded(state: DetailsUiState, actions: DetailsActions) {
                 Text(meta, Modifier.padding(top = 10.dp), style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary)
             }
         }
-        Column(Modifier.padding(start = 56.dp).weight(1f)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.padding(start = 48.dp).weight(1f)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 ActionButton(stringResource(R.string.details_play), SpinroomIcons.Play, actions.onPlay, primary = true, modifier = Modifier.focusRequester(playFocus))
                 ActionButton(stringResource(R.string.details_shuffle), ShuffleIcon, actions.onShuffle)
                 ActionButton(stringResource(R.string.details_add_to_queue), null, actions.onAddToQueue)
@@ -164,7 +166,7 @@ private fun Loaded(state: DetailsUiState, actions: DetailsActions) {
                         if (state.favorite) HeartFilledIcon else HeartIcon,
                         contentDescription = stringResource(R.string.details_favorite),
                         tint = if (state.favorite) SpinroomColors.Accent else SpinroomColors.TextPrimary,
-                        modifier = Modifier.padding(12.dp).size(24.dp),
+                        modifier = Modifier.padding(10.dp).size(24.dp),
                     )
                 }
             }
@@ -215,7 +217,7 @@ private fun TrackLine(track: TrackRow, kind: DetailsKind, onClick: (TrackRow) ->
         onLongClick = onLongClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
         shape = RoundedCornerShape(10.dp),
-        containerColor = SpinroomColors.Bg,
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         focusedScale = 1.01f,
     ) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -243,12 +245,12 @@ private fun ActionButton(
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(50),
-        containerColor = if (primary) SpinroomColors.Accent else SpinroomColors.Surface,
-        focusedContainerColor = if (primary) SpinroomColors.Accent else SpinroomColors.SurfaceHigh,
+        containerColor = if (primary) SpinroomColors.Accent else SpinroomColors.Glass,
+        focusedContainerColor = if (primary) SpinroomColors.Accent else SpinroomColors.GlassHigh,
         focusedScale = 1.06f,
     ) {
         val color = if (primary) SpinroomColors.Bg else SpinroomColors.TextPrimary
-        Row(Modifier.padding(horizontal = 18.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (icon != null) Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
             Text(label, style = MaterialTheme.typography.titleSmall, color = color, maxLines = 1, softWrap = false)
         }
@@ -276,6 +278,7 @@ private val DetailsKind.labelRes: Int
         DetailsKind.Album -> R.string.details_kind_album
         DetailsKind.Artist -> R.string.details_kind_artist
         DetailsKind.Playlist -> R.string.details_kind_playlist
+        DetailsKind.Track -> R.string.details_kind_track
     }
 
 @Composable
