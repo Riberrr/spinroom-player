@@ -15,6 +15,8 @@ data class Appearance(
     val accent: String = ACCENT_AMBER,
     /** true = plain theme background instead of the blurred content backdrop. */
     val solidBackground: Boolean = false,
+    /** Now Playing background: [BG_BLUR] (blurred cover), [BG_COLOR] (gradient of the cover color) or [BG_SOLID]. */
+    val playerBackground: String = BG_BLUR,
     /** Screensaver after idle; off by default. */
     val screensaver: Boolean = false,
 ) {
@@ -23,6 +25,11 @@ data class Appearance(
         const val THEME_GRANAT = "granat"
         const val THEME_OLED = "oled"
         val THEMES = listOf(THEME_GRAFIT, THEME_GRANAT, THEME_OLED)
+
+        const val BG_BLUR = "blur"
+        const val BG_COLOR = "color"
+        const val BG_SOLID = "solid"
+        val PLAYER_BACKGROUNDS = listOf(BG_BLUR, BG_COLOR, BG_SOLID)
 
         const val ACCENT_AMBER = "amber"
         const val ACCENT_MINT = "mint"
@@ -40,6 +47,7 @@ internal fun appearanceFrom(prefs: Preferences): Appearance {
         theme = prefs[THEME]?.takeIf { it in Appearance.THEMES } ?: d.theme,
         accent = prefs[ACCENT]?.takeIf { it in Appearance.ACCENTS } ?: d.accent,
         solidBackground = prefs[SOLID_BG] ?: d.solidBackground,
+        playerBackground = prefs[PLAYER_BG]?.takeIf { it in Appearance.PLAYER_BACKGROUNDS } ?: d.playerBackground,
         screensaver = prefs[SCREENSAVER] ?: d.screensaver,
     )
 }
@@ -47,7 +55,8 @@ internal fun appearanceFrom(prefs: Preferences): Appearance {
 private val THEME = stringPreferencesKey("appearance_theme")
 private val ACCENT = stringPreferencesKey("appearance_accent")
 private val SOLID_BG = booleanPreferencesKey("appearance_solid_bg")
-private val SCREENSAVER = booleanPreferencesKey("appearance_screensaver")
+private val PLAYER_BG = stringPreferencesKey("appearance_player_bg")
+private val SCREENSAVER =booleanPreferencesKey("appearance_screensaver")
 
 /** Theme, accent, background and screensaver preferences (UI in SUI8a). */
 class AppearanceSettings(private val store: DataStore<Preferences>) {
@@ -56,5 +65,6 @@ class AppearanceSettings(private val store: DataStore<Preferences>) {
     suspend fun setTheme(id: String) { if (id in Appearance.THEMES) store.edit { it[THEME] = id } }
     suspend fun setAccent(id: String) { if (id in Appearance.ACCENTS) store.edit { it[ACCENT] = id } }
     suspend fun setSolidBackground(value: Boolean) { store.edit { it[SOLID_BG] = value } }
+    suspend fun setPlayerBackground(id: String) { if (id in Appearance.PLAYER_BACKGROUNDS) store.edit { it[PLAYER_BG] = id } }
     suspend fun setScreensaver(value: Boolean) { store.edit { it[SCREENSAVER] = value } }
 }
