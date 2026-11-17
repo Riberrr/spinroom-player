@@ -8,6 +8,7 @@ import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.PlayerRepository
 import io.github.riberrr.spinroom.core.data.SearchRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
+import io.github.riberrr.spinroom.core.maapi.FavoritesApi
 import io.github.riberrr.spinroom.core.maapi.SearchResults
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,6 +24,12 @@ interface SearchBackend {
 
     /** Starts [uri] on the selected player; false when no player is chosen yet. */
     suspend fun play(uri: String): Boolean
+
+    /** Sets or clears the MA favorite flag of [uri]; false when it could not be resolved. */
+    suspend fun setFavorite(uri: String, favorite: Boolean): Boolean
+
+    /** Real favorite flag of [uri] (search hits from providers do not carry it); null when unknown. */
+    suspend fun isFavorite(uri: String): Boolean?
 }
 
 @Singleton
@@ -30,6 +37,7 @@ class MaSearchBackend @Inject constructor(
     private val search: SearchRepository,
     private val players: PlayerRepository,
     private val settings: SettingsStore,
+    private val favorites: FavoritesApi,
     connectionManager: ConnectionManager,
 ) : SearchBackend {
     init { connectionManager.start() }
@@ -44,6 +52,10 @@ class MaSearchBackend @Inject constructor(
         players.api.playMedia(playerId, listOf(uri))
         return true
     }
+
+    override suspend fun setFavorite(uri: String, favorite: Boolean) = favorites.set(uri, favorite)
+
+    override suspend fun isFavorite(uri: String): Boolean? = runCatching { favorites.resolve(uri).favorite }.getOrNull()
 
     private companion object {
         const val SEARCH_LIMIT = 12

@@ -42,6 +42,14 @@ class SearchViewModelTest {
             if (fail) error("offline")
             return results
         }
+        val favCalls = mutableListOf<Pair<String, Boolean>>()
+        var favOk = true
+        override suspend fun setFavorite(uri: String, favorite: Boolean): Boolean {
+            favCalls += uri to favorite
+            return favOk
+        }
+        val remoteFavorites = mutableMapOf<String, Boolean>()
+        override suspend fun isFavorite(uri: String): Boolean? = remoteFavorites[uri]
         override suspend fun play(uri: String): Boolean {
             if (canPlay) played += uri
             return canPlay
@@ -102,12 +110,10 @@ class SearchViewModelTest {
         vmTest { vm ->
             vm.onType("kwartet"); advanceTimeBy(500); runCurrent()
             val s = vm.state.value
-            assertEquals("Kwartet Północ", s.best?.title)
             assertEquals("Pliki lokalne", s.tracks[0].source)
             assertEquals("YouTube Music", s.tracks[1].source)
             assertEquals("Kwartet Północ · Horyzont", s.tracks[0].subtitle)
             vm.onFilter(SearchFilter.TRACKS)
-            assertNull(vm.state.value.best)
             assertEquals(2, vm.state.value.shownTracks.size)
             assertTrue(vm.state.value.shownArtists.isEmpty())
         }
@@ -166,5 +172,119 @@ class SearchViewModelTest {
         assertEquals("Pliki lokalne", SearchViewModel.sourceLabel("filesystem_local--ab12"))
         assertEquals("Biblioteka", SearchViewModel.sourceLabel("library"))
         assertEquals("Some thing", SearchViewModel.sourceLabel("some_thing--x"))
+    }
+
+    private fun favItem(name: String, type: String, provider: String = "x", fav: Boolean = false, year: Int? = null) =
+        item(name, type, provider).copy(favorite = fav, year = year)
+
+    @Test fun favoriteToggleShowsToastAndUndoReverts() = runTest {
+        backend.results = SearchResults(radio = listOf(favItem("Radio Jazz", "radio")))
+        vmTest { vm ->
+            vm.onType("jazz"); advanceTimeBy(500); runCurrent()
+            val row = vm.state.value.radio[0]
+            assertTrue(!vm.state.value.isFavorite(row))
+            vm.onToggleFavorite(row); runCurrent()
+            assertTrue(vm.state.value.isFavorite(row))
+            assertEquals(FavoriteToast(row.uri, "Radio Jazz", true), vm.state.value.toast)
+            assertEquals(listOf(row.uri to true), backend.favCalls)
+            vm.onUndo(); runCurrent()
+            assertTrue(!vm.state.value.isFavorite(row))
+            assertNull(vm.state.value.toast)
+            assertEquals(listOf(row.uri to true, row.uri to false), backend.favCalls)
+        }
+    }
+
+    @Test fun removingExistingFavoriteAndToastExpires() = runTest {
+        backend.results = SearchResults(playlists = listOf(favItem("Jazz na wieczór", "playlist", fav = true)))
+        vmTest { vm ->
+            vm.onType("jazz"); advanceTimeBy(500); runCurrent()
+            val row = vm.state.value.playlists[0]
+            assertTrue(vm.state.value.isFavorite(row))
+            vm.onToggleFavorite(row); runCurrent()
+            assertTrue(!vm.state.value.isFavorite(row))
+            assertEquals(false, vm.state.value.toast?.added)
+            advanceTimeBy(SearchViewModel.TOAST_MS + 100); runCurrent()
+            assertNull(vm.state.value.toast)
+        }
+    }
+
+    @Test fun failedFavoriteIsRolledBack() = runTest {
+        backend.results = SearchResults(radio = listOf(favItem("Radio Jazz", "radio")))
+        backend.favOk = false
+        vmTest { vm ->
+            vm.onType("jazz"); advanceTimeBy(500); runCurrent()
+            val row = vm.state.value.radio[0]
+            vm.onToggleFavorite(row); runCurrent()
+            assertTrue(!vm.state.value.isFavorite(row))
+            assertNull(vm.state.value.toast)
+            assertEquals(SearchUiState.Notice.FAVORITE_FAILED, vm.state.value.notice)
+        }
+    }
+
+    @Test fun categoriesAndFiltersNarrowResults() = runTest {
+        backend.results = SearchResults(
+            radio = listOf(favItem("Radio Jazz", "radio", "tunein--1", fav = true)),
+            playlists = listOf(favItem("Jazz na wieczór", "playlist", "spotify--1")),
+            albums = listOf(favItem("Jazzowy Port", "album", "spotify--1", year = 1996), favItem("Blue", "album", "filesystem_local--1", year = 2011)),
+        )
+        vmTest { vm ->
+            vm.onType("jazz"); advanceTimeBy(500); runCurrent()
+            assertEquals(1, vm.state.value.shownRadio.size)
+            vm.onFilter(SearchFilter.PLAYLISTS)
+            assertEquals(1, vm.state.value.shownPlaylists.size)
+            assertTrue(vm.state.value.shownAlbums.isEmpty() && vm.state.value.shownRadio.isEmpty())
+            vm.onFilter(SearchFilter.ALL)
+            vm.onToggleSource("spotify")
+            assertEquals(listOf("Jazzowy Port"), vm.state.value.shownAlbums.map { it.title })
+            vm.onToggleDecade(1990)
+            assertEquals(2, vm.state.value.filters.activeCount)
+            assertEquals(listOf("Jazzowy Port"), vm.state.value.shownAlbums.map { it.title })
+            assertTrue(vm.state.value.shownPlaylists.isEmpty())
+            vm.onClearFilters()
+            vm.onToggleFavoritesOnly()
+            assertEquals(listOf("Radio Jazz"), vm.state.value.shownRadio.map { it.title })
+            assertTrue(vm.state.value.shownAlbums.isEmpty())
+            assertEquals(listOf("spotify", "filesystem_local", "tunein"), vm.state.value.sources.map { it.domain })
+        }
+    }
+
+    @Test fun physicalKeyboardMapping() {
+        assertEquals(PhysicalInput.Text("a"), mapPhysicalKey(false, false, 'A'.code, false))
+        assertEquals(PhysicalInput.Text("ł"), mapPhysicalKey(false, false, 'ł'.code, false))
+        assertEquals(PhysicalInput.Text(" "), mapPhysicalKey(false, false, ' '.code, false))
+        assertEquals(PhysicalInput.Text("7"), mapPhysicalKey(false, false, '7'.code, false))
+        assertEquals(PhysicalInput.Backspace, mapPhysicalKey(true, false, 0, false))
+        assertEquals(PhysicalInput.Submit, mapPhysicalKey(false, true, '\n'.code, false))
+        assertNull(mapPhysicalKey(false, false, 0, false))        // D-pad
+        assertNull(mapPhysicalKey(false, false, 'c'.code, true))  // Ctrl+C
+        assertNull(mapPhysicalKey(false, false, 0x1B, false))     // control char
+        assertNull(mapPhysicalKey(false, false, '~'.code, false)) // not offered on the on-screen keyboard
+    }
+
+    @Test fun physicalInputEditsQueryAndSubmitSearchesAtOnce() = runTest {
+        vmTest { vm ->
+            "Jaz".forEach { vm.onPhysicalInput(mapPhysicalKey(false, false, it.code, false)!!) }
+            vm.onPhysicalInput(PhysicalInput.Backspace)
+            vm.onPhysicalInput(PhysicalInput.Text("z"))
+            assertEquals("jaz", vm.state.value.query)
+            vm.onPhysicalInput(PhysicalInput.Submit); runCurrent()
+            assertEquals(listOf("jaz"), backend.queries)
+        }
+    }
+
+    @Test fun selectingRowLoadsRealFavoriteFlagButKeepsUserChange() = runTest {
+        backend.results = SearchResults(radio = listOf(favItem("Radio Jazz", "radio"), favItem("Jazz FM", "radio")))
+        backend.remoteFavorites["x://radio/Radio Jazz"] = true
+        backend.remoteFavorites["x://radio/Jazz FM"] = true
+        vmTest { vm ->
+            vm.onType("jazz"); advanceTimeBy(500); runCurrent()
+            val (a, b) = vm.state.value.radio
+            vm.onToggleFavorite(b); runCurrent() // user adds b first (server said it was already a favorite)
+            vm.onSelect(a); vm.onSelect(b); runCurrent()
+            assertTrue(vm.state.value.isFavorite(a))
+            assertTrue(vm.state.value.isFavorite(b))
+            vm.onToggleFavorite(a); runCurrent()
+            assertTrue(!vm.state.value.isFavorite(a))
+        }
     }
 }

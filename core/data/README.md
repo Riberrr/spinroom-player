@@ -15,9 +15,11 @@ Repositories over `:core:ma-api`, settings in DataStore, Hilt wiring (`di/DataMo
 Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (the file-backed one fails its rename on Windows JVMs).
 - `ItemMenuViewModel` (S14b): state + actions of the long-press menu (play next = `play_media option=next`, queue = `add`, favorite via `FavoritesApi`). Removal of items from other providers needs the library id — best effort via `item_by_uri`.
 
+## Library filters (SUI5)
+- `LibraryFilter(genreId, decade, provider, favoriteOnly)` (SUI5) + `FilteredLibrary.pager/items/genres/sources` — `library_items` with server-side genre/provider/favorite; decade is applied to `year` on the client by `FilteringPagingSource` (plain paging, no placeholders). `PlaylistSort` (`last_played_desc` / `name`), `ViewModePrefs.libraryList` (grid/list, DataStore), `PlayItem.play(uri, shuffle)` (replaces the queue of the chosen player). Hilt: `di/FilteredLibraryModule.kt`.
+
 ## Radio (SUI4)
 - `FavoriteStationsRepository` (Hilt singleton, `di.RadioModule`) — **source of the favorite-station order** (number on the tile = index + 1, and the CH+/CH- order). `favorites: StateFlow<List<Station>>`, `refresh()` (call after the MA connection is up; re-reads `library_items(radios, favorite)` and merges with the saved order), `move(station, delta)`, `remove(station)`, `add(providerUri)` (new station goes last), `step(current, forward)` (wraps; null when empty), `favoriteFor(browseItem)`. Browsing: `stations(RadioFilter)`, `search(q)`, `options(kind)`, `savedFilter`/`saveFilter` (default language `polish`).
 - `Station(uri, name, imageUrl, sourceId, libraryId)` — `uri` is the library uri, what `play_media` takes.
 - `StationOrder` (pure: `merge`, `move`, `remove`, `add`) + `FavoriteStationsOrder` (DataStore key `favorite_stations_order`).
 - SUI2's `ShellViewModel` still builds its own station list in MA order; switch it (and the dispatcher's CH±) to `FavoriteStationsRepository.favorites`/`step` — coordinator/SUI7.
-- `LibraryFilter(genreId, decade, provider, favoriteOnly)` (SUI5) + `FilteredLibrary.pager/items/genres/sources` — `library_items` with server-side genre/provider/favorite; decade is applied to `year` on the client by `FilteringPagingSource` (plain paging, no placeholders). `PlaylistSort` (`last_played_desc` / `name`), `ViewModePrefs.libraryList` (grid/list, DataStore), `PlayItem.play(uri, shuffle)` (replaces the queue of the chosen player). Hilt: `di/FilteredLibraryModule.kt`.
