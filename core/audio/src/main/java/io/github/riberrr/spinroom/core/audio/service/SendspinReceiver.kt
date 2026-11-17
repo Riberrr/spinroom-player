@@ -51,11 +51,13 @@ class SendspinReceiver(
     private val onConnected: (clientId: String, serverName: String?) -> Unit = { _, _ -> },
     /** Local latency calibration (S14c), applied live. */
     private val calibrationMs: Flow<Int> = emptyFlow(),
+    /** Name the user gave this TV (SUI8a); null = the device name. */
+    customName: String? = null,
 ) {
     private val app = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val clientId: String = credentials.identity.id
-    val name: String = NsdAdvertiser.deviceName(app)
+    val name: String = customName?.takeIf { it.isNotBlank() } ?: NsdAdvertiser.deviceName(app)
 
     val session = SendspinSession(
         SessionConfig(name = name, deviceInfo = deviceInfo, player = AudioCapabilities.probe()),

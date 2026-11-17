@@ -165,7 +165,6 @@ private fun ConnectionSection(ui: SettingsUiState, viewModel: SettingsViewModel,
             Text(stringResource(R.string.name_row_change), color = SpinroomColors.TextSecondary)
         }
     }
-    if (ui.renameFailed) Text(stringResource(R.string.name_rename_failed), color = SpinroomColors.TextSecondary)
     if (ui.loggedIn) PlayerList(ui, viewModel::onPickPlayer)
     statusText(ui.status)?.let { Text(it, color = if (ui.status is LoginStatus.Done) SpinroomColors.Success else SpinroomColors.TextPrimary) }
 }

@@ -75,6 +75,7 @@ class SpinroomPlaybackService : MediaSessionService() {
                     log = ::log,
                     onConnected = host::onSendspinConnected,
                     calibrationMs = host.audioCalibrationMs,
+                    customName = host.playerName(),
                 ).also {
                     receiver = it
                     it.start()
@@ -151,6 +152,12 @@ class SpinroomPlaybackService : MediaSessionService() {
         private val worker = executor.asCoroutineDispatcher()
 
         /** Starts the player; call from a visible activity (foreground-service start rules). */
+        /** Stops and starts the player so a changed name reaches MA (Sendspin `client/hello`, mDNS). */
+        fun restart(context: Context) {
+            context.stopService(Intent(context, SpinroomPlaybackService::class.java))
+            start(context)
+        }
+
         fun start(context: Context) {
             ContextCompat.startForegroundService(context, Intent(context, SpinroomPlaybackService::class.java))
         }

@@ -6,11 +6,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import io.github.riberrr.spinroom.core.data.Appearance
@@ -85,18 +89,19 @@ internal fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifie
 
 /** SUI8a "Wygląd": player background, theme, accent, screensaver; the preview follows the choices at once. */
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun AppearanceSection(ui: SettingsUiState, vm: SettingsViewModel) {
     val a = ui.appearance
-    Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.widthIn(max = 640.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SectionLabel(stringResource(R.string.appearance_bg_title))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Appearance.PLAYER_BACKGROUNDS.forEach { id ->
                     Chip(stringResource(BackgroundLabels.getValue(id)), a.playerBackground == id, { vm.setPlayerBackground(id) })
                 }
             }
             SectionLabel(stringResource(R.string.appearance_theme_title))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Appearance.THEMES.forEach { id ->
                     Chip(stringResource(ThemeLabels.getValue(id)), a.theme == id, { vm.setTheme(id) })
                 }
@@ -119,7 +124,7 @@ internal fun AppearanceSection(ui: SettingsUiState, vm: SettingsViewModel) {
                 Text(stringResource(AccentLabels.getValue(a.accent)), color = SpinroomColors.TextSecondary)
             }
         }
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SectionLabel(stringResource(R.string.appearance_preview))
             AppearancePreview(a)
             FocusSurface(
@@ -196,11 +201,12 @@ internal fun HomeRowsSection(layout: HomeLayout, vm: SettingsViewModel) {
 
 /** Dialog with a name field, suggestions and Zapisz / Anuluj (makieta 09B). */
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun PlayerNameDialog(current: String, onSave: (String) -> Boolean, onDismiss: () -> Unit) {
     var text by remember { mutableStateOf(current) }
     val result = PlayerName.validate(text)
-    Dialog(onDismissRequest = onDismiss) {
-        GlassSurface(Modifier.widthIn(min = 560.dp, max = 640.dp), high = true) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.width(640.dp).clip(RoundedCornerShape(20.dp)).background(SpinroomColors.SurfaceHigh).border(BorderStroke(1.dp, SpinroomColors.GlassBorder), RoundedCornerShape(20.dp))) {
             Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text(stringResource(R.string.name_title), style = MaterialTheme.typography.titleLarge, color = SpinroomColors.TextPrimary)
                 SettingsTextField(stringResource(R.string.name_field), text, { text = it })
@@ -216,14 +222,9 @@ internal fun PlayerNameDialog(current: String, onSave: (String) -> Boolean, onDi
                     color = if (result is PlayerName.Result.Ok) SpinroomColors.TextSecondary else MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                 )
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PlayerName.SUGGESTIONS.take(3).forEach { Chip(it, text.trim() == it, { text = it }) }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PlayerName.SUGGESTIONS.drop(3).forEach { Chip(it, text.trim() == it, { text = it }) }
-                        Chip(stringResource(R.string.name_custom), false, { text = "" })
-                    }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PlayerName.SUGGESTIONS.forEach { Chip(it, text.trim() == it, { text = it }) }
+                    Chip(stringResource(R.string.name_custom), false, { text = "" })
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
                     Chip(stringResource(R.string.name_cancel), false, onDismiss)

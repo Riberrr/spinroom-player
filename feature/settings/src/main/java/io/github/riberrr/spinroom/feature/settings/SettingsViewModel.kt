@@ -69,7 +69,6 @@ data class SettingsUiState(
     val homeLayout: HomeLayout = HomeLayout(),
     /** Name the user chose for this TV; null = none yet (MA shows the device name). */
     val playerName: String? = null,
-    val renameFailed: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -141,7 +140,6 @@ class SettingsViewModel @Inject constructor(
     /** Saves the name locally and renames the TV's player in MA. Returns false when [raw] is invalid. */
     fun renamePlayer(raw: String): Boolean {
         val name = (PlayerName.validate(raw) as? PlayerName.Result.Ok)?.name ?: return false
-        _state.update { it.copy(renameFailed = false) }
         viewModelScope.launch {
             playerNameStore.set(name)
             val id = _state.value.ownPlayerId
@@ -151,10 +149,8 @@ class SettingsViewModel @Inject constructor(
                 Log.i(TAG, "player renamed in MA")
             } catch (e: CancellationException) {
                 if (e !is TimeoutCancellationException) throw e
-                _state.update { it.copy(renameFailed = true) }
             } catch (e: Exception) {
                 Log.w(TAG, "rename failed: ${e.javaClass.simpleName}: ${e.message}")
-                _state.update { it.copy(renameFailed = true) }
             }
         }
         return true
