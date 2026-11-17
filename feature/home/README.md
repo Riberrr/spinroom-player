@@ -5,7 +5,7 @@ Depends on `:core:design`, `:core:data` (+ Coil 3 for covers).
 
 ## Public API
 - `HomeScreen(modifier, onOpenNowPlaying, onOpenSources, onOpenDetails(itemUri), onOpenSettings, onOpenRadio, onOpenPlaylists, viewModel)` — stateful, route `home`.
-  `onOpenRadio` defaults to `onOpenSources`, `onOpenPlaylists` to a no-op until `:app` wires the Radio / Playlists routes (SUI2).
+  `onOpenRadio` / `onOpenPlaylists` open the Radio and Playlists routes (wired in `SpinroomNavHost`).
 - `HomeContent(state, actions)` — stateless UI with `@Preview`s; `HomeActions` bundles the callbacks.
 - `HomeViewModel` (Hilt) over `HomeBackend` (interface + `MaHomeBackend` + `HomeModule`).
 - `HomeRow` / `DEFAULT_ROW_ORDER` / `HomeUiState.visibleRows` — row order (TODO(SUI8a): read it from the appearance preferences).
