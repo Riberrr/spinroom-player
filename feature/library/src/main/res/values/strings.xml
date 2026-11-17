@@ -13,4 +13,23 @@
     <string name="library_no_server_message">Wpisz adres serwera w Ustawieniach.</string>
     <string name="library_connecting">Łączę z serwerem…</string>
     <string name="library_loading">Wczytuję…</string>
+    <string name="library_empty_filtered">Żaden element nie pasuje do filtrów.</string>
+    <string name="library_view_grid">Siatka</string>
+    <string name="library_view_list">Lista</string>
+    <string name="filter_title">Filtry</string>
+    <string name="filter_button">Filtry</string>
+    <string name="filter_clear">Wyczyść filtry</string>
+    <string name="filter_favorites_only">Tylko ulubione</string>
+    <string name="filter_genre">Gatunek</string>
+    <string name="filter_decade">Dekada</string>
+    <string name="filter_decade_format">Lata %1$ds</string>
+    <string name="filter_source">Źródło</string>
+    <string name="preview_play">Odtwórz</string>
+    <string name="preview_shuffle">Losowo</string>
+    <string name="preview_tracks">%1$d utworów</string>
+    <string name="preview_minutes">%1$d min</string>
+    <string name="kind_album">Album</string>
+    <string name="kind_artist">Wykonawca</string>
+    <string name="kind_track">Utwór</string>
+    <string name="kind_playlist">Playlista</string>
 </resources>

@@ -14,3 +14,4 @@ Repositories over `:core:ma-api`, settings in DataStore, Hilt wiring (`di/DataMo
 
 Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (the file-backed one fails its rename on Windows JVMs).
 - `ItemMenuViewModel` (S14b): state + actions of the long-press menu (play next = `play_media option=next`, queue = `add`, favorite via `FavoritesApi`). Removal of items from other providers needs the library id — best effort via `item_by_uri`.
+- `LibraryFilter(genreId, decade, provider, favoriteOnly)` (SUI5) + `FilteredLibrary.pager/items/genres/sources` — `library_items` with server-side genre/provider/favorite; decade is applied to `year` on the client by `FilteringPagingSource` (plain paging, no placeholders). `PlaylistSort` (`last_played_desc` / `name`), `ViewModePrefs.libraryList` (grid/list, DataStore), `PlayItem.play(uri, shuffle)` (replaces the queue of the chosen player). Hilt: `di/FilteredLibraryModule.kt`.
