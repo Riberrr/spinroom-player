@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SUI0–SUI1 (16.11.2026, PR #45, #47); wcześniej SFix03–07. Przebudowa UI trwa wg `docs/UI-SESSIONS.md`. Ostatni tag: v1.0.1._
+_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SUI0–SUI6, SUI8a (16–17.11.2026, PR #45–#55); wcześniej SFix03–07. Przebudowa UI wg `docs/UI-SESSIONS.md`. Ostatni tag: v1.0.1._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -21,7 +21,7 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: SUI0–SUI1 (16.11.
 - Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione spoza biblioteki, `start_item`).
 
 ## W toku
-- Fala 2 (SUI2, SUI3, SUI5) do uruchomienia. SUI1: motywy, szkło, `ContentBackdrop`, `AppearanceSettings`; `:app` jeszcze nie woła `SpinroomTheme(...)` (SUI2). Zostaje tag v1.0.2 i test na TV 10.0.0.6.
+- Fala 4: SUI7 (odtwarzacz), SUI8b (pilot). Dalej SUI9 (CH± poza aplikacją), SUIv i tag v1.1.0. Do sprawdzenia na TV: nazwa odtwarzacza widoczna w MA (SUI8a), CH±, menu przytrzymania OK, awaria usługi odtwarzania na emulatorze (SUI3).
 
 ## Następne
 - Tag v1.0.0 — czeka na 4 sekrety SIGNING_* w GitHub (bez nich release.yml kończy się błędem). Przed instalacją v1.0 odinstalować v0.x z TV. Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.

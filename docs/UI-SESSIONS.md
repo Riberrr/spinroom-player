@@ -21,12 +21,12 @@ W fali 2 tylko SUI2 zmienia `:core:design`; SUI3 i SUI5 zgłaszają braki w „W
 | --- | --- | --- | --- | --- | --- |
 | ✓ | SUI0 Moduły Radio i Playlisty | `SUI0-modules.md` | — | haiku | low |
 | ✓ | SUI1 Fundament stylu | `SUI1-design-foundation.md` | — | **opus** | high |
-| | SUI2 Szkielet, menu, wysuwany odtwarzacz, pilot | `SUI2-shell.md` | SUI0, SUI1 | **opus** | high |
-| | SUI3 Start 03B-1 | `SUI3-home.md` | SUI1 | sonnet | medium |
-| | SUI5 Playlisty + Biblioteka + filtry | `SUI5-playlists-library.md` | SUI0, SUI1 | sonnet | medium |
-| | SUI4 Radio | `SUI4-radio.md` | SUI1, SUI2 | sonnet | high |
-| | SUI6 Szukaj | `SUI6-search.md` | SUI1, SUI5 | sonnet | medium |
-| | SUI8a Ustawienia, nazwa, Wygląd | `SUI8a-settings.md` | SUI1 | sonnet | medium |
+| ✓ | SUI2 Szkielet, menu, wysuwany odtwarzacz, pilot | `SUI2-shell.md` | SUI0, SUI1 | **opus** | high |
+| ✓ | SUI3 Start 03B-1 | `SUI3-home.md` | SUI1 | sonnet | medium |
+| ✓ | SUI5 Playlisty + Biblioteka + filtry | `SUI5-playlists-library.md` | SUI0, SUI1 | sonnet | medium |
+| ✓ | SUI4 Radio | `SUI4-radio.md` | SUI1, SUI2 | sonnet | high |
+| ✓ | SUI6 Szukaj | `SUI6-search.md` | SUI1, SUI5 | sonnet | medium |
+| ✓ | SUI8a Ustawienia, nazwa, Wygląd | `SUI8a-settings.md` | SUI1 | sonnet | medium |
 | | SUI7 Odtwarzacz 40:60 | `SUI7-now-playing.md` | SUI1, SUI2, SUI4 | sonnet | high |
 | | SUI8b Przyciski pilota | `SUI8b-remote-keys.md` | SUI2, SUI8a | sonnet | medium |
 | | SUI9 CH± poza aplikacją | `SUI9-global-keys.md` | SUI7, SUI8b | **opus** | high |
