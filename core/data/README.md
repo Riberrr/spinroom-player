@@ -20,3 +20,4 @@ Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (
 - `Station(uri, name, imageUrl, sourceId, libraryId)` — `uri` is the library uri, what `play_media` takes.
 - `StationOrder` (pure: `merge`, `move`, `remove`, `add`) + `FavoriteStationsOrder` (DataStore key `favorite_stations_order`).
 - SUI2's `ShellViewModel` still builds its own station list in MA order; switch it (and the dispatcher's CH±) to `FavoriteStationsRepository.favorites`/`step` — coordinator/SUI7.
+- `LibraryFilter(genreId, decade, provider, favoriteOnly)` (SUI5) + `FilteredLibrary.pager/items/genres/sources` — `library_items` with server-side genre/provider/favorite; decade is applied to `year` on the client by `FilteringPagingSource` (plain paging, no placeholders). `PlaylistSort` (`last_played_desc` / `name`), `ViewModePrefs.libraryList` (grid/list, DataStore), `PlayItem.play(uri, shuffle)` (replaces the queue of the chosen player). Hilt: `di/FilteredLibraryModule.kt`.

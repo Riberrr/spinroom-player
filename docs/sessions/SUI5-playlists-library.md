@@ -20,4 +20,8 @@
 - PR otwarty.
 
 ## Wynik
-_(uzupełnia sesja)_
+- **Działa:** Playlisty (siatka z mozaiką od MA, sortowanie „Ostatnio grane” = `last_played_desc` / A–Z, filtr źródła przyciskiem cyklicznym, tło `ContentBackdrop`). Biblioteka: przełącznik Siatka/Lista (zapamiętany w `ViewModePrefs`), lista + szklany podgląd (okładka, meta, Odtwórz/Losowo/♡, 8 pierwszych utworów albumu/playlisty), panel `FilterPanel` (Gatunek, Dekada, Źródło, Tylko ulubione, „Wyczyść filtry”), litera z klawiatury skacze i ustawia fokus. Zrzuty z emulatora: playlisty, lista + podgląd, panel filtrów (po tych zrzutach zmieniłem tylko `maxLines` chipów).
+- **API:** `:core:data` — `LibraryFilter`, `PlaylistSort`, `FilteredLibrary` (pager/items/genres/sources), `FilteringPagingSource`, `ViewModePrefs`, `PlayItem.play(uri, shuffle)`; `:feature:library` — `FilterPanel`, `FilterPanelActions`, `FilterChip` (publiczne, dla SUI6; do przeniesienia do `:core:design` w następnej fali); `:feature:playlists` — `PlaylistsScreen(…, viewModel)` (sygnatura jak wcześniej + opcjonalny VM), nadal bez trasy w `:app` (SUI2).
+- **Odstępstwa:** w Playlistach OK = Odtwórz, a „Odtwórz / Losowo / Szczegóły” są pod kafelkiem dostępne przez ↓ (spec „→ Losowo, ↓ szczegóły” blokowałoby przejście do następnej kolumny). `←` w pierwszej kolumnie/na wierszu listy otwiera filtry, więc menu boczne jest wtedy osiągalne tylko z rzędu zakładek.
+- **Pułapki:** dekada filtrowana po stronie klienta po `year` (MA nie ma takiego argumentu) i z aktywnym filtrem lista jest bez placeholderów, więc skok do litery i licznik w zakładce są wyłączone. Lista gatunków z MA jest długa (kilkaset pozycji) i niesortowana po popularności. Przy 960 dp (emulator) rząd chipów jest ciasny. Zakładka „Ulubione” z makiety = filtr „Tylko ulubione”.
+- **Dalej:** SUI2 dopina trasę Playlist i menu; SUI6 może użyć `FilterPanel`. Mozaika 2×2 z okładek utworów wymagałaby dodatkowych zapytań (MA zwraca własną kompozytową okładkę, więc nie była potrzebna).

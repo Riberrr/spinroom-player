@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="playlists_title">Playlisty</string>
+    <string name="playlists_sort_recent">Ostatnio grane</string>
+    <string name="playlists_sort_alpha">A–Z</string>
+    <string name="playlists_source_all">Wszystkie źródła</string>
+    <string name="playlists_play">Odtwórz</string>
+    <string name="playlists_shuffle">Losowo</string>
+    <string name="playlists_details">Szczegóły</string>
+    <string name="playlists_empty_title">Nie ma tu jeszcze playlist</string>
+    <string name="playlists_empty_message">Dodaj playlistę w Music Assistant, a pojawi się tutaj.</string>
+    <string name="playlists_no_server_title">Połącz się z serwerem</string>
+    <string name="playlists_no_server_message">Wpisz adres serwera w Ustawieniach.</string>
+    <string name="playlists_connecting">Łączę z serwerem…</string>
+    <string name="playlists_loading">Wczytuję…</string>
+    <string name="playlists_error_message">Nie mogę pobrać playlist. Sprawdź połączenie z serwerem.</string>
+    <string name="playlists_retry">Spróbuj ponownie</string>
 </resources>
