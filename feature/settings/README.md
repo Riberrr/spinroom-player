@@ -9,3 +9,5 @@ Depends on `:core:design`, `:core:data` (Hilt).
 Sub-screen "O aplikacji" (S16, `AboutScreen`): wersja, notka o nieoficjalnym kliencie, licencje. Opened from a button at the bottom, same in-screen pattern as latency.
 Player list shows a second line (model · address) from MA `device_info` (`PlayerDeviceInfo` in :core:ma-api); the address field uses the Uri keyboard; after login focus moves to "Wyloguj".
 SFix04a: the list marks this TV ("To urządzenie", first) and hides stale unavailable players (`PlayerRows.kt`).
+
+SUI8a: ekran w dwóch kolumnach (`SettingsCategory`: Połączenie, Odtwarzanie, Wygląd, Przyciski pilota (zaślepka), Ekran główny, O aplikacji); fokus na kategorii pokazuje jej treść. Sekcje nowe w `SettingsSections.kt`: `AppearanceSection` (tło, motyw, akcent, wygaszacz, podgląd), `HomeRowsSection`, `PlayerNameDialog` (wiersz „Nazwa odtwarzacza” w Połączeniu). Zmiany zapisują `AppearanceSettings`/`HomeLayoutSettings`, motyw działa od razu w całej aplikacji. Wygaszacz tylko zapisuje flagę (brak implementacji wygaszacza).

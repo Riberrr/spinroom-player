@@ -24,4 +24,7 @@ interface PlaybackHost {
 
     /** Saved latency calibration in ms (−500…+500, S14c); the engine follows every change live. */
     val audioCalibrationMs: Flow<Int> get() = emptyFlow()
+
+    /** Name the user chose for this TV (Settings › Nazwa odtwarzacza), sent in `client/hello` and mDNS; null = device name. */
+    suspend fun playerName(): String? = null
 }

@@ -28,6 +28,7 @@ class SpinroomApp : Application(), PlaybackHost, SingletonImageLoader.Factory {
     @Inject lateinit var settings: SettingsStore
     @Inject @AppScope lateinit var appScope: CoroutineScope
     @Inject lateinit var latency: LatencyStore
+    @Inject lateinit var playerNameStore: io.github.riberrr.spinroom.core.data.PlayerNameStore
 
     /** Covers are small server-resized thumbnails: 20% memory cache + 100 MB disk cache keep grid scrolling off the network. */
     override fun newImageLoader(context: PlatformContext): ImageLoader =
@@ -44,6 +45,8 @@ class SpinroomApp : Application(), PlaybackHost, SingletonImageLoader.Factory {
     override val notificationIcon: Int get() = R.drawable.ic_launcher_monochrome
 
     override val audioCalibrationMs: Flow<Int> get() = latency.calibrationMs
+
+    override suspend fun playerName(): String? = playerNameStore.name.first()
 
     /**
      * MA registers a Sendspin player under its client id: make it the app's player

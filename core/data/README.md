@@ -23,3 +23,6 @@ Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (
 - `Station(uri, name, imageUrl, sourceId, libraryId)` — `uri` is the library uri, what `play_media` takes.
 - `StationOrder` (pure: `merge`, `move`, `remove`, `add`) + `FavoriteStationsOrder` (DataStore key `favorite_stations_order`).
 - SUI2's `ShellViewModel` still builds its own station list in MA order; switch it (and the dispatcher's CH±) to `FavoriteStationsRepository.favorites`/`step` — coordinator/SUI7.
+
+## Player name (SUI8a)
+- `PlayerName` (walidacja ≤40 znaków, podpowiedzi), `PlayerNameStore` (nazwa TV w DataStore), `PlayerRenamer` (MA `config/players/save`, tylko admin), `HomeLayoutSettings`/`HomeLayout`/`HomeRows` (kolejność i widoczność rzędów Startu), `Appearance.playerBackground` (blur/color/solid). DI: `SettingsExtrasModule`.
