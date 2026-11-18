@@ -106,3 +106,5 @@ SFix-UI1: link „Wszystkie …→” w nagłówku sekcji Startu zamiast kafla; 
 - SFix-UI5: wejście z kontrolek do listy/siatki przez `Modifier.focusJump` (jawne żądanie fokusu, podwójne); `focusRestorer` w SpinroomShell przekierowuje zwykłe ↓/focusProperties na pierwszy ulubiony kafel.
 - SFix-UI4: Play/Pause with only a hold shortcut gets an implicit short press (toggle on release) in `RemoteKeyDispatcher`; the down is consumed so the system media session can't pause on hold.
 - SFix-UI8: radio cover = queue item image (song art) before station logo, never MA logo; load failure → station initials.
+- SFix-UI6: pasek ulubionych w Radiu zwija się animacją rozmiaru tych samych kafli (fokus stabilny); przycisk Odtwórz w Szukaj to sama ikona.
+- SFix-UI7: style A — glass rail 72 dp with accent selection, hidden in full-screen player; "Odtwarzacz" rail item only while playing; hash-based gradient backdrop and AcronymFill tiles.

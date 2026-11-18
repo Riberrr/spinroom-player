@@ -44,14 +44,13 @@ fun StationTile(
     Column(modifier.width(size)) {
         FocusSurface(
             onClick, Modifier.size(size), focusedScale = 1.08f, onLongClick = onLongClick,
-            containerColor = stationColor(name), focusedContainerColor = stationColor(name),
+            containerColor = if (logoUrl != null || logo != null) stationColor(name) else Color.Transparent,
+            focusedContainerColor = if (logoUrl != null || logo != null) stationColor(name) else Color.Transparent,
         ) {
             when {
                 logo != null -> logo()
                 logoUrl != null -> AsyncImage(logoUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stationInitials(name), style = MaterialTheme.typography.headlineMedium, color = SpinroomColors.TextPrimary)
-                }
+                else -> AcronymFill(name, Modifier.fillMaxSize(), MaterialTheme.typography.headlineMedium)
             }
         }
         Text(name, Modifier.padding(top = 10.dp), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -61,11 +60,11 @@ fun StationTile(
 
 /** 2x2 mosaic of the first four [imageUrls]; 1-3 URLs show the first one full-size, none shows the placeholder. */
 @Composable
-fun PlaylistMosaic(imageUrls: List<String>, modifier: Modifier = Modifier) {
+fun PlaylistMosaic(imageUrls: List<String>, modifier: Modifier = Modifier, name: String? = null) {
     val urls = imageUrls.filter { it.isNotBlank() }.take(4)
     Box(modifier.background(Color(0xFF2E4A7D))) {
         when {
-            urls.isEmpty() -> CoverPlaceholder(Modifier.fillMaxSize())
+            urls.isEmpty() -> if (name.isNullOrBlank()) CoverPlaceholder(Modifier.fillMaxSize()) else AcronymFill(name, Modifier.fillMaxSize())
             urls.size < 4 -> AsyncImage(urls[0], null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             else -> Column(Modifier.fillMaxSize()) {
                 for (r in 0..1) Row(Modifier.weight(1f)) {

@@ -74,7 +74,7 @@ import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.design.SpinroomIcons
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
 import io.github.riberrr.spinroom.core.design.stationColor
-import io.github.riberrr.spinroom.core.design.stationInitials
+import io.github.riberrr.spinroom.core.design.AcronymFill
 import io.github.riberrr.spinroom.feature.library.FilterPanel
 import io.github.riberrr.spinroom.feature.library.FilterPanelActions
 import kotlinx.coroutines.delay
@@ -437,8 +437,10 @@ private fun Cover(row: SearchRow, size: Int) {
     Box(Modifier.size(size.dp).clip(shape).background(bg), contentAlignment = Alignment.Center) {
         if (row.imageUrl != null) {
             AsyncImage(row.imageUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        } else if (station || row.kind == ResultKind.PLAYLIST) {
+            AcronymFill(row.title, Modifier.fillMaxSize(), MaterialTheme.typography.titleMedium)
         } else {
-            Text(if (station) stationInitials(row.title) else row.title.take(2).uppercase(), color = SpinroomColors.TextPrimary, style = MaterialTheme.typography.titleMedium)
+            Text(row.title.take(2).uppercase(), color = SpinroomColors.TextPrimary, style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -489,12 +491,15 @@ private fun ResultItem(row: SearchRow, favorite: Boolean, actions: SearchActions
                         Text(sub, color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
-                if (!selected) SourceBadge(row.source)
-                if (favorite) FavoriteHeart(true)
+                if (!selected) {
+                    SourceBadge(row.source)
+                    if (favorite) FavoriteHeart(true)
+                }
             }
         }
         if (selected) {
-            ActionButton(stringResource(R.string.search_play), primary = true, onClick = { actions.onPlay(row) })
+            // Icon only (like the heart button): the long title stays readable.
+            ActionButton(null, primary = true, onClick = { actions.onPlay(row) })
             // Icon only: the row keeps room for its title. Filled heart = already a favorite, OK removes it.
             ActionButton(null, primary = false, favorite = favorite, onClick = { actions.onFavorite(row) })
         }
@@ -508,9 +513,9 @@ private fun ActionButton(label: String?, primary: Boolean, onClick: () -> Unit, 
         containerColor = if (primary) SpinroomColors.Accent else SpinroomColors.Glass,
         focusedContainerColor = if (primary) SpinroomColors.Accent else SpinroomColors.GlassHigh,
     ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(horizontal = if (label == null) 12.dp else 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (primary) {
-                Icon(SpinroomIcons.Play, null, Modifier.size(18.dp), tint = SpinroomColors.Bg)
+                Icon(SpinroomIcons.Play, stringResource(R.string.search_play), Modifier.size(18.dp), tint = SpinroomColors.Bg)
             } else if (favorite != null) {
                 FavoriteHeart(favorite, Modifier.size(18.dp))
             }

@@ -1,17 +1,14 @@
 package io.github.riberrr.spinroom.core.design
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Text
 import coil3.compose.SubcomposeAsyncImage
 
 /**
@@ -23,9 +20,7 @@ fun EntryThumb(name: String, imageUrl: String?, isStation: Boolean, modifier: Mo
     val shape = RoundedCornerShape(6.dp)
     val fallback: @Composable () -> Unit = {
         if (isStation) {
-            Box(Modifier.fillMaxSize().background(stationColor(name)), contentAlignment = Alignment.Center) {
-                Text(stationInitials(name), style = MaterialTheme.typography.labelMedium, color = SpinroomColors.TextPrimary, maxLines = 1)
-            }
+            AcronymFill(name, Modifier.fillMaxSize(), MaterialTheme.typography.labelMedium)
         } else CoverPlaceholder(Modifier.fillMaxSize())
     }
     Box(modifier.clip(shape)) {

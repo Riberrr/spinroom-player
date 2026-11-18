@@ -58,7 +58,7 @@ import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
 import io.github.riberrr.spinroom.core.design.StationTile
 import io.github.riberrr.spinroom.core.design.stationColor
-import io.github.riberrr.spinroom.core.design.stationInitials
+import io.github.riberrr.spinroom.core.design.AcronymFill
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 
 private val TILE_SIZE = 100.dp
@@ -210,7 +210,7 @@ private fun LazyListScope.playlistsRow(state: HomeUiState, actions: HomeActions,
                         modifier = Modifier.size(TILE_SIZE).track("pl:${p.key}", BackdropTarget(p.coverUrl, null)),
                         focusedScale = 1.08f,
                         onLongClick = p.uri?.let { u -> { menu(u, p.title) } },
-                    ) { PlaylistMosaic(listOfNotNull(p.coverUrl), Modifier.fillMaxSize()) }
+                    ) { PlaylistMosaic(listOfNotNull(p.coverUrl), Modifier.fillMaxSize(), name = p.title) }
                 }
                 Text(p.title, Modifier.padding(top = 10.dp), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
@@ -351,11 +351,7 @@ private fun HomeEmptyPreview() {
 /** Station logo; while loading or when it fails, the initials on the tile's color (not the music-note placeholder). */
 @Composable
 private fun StationLogo(url: String, name: String) {
-    val initials: @Composable () -> Unit = {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stationInitials(name), style = MaterialTheme.typography.headlineMedium, color = SpinroomColors.TextPrimary)
-        }
-    }
+    val initials: @Composable () -> Unit = { AcronymFill(name, Modifier.fillMaxSize(), MaterialTheme.typography.headlineMedium) }
     SubcomposeAsyncImage(
         model = url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize(),
         loading = { initials() }, error = { initials() },

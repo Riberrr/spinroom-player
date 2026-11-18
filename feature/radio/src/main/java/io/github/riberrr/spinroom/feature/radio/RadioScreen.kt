@@ -2,6 +2,15 @@ package io.github.riberrr.spinroom.feature.radio
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -81,7 +90,7 @@ import io.github.riberrr.spinroom.core.design.SpinroomIcons
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
 import io.github.riberrr.spinroom.core.design.StationTile
 import io.github.riberrr.spinroom.core.design.stationColor
-import io.github.riberrr.spinroom.core.design.stationInitials
+import io.github.riberrr.spinroom.core.design.AcronymFill
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.RadioFilter
 import io.github.riberrr.spinroom.core.maapi.RadioFilterKind
@@ -147,6 +156,8 @@ fun RadioContent(state: RadioUiState, actions: RadioActions, modifier: Modifier 
     var backdropName by remember { mutableStateOf<String?>(null) }
     var backdropUrl by remember { mutableStateOf<String?>(null) }
     var searchFieldFocused by remember { mutableStateOf(false) }
+    // Focus below the favorites (search box, chips, station grid) shrinks the favorites bar to small numbered icons.
+    var lowerFocused by remember { mutableStateOf(false) }
     val firstKey = remember { FocusRequester() }
     val searchField = remember { FocusRequester() }
     val favoritesRow = remember { FocusRequester() }
@@ -234,15 +245,17 @@ fun RadioContent(state: RadioUiState, actions: RadioActions, modifier: Modifier 
                     }
                 } else {
                     Header(state)
-                    Favorites(state, actions, favoritesRow) { name, url -> backdropName = name; backdropUrl = url }
-                    Controls(state, actions, searchField, resultsTarget) { searchFieldFocused = it }
+                    Favorites(state, actions, favoritesRow, compact = lowerFocused) { name, url -> backdropName = name; backdropUrl = url }
                 }
-                val rows = if (searching) state.searchRows else state.rows
-                StationList(
-                    state = state, rows = rows, gridFirst = gridFirst, columns = if (searching) 1 else 2, actions = actions,
-                    onFocus = { name, url -> backdropName = name; backdropUrl = url },
-                    modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp),
-                )
+                Column(Modifier.weight(1f).fillMaxWidth().onFocusChanged { lowerFocused = it.hasFocus }) {
+                    if (!searching) Controls(state, actions, searchField, resultsTarget) { searchFieldFocused = it }
+                    val rows = if (searching) state.searchRows else state.rows
+                    StationList(
+                        state = state, rows = rows, gridFirst = gridFirst, columns = if (searching) 1 else 2, actions = actions,
+                        onFocus = { name, url -> backdropName = name; backdropUrl = url },
+                        modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp),
+                    )
+                }
             }
         }
 
@@ -275,8 +288,10 @@ private fun Favorites(
     state: RadioUiState,
     actions: RadioActions,
     rowRequester: FocusRequester,
+    compact: Boolean,
     onFocus: (String?, String?) -> Unit,
 ) {
+    val t by animateFloatAsState(if (compact) 1f else 0f, tween(200), label = "favoritesCompact")
     if (state.favorites.isEmpty()) {
         Box(Modifier.fillMaxWidth().height(190.dp), contentAlignment = Alignment.Center) {
             EmptyState(stringResource(R.string.radio_no_favorites_title), message = stringResource(R.string.radio_no_favorites_message))
@@ -285,20 +300,34 @@ private fun Favorites(
     }
     LazyRow(
         Modifier.fillMaxWidth().focusRequester(rowRequester).focusRestorer(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = (14 - 8 * t).dp),
+        horizontalArrangement = Arrangement.spacedBy((20 - 12 * t).dp),
     ) {
         itemsIndexed(state.favorites, key = { _, s -> s.uri }) { index, station ->
             val moving = state.movingUri == station.uri
-            StationTile(
-                name = station.name,
-                subtitle = if (moving) stringResource(R.string.radio_moving) else "",
-                onClick = { if (state.movingUri == null) actions.onPlay(station.uri) },
-                modifier = Modifier.onFocusChanged { if (it.isFocused) onFocus(station.name, station.imageUrl) },
-                onLongClick = { if (state.movingUri == null) actions.onOpenMenu(station) },
-                logo = { NumberedLogo(index + 1, station.name, station.imageUrl) },
-            )
+            val size = (148 - 96 * t).dp
+            // Captions (below the square) are clipped away as the bar shrinks; the tile stays the same focusable node.
+            Box(Modifier.height(size + (44 * (1 - t)).dp).clip(FocusRoomClip)) {
+                StationTile(
+                    name = station.name,
+                    subtitle = if (moving) stringResource(R.string.radio_moving) else "",
+                    onClick = { if (state.movingUri == null) actions.onPlay(station.uri) },
+                    modifier = Modifier.wrapContentHeight(Alignment.Top, unbounded = true)
+                        .onFocusChanged { if (it.isFocused) onFocus(station.name, station.imageUrl) },
+                    size = size,
+                    onLongClick = { if (state.movingUri == null) actions.onOpenMenu(station) },
+                    logo = { NumberedLogo(index + 1, station.name, station.imageUrl) },
+                )
+            }
         }
+    }
+}
+
+/** Clip that leaves room around a tile for its focus scale and border (captions start 10 dp below the tile). */
+private val FocusRoomClip = object : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val m = with(density) { 16.dp.toPx() }
+        return Outline.Rectangle(Rect(-m, -m, size.width + m, size.height + with(density) { 6.dp.toPx() }))
     }
 }
 
@@ -306,9 +335,7 @@ private fun Favorites(
 private fun NumberedLogo(number: Int, name: String, imageUrl: String?) {
     Box(Modifier.fillMaxSize()) {
         if (imageUrl != null) AsyncImage(imageUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-        else Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stationInitials(name), style = MaterialTheme.typography.headlineMedium, color = SpinroomColors.TextPrimary)
-        }
+        else AcronymFill(name, Modifier.fillMaxSize(), MaterialTheme.typography.headlineMedium)
         Box(
             Modifier.padding(8.dp).size(28.dp).clipCircle().background(SpinroomColors.Bg.copy(alpha = 0.7f)).align(Alignment.TopStart),
             contentAlignment = Alignment.Center,
