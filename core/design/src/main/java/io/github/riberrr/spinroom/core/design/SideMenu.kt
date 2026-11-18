@@ -26,6 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,13 +38,16 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 
+/** Collapsed width of the rail; the shell reserves the same slot. */
+val RAIL_WIDTH = 72.dp
+
 data class SideMenuItem(val id: String, val label: String, val icon: ImageVector)
 
 /** A pinned favorite (station or playlist) in the expanded menu. [isStation] picks initials-on-color as the fallback thumbnail. */
 data class PinnedEntry(val id: String, val title: String, val subtitle: String, val imageUrl: String?, val isStation: Boolean)
 
 /**
- * Left navigation rail. Collapsed it shows only icons (88 dp); while any item has focus it expands
+ * Left navigation rail. Collapsed it shows only icons (72 dp); while any item has focus it expands
  * to show labels. [selectedId] marks the current screen. Pass [enterFocusRequester] to move focus
  * into the menu from outside (e.g. D-pad left on the screen's left edge). [onFocusChange] reports whether
  * focus is inside the menu. [items] sit at the top, [bottomItems] (e.g. settings) are pinned to the bottom.
@@ -64,15 +70,17 @@ fun SideMenu(
     val entering = remember { booleanArrayOf(false) }
     val all = items + bottomItems
     val targetId = all.firstOrNull { it.id == selectedId }?.id ?: all.firstOrNull()?.id
-    val width by animateDpAsState(if (hasFocus) 240.dp else 88.dp, label = "menuWidth")
-    // The layout slot stays 88 dp; the expanded rail overlays the content instead of squeezing it.
-    Box(modifier.fillMaxHeight().width(88.dp).zIndex(1f)) {
+    val width by animateDpAsState(if (hasFocus) 232.dp else RAIL_WIDTH, label = "menuWidth")
+    // The layout slot stays RAIL_WIDTH; the expanded rail overlays the content instead of squeezing it.
+    Box(modifier.fillMaxHeight().width(RAIL_WIDTH).zIndex(1f)) {
         Column(
             Modifier
                 .fillMaxHeight()
                 .wrapContentWidth(Alignment.Start, unbounded = true)
                 .width(width)
-                .background(SpinroomColors.Surface.copy(alpha = if (hasFocus) 0.94f else 1f))
+                .background(SpinroomColors.Bg.copy(alpha = if (hasFocus) 0.94f else 0.88f))
+                .background(SpinroomColors.Glass)
+                .drawBehind { drawRect(Color.White.copy(alpha = 0.10f), topLeft = Offset(size.width - 1.dp.toPx(), 0f), size = Size(1.dp.toPx(), size.height)) }
                 .onFocusChanged {
                     hasFocus = it.hasFocus
                     onFocusChange(it.hasFocus)
@@ -88,7 +96,7 @@ fun SideMenu(
                     }
                 }
                 .focusGroup()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 10.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items.forEach { item ->
@@ -133,14 +141,14 @@ private fun MenuEntry(item: SideMenuItem, selected: Boolean, expanded: Boolean, 
         onClick,
         modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        containerColor = if (selected) SpinroomColors.SurfaceHigh else Color.Transparent,
-        focusedContainerColor = SpinroomColors.SurfaceHigh,
+        containerColor = if (selected) SpinroomColors.Accent.copy(alpha = 0.16f) else Color.Transparent,
+        focusedContainerColor = if (selected) SpinroomColors.Accent.copy(alpha = 0.28f) else SpinroomColors.GlassHigh,
         focusedScale = 1.0f,
     ) {
-        Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(horizontal = 13.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(item.icon, item.label, Modifier.size(26.dp), tint = if (selected) SpinroomColors.Accent else SpinroomColors.TextSecondary)
             if (expanded) {
-                Text(item.label, Modifier.padding(start = 16.dp), style = MaterialTheme.typography.titleSmall, maxLines = 1)
+                Text(item.label, Modifier.padding(start = 16.dp), style = MaterialTheme.typography.titleSmall, color = if (selected) SpinroomColors.Accent else SpinroomColors.TextPrimary, maxLines = 1)
             }
         }
     }

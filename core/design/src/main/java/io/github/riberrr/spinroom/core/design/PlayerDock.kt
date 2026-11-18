@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -146,11 +147,11 @@ fun PlayerDock(
 @Composable
 private fun DockBar(state: MiniPlayerState, coverUrl: String?, isRadio: Boolean, labels: DockLabels, onClick: () -> Unit, modifier: Modifier) {
     FocusSurface(
-        onClick, modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(0.dp),
-        containerColor = SpinroomColors.Surface.copy(alpha = 0.9f), focusedContainerColor = SpinroomColors.SurfaceHigh, focusedScale = 1f,
+        onClick, modifier.fillMaxWidth().height(80.dp).padding(horizontal = 24.dp, vertical = 8.dp), shape = RoundedCornerShape(18.dp),
+        containerColor = SpinroomColors.GlassHigh, focusedContainerColor = SpinroomColors.Accent.copy(alpha = 0.20f), focusedScale = 1f,
     ) {
-        Row(Modifier.fillMaxSize().padding(horizontal = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-            EntryThumb(state.title, coverUrl, isRadio, Modifier.size(52.dp))
+        Row(Modifier.fillMaxSize().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            EntryThumb(state.title, coverUrl, isRadio, Modifier.size(46.dp))
             Column(Modifier.padding(start = 20.dp).width(300.dp)) {
                 Text(state.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(state.artist, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -184,7 +185,7 @@ private fun DockPanel(
     onEntryClick: (String) -> Unit,
     playFocus: FocusRequester,
 ) {
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))) {
         ContentBackdrop(imageUrl = coverUrl, seedColor = if (isRadio) stationColor(state.title) else null)
         Box(Modifier.fillMaxWidth().height(1.dp).background(SpinroomColors.GlassBorder))
         Row(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 24.dp), verticalAlignment = Alignment.CenterVertically) {

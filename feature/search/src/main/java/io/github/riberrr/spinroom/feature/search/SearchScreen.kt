@@ -74,7 +74,7 @@ import io.github.riberrr.spinroom.core.design.SpinroomColors
 import io.github.riberrr.spinroom.core.design.SpinroomIcons
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
 import io.github.riberrr.spinroom.core.design.stationColor
-import io.github.riberrr.spinroom.core.design.stationInitials
+import io.github.riberrr.spinroom.core.design.AcronymFill
 import io.github.riberrr.spinroom.feature.library.FilterPanel
 import io.github.riberrr.spinroom.feature.library.FilterPanelActions
 import kotlinx.coroutines.delay
@@ -437,8 +437,10 @@ private fun Cover(row: SearchRow, size: Int) {
     Box(Modifier.size(size.dp).clip(shape).background(bg), contentAlignment = Alignment.Center) {
         if (row.imageUrl != null) {
             AsyncImage(row.imageUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        } else if (station || row.kind == ResultKind.PLAYLIST) {
+            AcronymFill(row.title, Modifier.fillMaxSize(), MaterialTheme.typography.titleMedium)
         } else {
-            Text(if (station) stationInitials(row.title) else row.title.take(2).uppercase(), color = SpinroomColors.TextPrimary, style = MaterialTheme.typography.titleMedium)
+            Text(row.title.take(2).uppercase(), color = SpinroomColors.TextPrimary, style = MaterialTheme.typography.titleMedium)
         }
     }
 }

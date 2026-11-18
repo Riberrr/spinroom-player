@@ -90,7 +90,7 @@ import io.github.riberrr.spinroom.core.design.SpinroomIcons
 import io.github.riberrr.spinroom.core.design.SpinroomTheme
 import io.github.riberrr.spinroom.core.design.StationTile
 import io.github.riberrr.spinroom.core.design.stationColor
-import io.github.riberrr.spinroom.core.design.stationInitials
+import io.github.riberrr.spinroom.core.design.AcronymFill
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.RadioFilter
 import io.github.riberrr.spinroom.core.maapi.RadioFilterKind
@@ -335,9 +335,7 @@ private val FocusRoomClip = object : Shape {
 private fun NumberedLogo(number: Int, name: String, imageUrl: String?) {
     Box(Modifier.fillMaxSize()) {
         if (imageUrl != null) AsyncImage(imageUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-        else Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stationInitials(name), style = MaterialTheme.typography.headlineMedium, color = SpinroomColors.TextPrimary)
-        }
+        else AcronymFill(name, Modifier.fillMaxSize(), MaterialTheme.typography.headlineMedium)
         Box(
             Modifier.padding(8.dp).size(28.dp).clipCircle().background(SpinroomColors.Bg.copy(alpha = 0.7f)).align(Alignment.TopStart),
             contentAlignment = Alignment.Center,
