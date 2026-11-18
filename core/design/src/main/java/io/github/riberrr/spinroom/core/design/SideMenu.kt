@@ -61,6 +61,7 @@ fun SideMenu(
     bottomItems: List<SideMenuItem> = emptyList(),
     enterFocusRequester: FocusRequester? = null,
     onFocusChange: (Boolean) -> Unit = {},
+    onItemFocus: (String) -> Unit = {},
     pinned: List<PinnedEntry> = emptyList(),
     pinnedTitle: String = "",
     onSelectPinned: (PinnedEntry) -> Unit = {},
@@ -100,7 +101,7 @@ fun SideMenu(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items.forEach { item ->
-                MenuEntry(item, item.id == selectedId, hasFocus, { onSelect(item.id) }, Modifier.focusRequester(requesters.getOrPut(item.id) { FocusRequester() }))
+                MenuEntry(item, item.id == selectedId, hasFocus, { onSelect(item.id) }, Modifier.focusRequester(requesters.getOrPut(item.id) { FocusRequester() }).onFocusChanged { if (it.isFocused) onItemFocus(item.id) })
             }
             if (hasFocus && pinned.isNotEmpty()) {
                 Text(
@@ -113,7 +114,7 @@ fun SideMenu(
             }
             Box(Modifier.weight(1f))
             bottomItems.forEach { item ->
-                MenuEntry(item, item.id == selectedId, hasFocus, { onSelect(item.id) }, Modifier.focusRequester(requesters.getOrPut(item.id) { FocusRequester() }))
+                MenuEntry(item, item.id == selectedId, hasFocus, { onSelect(item.id) }, Modifier.focusRequester(requesters.getOrPut(item.id) { FocusRequester() }).onFocusChanged { if (it.isFocused) onItemFocus(item.id) })
             }
         }
     }

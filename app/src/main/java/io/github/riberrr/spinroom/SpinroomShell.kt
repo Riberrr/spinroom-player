@@ -67,7 +67,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val pinned = remember(stations, playlists) { pinnedOf(stations, playlists) }
     val radioLabel = stringResource(R.string.pinned_radio)
     val playlistLabel = stringResource(R.string.pinned_playlist)
-    LaunchedEffect(Unit) { shell.openDrawer.collect { runCatching { dockFocus.requestFocus() } } }
+    LaunchedEffect(Unit) { shell.openDrawer.collect { android.util.Log.i("Spinroom", "drawer request"); android.util.Log.i("Spinroom", "dock requestFocus=" + runCatching { dockFocus.requestFocus() }) } }
     LaunchedEffect(Unit) {
         shell.navigate.collect { target ->
             navController.navigate(target) {
@@ -80,9 +80,10 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     var menuHasFocus by remember { mutableStateOf(false) }
     var menuOpenedByUser by remember { mutableStateOf(false) }
     var leftEdgeHit by remember { mutableStateOf(false) }
+    var menuItemId by remember { mutableStateOf("") }
 
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
-    val items = listOf(
+    val baseItems = listOf(
         SideMenuItem(Routes.HOME, stringResource(R.string.menu_home), SpinroomIcons.Home),
         SideMenuItem(Routes.RADIO, stringResource(R.string.menu_radio), SpinroomIcons.Radio),
         SideMenuItem(Routes.PLAYLISTS, stringResource(R.string.menu_playlists), SpinroomIcons.Playlists),
@@ -92,10 +93,9 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     // The player entry exists only while something plays; it jumps focus to the bottom dock (no scrolling down a long list).
     val hasTrack by activityNowPlayingViewModel().state.collectAsState().let { s -> androidx.compose.runtime.derivedStateOf { s.value.hasTrack } }
     val fullPlayer = route == Routes.NOW_PLAYING
-    val bottom = buildList {
-        if (hasTrack && !fullPlayer) add(SideMenuItem(MENU_PLAYER, stringResource(R.string.menu_player), SpinroomIcons.Player))
-        add(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
-    }
+    // Right under the main entries (not at the bottom): reachable with a few Down presses even with favorites pinned in between.
+    val items = if (hasTrack && !fullPlayer) baseItems + SideMenuItem(MENU_PLAYER, stringResource(R.string.menu_player), SpinroomIcons.Player) else baseItems
+    val bottom = listOf(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
     // Full-screen player: the menu slides behind the left edge and is not composed, so it cannot take focus.
     LaunchedEffect(fullPlayer) { if (fullPlayer) { menuHasFocus = false; menuOpenedByUser = false } }
     val slot by androidx.compose.animation.core.animateDpAsState(if (fullPlayer) 0.dp else RAIL_WIDTH, label = "menuSlot")
@@ -120,13 +120,15 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             // geometrically nearest button instead: the mini player, for the bottom "Ustawienia" item.
             modifier = Modifier.padding(top = 44.dp).onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight && menuHasFocus) {
+                    if (menuItemId == MENU_PLAYER) { shell.requestDrawer(); return@onPreviewKeyEvent true }
                     runCatching { screenFocus.requestFocus() }.isSuccess
                 } else false
             },
             items = items,
             selectedId = route.orEmpty(),
             onSelect = { target ->
-                if (target == MENU_PLAYER) { runCatching { dockFocus.requestFocus() }; return@SideMenu }
+                android.util.Log.i("Spinroom", "menu select: $target")
+                if (target == MENU_PLAYER) { shell.requestDrawer(); return@SideMenu }
                 navController.navigate(target) {
                     popUpTo(Routes.HOME) { saveState = true }
                     launchSingleTop = true
@@ -144,6 +146,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                     if (route == Routes.DETAILS) popUpTo(Routes.DETAILS) { inclusive = true }
                 }
             },
+            onItemFocus = { menuItemId = it; android.util.Log.i("Spinroom", "menu focus: $it") },
             enterFocusRequester = menuFocus,
             onFocusChange = {
                 menuHasFocus = it
@@ -216,7 +219,7 @@ private fun MenuLogo(modifier: Modifier = Modifier) {
 }
 
 /** The logo takes a row of the rail: with more pinned entries the expanded rail would push "Ustawienia" off screen. */
-private const val MAX_PINNED = 4
+private const val MAX_PINNED = 3
 
 /** Pseudo-route of the rail entry that moves focus to the bottom player. */
 private const val MENU_PLAYER = "player"
