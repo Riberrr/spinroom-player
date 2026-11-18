@@ -32,4 +32,4 @@ Layout assumes a 1280×720 dp screen; components use weights so they also hold a
 - `EntryThumb(name, imageUrl, isStation)` — small square thumbnail with station initials / cover placeholder fallback.
 
 ## SUI4
-- `OnScreenKeyboard(symbols, labels: KeyboardLabels, onType, onBackspace, onToggleSymbols, modifier, firstKey)` — the 7-column Polish keyboard on glass keys (same layout as Szukaj). Search (SUI3) can adopt it instead of its private copy.
+- `OnScreenKeyboard(symbols, labels: KeyboardLabels, onType, onBackspace, onToggleSymbols, modifier, firstKey, resultsTarget)` (`resultsTarget`: → z ostatniej kolumny i ↓ z dolnego rzędu skaczą tam; patrz `Modifier.focusJump`) — the 7-column Polish keyboard on glass keys (same layout as Szukaj). Search (SUI3) can adopt it instead of its private copy.
