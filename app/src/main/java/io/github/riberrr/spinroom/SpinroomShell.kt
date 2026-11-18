@@ -83,7 +83,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     var menuItemId by remember { mutableStateOf("") }
 
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
-    val items = listOf(
+    val baseItems = listOf(
         SideMenuItem(Routes.HOME, stringResource(R.string.menu_home), SpinroomIcons.Home),
         SideMenuItem(Routes.RADIO, stringResource(R.string.menu_radio), SpinroomIcons.Radio),
         SideMenuItem(Routes.PLAYLISTS, stringResource(R.string.menu_playlists), SpinroomIcons.Playlists),
@@ -93,10 +93,9 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     // The player entry exists only while something plays; it jumps focus to the bottom dock (no scrolling down a long list).
     val hasTrack by activityNowPlayingViewModel().state.collectAsState().let { s -> androidx.compose.runtime.derivedStateOf { s.value.hasTrack } }
     val fullPlayer = route == Routes.NOW_PLAYING
-    val bottom = buildList {
-        if (hasTrack && !fullPlayer) add(SideMenuItem(MENU_PLAYER, stringResource(R.string.menu_player), SpinroomIcons.Player))
-        add(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
-    }
+    // Right under the main entries (not at the bottom): reachable with a few Down presses even with favorites pinned in between.
+    val items = if (hasTrack && !fullPlayer) baseItems + SideMenuItem(MENU_PLAYER, stringResource(R.string.menu_player), SpinroomIcons.Player) else baseItems
+    val bottom = listOf(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
     // Full-screen player: the menu slides behind the left edge and is not composed, so it cannot take focus.
     LaunchedEffect(fullPlayer) { if (fullPlayer) { menuHasFocus = false; menuOpenedByUser = false } }
     val slot by androidx.compose.animation.core.animateDpAsState(if (fullPlayer) 0.dp else RAIL_WIDTH, label = "menuSlot")
