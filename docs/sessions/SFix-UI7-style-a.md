@@ -19,3 +19,5 @@ Menu szklane + akcent + węższe; menu schowane w pełnym odtwarzaczu; pozycja �
 
 ## Poprawka po teście TV (OK na „Odtwarzacz” nie rozwijał docka)
 OK i Prawo na pozycji „Odtwarzacz” idą teraz tą samą drogą co hold Play/Pause (`shell.requestDrawer()` → `dockFocus.requestFocus()` poza zdarzeniem klawisza menu); dodano `SideMenu.onItemFocus`. Przyczyny nie udało się potwierdzić na TV (sesja nie dostała zgody użytkownika na uruchomienie aplikacji na TV) — wymaga weryfikacji na TV.
+
+**Diagnoza na emulatorze (tymczasowy fake stan grania, usunięty):** OK i Prawo na „Odtwarzacz” rozwijają panel docka z fokusem na Play (log `dock requestFocus=Success(true)`); „Pełny ekran” z docka chowa menu, Back je przywraca. Na emulatorze błędu z TV nie udało się odtworzyć; podejrzenie: na TV fokus w menu stoi na innej pozycji (np. przypiętej stacji — jej OK robi `screenFocus.requestFocus()` i gra stację), niż zakłada test. Dodano logi `Spinroom`: `menu focus: <id>`, `menu select: <id>`, `drawer request`, `dock requestFocus=…`. `MAX_PINNED` 4→3, bo dodatkowy wiersz „Odtwarzacz” wypychał „Ustawienia” poza ekran przy 4 przypiętych.

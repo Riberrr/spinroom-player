@@ -67,7 +67,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val pinned = remember(stations, playlists) { pinnedOf(stations, playlists) }
     val radioLabel = stringResource(R.string.pinned_radio)
     val playlistLabel = stringResource(R.string.pinned_playlist)
-    LaunchedEffect(Unit) { shell.openDrawer.collect { runCatching { dockFocus.requestFocus() } } }
+    LaunchedEffect(Unit) { shell.openDrawer.collect { android.util.Log.i("Spinroom", "drawer request"); android.util.Log.i("Spinroom", "dock requestFocus=" + runCatching { dockFocus.requestFocus() }) } }
     LaunchedEffect(Unit) {
         shell.navigate.collect { target ->
             navController.navigate(target) {
@@ -128,6 +128,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             items = items,
             selectedId = route.orEmpty(),
             onSelect = { target ->
+                android.util.Log.i("Spinroom", "menu select: $target")
                 if (target == MENU_PLAYER) { shell.requestDrawer(); return@SideMenu }
                 navController.navigate(target) {
                     popUpTo(Routes.HOME) { saveState = true }
@@ -146,7 +147,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                     if (route == Routes.DETAILS) popUpTo(Routes.DETAILS) { inclusive = true }
                 }
             },
-            onItemFocus = { menuItemId = it },
+            onItemFocus = { menuItemId = it; android.util.Log.i("Spinroom", "menu focus: $it") },
             enterFocusRequester = menuFocus,
             onFocusChange = {
                 menuHasFocus = it
@@ -219,7 +220,7 @@ private fun MenuLogo(modifier: Modifier = Modifier) {
 }
 
 /** The logo takes a row of the rail: with more pinned entries the expanded rail would push "Ustawienia" off screen. */
-private const val MAX_PINNED = 4
+private const val MAX_PINNED = 3
 
 /** Pseudo-route of the rail entry that moves focus to the bottom player. */
 private const val MENU_PLAYER = "player"
