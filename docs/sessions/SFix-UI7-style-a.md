@@ -16,3 +16,6 @@ Menu szklane + akcent + węższe; menu schowane w pełnym odtwarzaczu; pozycja �
 - Pełny odtwarzacz (`NOW_PLAYING`): menu wsuwa się za lewą krawędź i nie jest komponowane (brak fokusu); Lewo na krawędzi tam nic nie otwiera, wraca po Back (wyjście z odtwarzacza). 
 - `PlayerDock`: pasek jako zaokrąglona szklana kapsuła (akcentowy fokus), panel z zaokrąglonymi górnymi rogami.
 - Pułapki: lint lokalnie pada na `local.properties` (PropertyEscape, fałszywy alarm w worktree); na emulatorze Sendspin jest Idle, więc nie sprawdzono wizualnie docka i pozycji „Odtwarzacz” podczas grania.
+
+## Poprawka po teście TV (OK na „Odtwarzacz” nie rozwijał docka)
+OK i Prawo na pozycji „Odtwarzacz” idą teraz tą samą drogą co hold Play/Pause (`shell.requestDrawer()` → `dockFocus.requestFocus()` poza zdarzeniem klawisza menu); dodano `SideMenu.onItemFocus`. Przyczyny nie udało się potwierdzić na TV (sesja nie dostała zgody użytkownika na uruchomienie aplikacji na TV) — wymaga weryfikacji na TV.

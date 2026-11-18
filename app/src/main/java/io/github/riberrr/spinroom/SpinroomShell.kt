@@ -80,6 +80,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     var menuHasFocus by remember { mutableStateOf(false) }
     var menuOpenedByUser by remember { mutableStateOf(false) }
     var leftEdgeHit by remember { mutableStateOf(false) }
+    var menuItemId by remember { mutableStateOf("") }
 
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
     val items = listOf(
@@ -120,13 +121,14 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             // geometrically nearest button instead: the mini player, for the bottom "Ustawienia" item.
             modifier = Modifier.padding(top = 44.dp).onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight && menuHasFocus) {
+                    if (menuItemId == MENU_PLAYER) { shell.requestDrawer(); return@onPreviewKeyEvent true }
                     runCatching { screenFocus.requestFocus() }.isSuccess
                 } else false
             },
             items = items,
             selectedId = route.orEmpty(),
             onSelect = { target ->
-                if (target == MENU_PLAYER) { runCatching { dockFocus.requestFocus() }; return@SideMenu }
+                if (target == MENU_PLAYER) { shell.requestDrawer(); return@SideMenu }
                 navController.navigate(target) {
                     popUpTo(Routes.HOME) { saveState = true }
                     launchSingleTop = true
@@ -144,6 +146,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                     if (route == Routes.DETAILS) popUpTo(Routes.DETAILS) { inclusive = true }
                 }
             },
+            onItemFocus = { menuItemId = it },
             enterFocusRequester = menuFocus,
             onFocusChange = {
                 menuHasFocus = it
