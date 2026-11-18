@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: cała przebudowa UI SUI0–SUI9, SUIv, SFix-UI1–3 (16–18.11.2026, PR #45–#63). Ostatni tag: v1.0.1; v1.1.0 czeka na test na TV._
+_Prowadzi koordynator po każdym scaleniu. Przebudowa UI SUI0–SUI9 + SFix-UI1–3 scalona (PR #45–#65). Ostatni tag: v1.1.0 (18.11.2026, wydanie z APK; test na TV: start, granie, dock, CH+ OK)._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer 8928, mDNS, klient 8927).
@@ -21,7 +21,7 @@ _Prowadzi koordynator po każdym scaleniu. Ostatnio scalone: cała przebudowa UI
 - Fixtures MA nie nagrane — ⚠️ w `docs/MA-API.md` (imageproxy, `queue_updated`, ulubione spoza biblioteki, `start_item`).
 
 ## W toku
-- Nic otwartego w kodzie. v1.1.0 NIE wydane celowo: przegląd SUIv objął tylko emulator (TV: `screencap` nie działa, klasyfikator blokował sterowanie). Do zrobienia ręcznie na TV: (1) Ustawienia TV → Dostępność → Usługi → Spinroom → Włącz (CH± poza aplikacją); (2) sprawdzić granie, dock, hold Play/Pause, menu przytrzymania OK, nazwę odtwarzacza w MA, Wygląd, Przyciski pilota, Szukaj → ulubione, wygląd Radia po SFix-UI2; (3) potem `git tag v1.1.0` (CI release, sekrety SIGNING_* są). Znana luka: zimny start debug na przeciążonym emulatorze → ANR `startForeground` w SpinroomPlaybackService.
+- Do ręcznego sprawdzenia na TV: (1) Ustawienia TV → Dostępność → Usługi → Spinroom → Włącz (CH± poza aplikacją, niesprawdzone); (2) wygląd ekranów (zrzuty z TV niemożliwe: `screencap` nie działa), Wygląd, Szukaj → ulubione, przyciski pilota. Znana luka: zimny start debug na przeciążonym emulatorze → ANR `startForeground`. Drobiazg: przytrzymanie Play/Pause otwiera dock, ale chwilowo pauzuje granie.
 
 ## Następne
 - Tag v1.0.0 — czeka na 4 sekrety SIGNING_* w GitHub (bez nich release.yml kończy się błędem). Przed instalacją v1.0 odinstalować v0.x z TV. Do uporządkowania: `:core:design` zależy od `:core:data` (S14b); brak toastu i odświeżenia po zmianie ulubionych.
