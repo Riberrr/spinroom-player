@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import io.github.riberrr.spinroom.core.design.focusJump
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
@@ -242,7 +243,7 @@ fun SearchContent(
                 )
             }
             Column(Modifier.weight(1f).fillMaxHeight()) {
-                CategoryChips(state, actions, filtersChip)
+                CategoryChips(state, actions, filtersChip, if (state.hasShown) firstResult else null)
                 ActiveFilterChips(state.filters, actions.panel)
                 // No results (idle, empty, loading, offline): nothing here may take focus, so ← from the keyboard
                 // reaches the menu instead of an invisible target on the right.
@@ -286,7 +287,9 @@ private fun QueryField(query: String, modifier: Modifier) {
 @Composable
 private fun Keyboard(symbols: Boolean, actions: SearchActions, firstKey: FocusRequester, firstResult: FocusRequester, hasResults: Boolean, modifier: Modifier) {
     // → on the right-most keys goes to the first result explicitly: the geometric search would stop on the list container.
-    val edge = Modifier.focusProperties { right = if (hasResults) firstResult else FocusRequester.Default }
+    val target = if (hasResults) firstResult else null
+    val edge = Modifier.focusJump(Key.DirectionRight, target)
+    val bottom = Modifier.focusJump(Key.DirectionDown, target)
     val keys = if (symbols) SymbolKeys else LetterKeys
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         keys.chunked(KEY_COLUMNS).forEachIndexed { rowIndex, row ->
@@ -298,9 +301,9 @@ private fun Keyboard(symbols: Boolean, actions: SearchActions, firstKey: FocusRe
             }
         }
         Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            KeyboardKey(stringResource(R.string.search_space), { actions.onType(" ") }, Modifier.weight(3.2f))
-            KeyboardKey(stringResource(R.string.search_delete), actions.onBackspace, Modifier.weight(2f))
-            KeyboardKey(stringResource(if (symbols) R.string.search_letters else R.string.search_symbols), actions.onToggleSymbols, Modifier.weight(2f).then(edge))
+            KeyboardKey(stringResource(R.string.search_space), { actions.onType(" ") }, Modifier.weight(3.2f).then(bottom))
+            KeyboardKey(stringResource(R.string.search_delete), actions.onBackspace, Modifier.weight(2f).then(bottom))
+            KeyboardKey(stringResource(if (symbols) R.string.search_letters else R.string.search_symbols), actions.onToggleSymbols, Modifier.weight(2f).then(bottom).then(edge))
         }
     }
 }
@@ -339,12 +342,12 @@ private fun Pill(label: String, on: Boolean, onClick: () -> Unit, modifier: Modi
 }
 
 @Composable
-private fun CategoryChips(state: SearchUiState, actions: SearchActions, filtersChip: FocusRequester) {
+private fun CategoryChips(state: SearchUiState, actions: SearchActions, filtersChip: FocusRequester, resultsTarget: FocusRequester?) {
     // LazyRow: chips scroll sideways and stop short of the list's scrollbar at the right edge.
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(end = 32.dp),
-        modifier = Modifier.padding(top = 4.dp).fillMaxWidth(),
+        modifier = Modifier.padding(top = 4.dp).fillMaxWidth().focusJump(Key.DirectionDown, resultsTarget),
     ) {
         items(SearchFilter.entries, key = { it.name }) { filter ->
             Pill(stringResource(filter.labelRes()), filter == state.filter, { actions.onFilter(filter) })

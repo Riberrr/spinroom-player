@@ -22,7 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.background
@@ -40,6 +40,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import io.github.riberrr.spinroom.core.design.focusJump
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -149,9 +150,11 @@ fun RadioContent(state: RadioUiState, actions: RadioActions, modifier: Modifier 
     val firstKey = remember { FocusRequester() }
     val searchField = remember { FocusRequester() }
     val favoritesRow = remember { FocusRequester() }
+    val gridFirst = remember { FocusRequester() }
     val menuFirst = remember { FocusRequester() }
     val pickerFirst = remember { FocusRequester() }
     val searching = state.searching
+    val resultsTarget = if ((if (searching) state.searchRows else state.rows).isNotEmpty()) gridFirst else null
 
     LaunchedEffect(searching) {
         if (searching) runCatching { firstKey.requestFocus() } else if (backdropName == null) Unit else runCatching { searchField.requestFocus() }
@@ -207,11 +210,11 @@ fun RadioContent(state: RadioUiState, actions: RadioActions, modifier: Modifier 
                 enter = slideInHorizontally { -it } + fadeIn(),
                 exit = slideOutHorizontally { -it } + fadeOut(),
             ) {
-                SearchPane(state, actions, firstKey, Modifier.padding(end = 32.dp))
+                SearchPane(state, actions, firstKey, resultsTarget, Modifier.padding(end = 32.dp))
             }
             Column(Modifier.weight(1f).fillMaxHeight()) {
                 if (searching) {
-                    Row(Modifier.padding(bottom = 14.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(Modifier.focusJump(Key.DirectionDown, resultsTarget).padding(bottom = 14.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         FocusSurface(
                             onClick = actions.onTogglePolishOnly, shape = CircleShape, focusedScale = 1.06f,
                             containerColor = SpinroomColors.Glass, focusedContainerColor = SpinroomColors.GlassHigh,
@@ -232,11 +235,11 @@ fun RadioContent(state: RadioUiState, actions: RadioActions, modifier: Modifier 
                 } else {
                     Header(state)
                     Favorites(state, actions, favoritesRow) { name, url -> backdropName = name; backdropUrl = url }
-                    Controls(state, actions, searchField) { searchFieldFocused = it }
+                    Controls(state, actions, searchField, resultsTarget) { searchFieldFocused = it }
                 }
                 val rows = if (searching) state.searchRows else state.rows
                 StationList(
-                    state = state, rows = rows, columns = if (searching) 1 else 2, actions = actions,
+                    state = state, rows = rows, gridFirst = gridFirst, columns = if (searching) 1 else 2, actions = actions,
                     onFocus = { name, url -> backdropName = name; backdropUrl = url },
                     modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp),
                 )
@@ -318,9 +321,9 @@ private fun NumberedLogo(number: Int, name: String, imageUrl: String?) {
 private fun Modifier.clipCircle() = this.then(Modifier.clip(CircleShape))
 
 @Composable
-private fun Controls(state: RadioUiState, actions: RadioActions, searchField: FocusRequester, onSearchFocus: (Boolean) -> Unit) {
+private fun Controls(state: RadioUiState, actions: RadioActions, searchField: FocusRequester, downTarget: FocusRequester?, onSearchFocus: (Boolean) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
+        Modifier.fillMaxWidth().focusJump(Key.DirectionDown, downTarget).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         FocusSurface(
@@ -379,6 +382,8 @@ private fun Chip(kind: RadioFilterKind, label: String, state: RadioUiState, all:
 private fun StationList(
     state: RadioUiState,
     rows: List<RadioRow>,
+    gridFirst: FocusRequester,
+
     columns: Int,
     actions: RadioActions,
     onFocus: (String?, String?) -> Unit,
@@ -398,12 +403,13 @@ private fun StationList(
             contentPadding = PaddingValues(start = 4.dp, end = 4.dp, top = 6.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            items(rows, key = { it.uri.ifEmpty { it.name } }) { row ->
+            itemsIndexed(rows, key = { _, r -> r.uri.ifEmpty { r.name } }) { index, row ->
                 ResultRow(
                     title = row.name,
                     subtitle = row.subtitle.ifBlank { stringResource(R.string.radio_provider) },
                     onClick = { actions.onPlay(row.uri) },
-                    modifier = Modifier.onFocusChanged { if (it.isFocused) onFocus(row.name, row.imageUrl) },
+                    modifier = (if (index == 0) Modifier.focusRequester(gridFirst) else Modifier)
+                        .onFocusChanged { if (it.isFocused) onFocus(row.name, row.imageUrl) },
                     favorite = state.isFavorite(row),
                     onLongClick = { actions.onToggleFavorite(row) },
                     thumbnail = { EntryThumb(row.name, row.imageUrl, isStation = true, modifier = Modifier.fillMaxSize()) },
@@ -415,7 +421,7 @@ private fun StationList(
 
 /** Search mode, left: breadcrumb, query box ("tylko radio") and the on-screen keyboard. */
 @Composable
-private fun SearchPane(state: RadioUiState, actions: RadioActions, firstKey: FocusRequester, modifier: Modifier) {
+private fun SearchPane(state: RadioUiState, actions: RadioActions, firstKey: FocusRequester, rightTarget: FocusRequester?, modifier: Modifier) {
     Column(modifier.width(400.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 10.dp)) {
             Text(stringResource(R.string.radio_search_crumb) + " › ", color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodyLarge)
@@ -439,7 +445,7 @@ private fun SearchPane(state: RadioUiState, actions: RadioActions, firstKey: Foc
                 stringResource(R.string.radio_symbols), stringResource(R.string.radio_letters),
             ),
             onType = actions.onType, onBackspace = actions.onBackspace, onToggleSymbols = actions.onToggleSymbols,
-            modifier = Modifier.padding(top = 14.dp), firstKey = firstKey,
+            modifier = Modifier.padding(top = 14.dp), firstKey = firstKey, resultsTarget = rightTarget,
         )
     }
 }
