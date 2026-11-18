@@ -303,4 +303,19 @@ class NowPlayingViewModelTest {
         runCurrent()
         assertEquals(listOf("next:tv"), backend.commands)
     }
+
+    private fun img(id: String, provider: String = "radiobrowser", path: String = "https://x/$id.png") =
+        io.github.riberrr.spinroom.core.maapi.MediaItemImage("thumb", path, provider, true, id)
+
+    @Test fun radioCoverPrefersSongArtThenStationLogoNeverMaLogo() {
+        val logo = img("logo-id")
+        val station = MediaItem(itemId = "1", provider = "library", mediaType = "radio", name = "S", uri = "u", metadata = io.github.riberrr.spinroom.core.maapi.MediaMetadata(images = listOf(logo)))
+        val song = img("song-id")
+        assertEquals(song, pickCoverImage(station, song))
+        assertEquals(logo, pickCoverImage(station, null))
+        assertEquals(logo, pickCoverImage(station, img("ma", provider = "builtin", path = "logo.png")))
+        assertEquals(null, pickCoverImage(station.copy(metadata = null), img("ma", provider = "builtin", path = "logo.png")))
+        val track = station.copy(mediaType = "track", image = img("album"))
+        assertEquals(img("album"), pickCoverImage(track, song))
+    }
 }

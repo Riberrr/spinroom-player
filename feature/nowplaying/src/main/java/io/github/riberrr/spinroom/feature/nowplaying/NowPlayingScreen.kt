@@ -218,7 +218,10 @@ private fun Player(state: NowPlayingUiState, actions: NowPlayingActions) {
         BoxWithConstraints(Modifier.weight(0.4f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             val side = minOf(440.dp, maxWidth, maxHeight)
             val shape = Modifier.size(side).clip(RoundedCornerShape(20.dp))
-            if (state.isRadio && state.coverUrl == null) StationCover(state.title.ifBlank { state.mediaName }, shape) else Cover(state.coverUrl, shape)
+            val stationName = state.mediaName.ifBlank { state.title }
+            if (state.isRadio && state.coverUrl == null) StationCover(stationName, shape)
+            else if (state.isRadio) Cover(state.coverUrl, shape, error = { StationCover(stationName, Modifier.fillMaxSize()) })
+            else Cover(state.coverUrl, shape)
         }
         Column(Modifier.weight(0.6f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
             if (state.queueExpanded && !state.isRadio) FullQueue(state, actions) else Details(state, actions)
@@ -406,7 +409,7 @@ private fun PlayerPicker(state: NowPlayingUiState, actions: NowPlayingActions) {
 }
 
 @Composable
-internal fun Cover(url: String?, modifier: Modifier) {
+internal fun Cover(url: String?, modifier: Modifier, error: @Composable () -> Unit = { CoverPlaceholder(Modifier.fillMaxSize()) }) {
     if (url == null) {
         CoverPlaceholder(modifier)
     } else {
