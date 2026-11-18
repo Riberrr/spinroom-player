@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+- Nowy wygląd: motywy Grafit/Granat/OLED i akcenty, szklane panele, rozmyte tło z okładki.
+- Nowa powłoka: menu boczne z przypiętymi, wysuwany odtwarzacz na dole (przytrzymaj Play/Pause), CH+/CH− przełączają utwór lub ulubioną stację.
+- Nowe ekrany: Start, Radio (z szukaniem stacji), Playlisty, Biblioteka z filtrami, Szukaj, odtwarzacz 40:60.
+- Ustawienia: nazwa odtwarzacza, Wygląd, przyciski pilota; opcjonalna usługa ułatwień dostępu dla CH± poza aplikacją (włączana ręcznie w Ustawieniach TV).
+
 ## 1.0.0
 - Wydanie 1.0: ekran „O aplikacji” (wersja, licencje), podpisane wydanie, README ze zrzutami.
 
