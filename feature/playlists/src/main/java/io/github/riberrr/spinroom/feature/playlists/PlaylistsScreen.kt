@@ -201,7 +201,7 @@ private fun PlaylistTile(row: PlaylistRow, actions: PlaylistsActions, onFocused:
             onClick = { actions.onPlay(row, false) },
             modifier = Modifier.size(TILE),
             focusedScale = 1.06f,
-        ) { PlaylistMosaic(listOfNotNull(row.coverUrl), Modifier.fillMaxSize()) }
+        ) { PlaylistMosaic(listOfNotNull(row.coverUrl), Modifier.fillMaxSize(), name = row.title) }
         Text(row.title, Modifier.padding(top = 10.dp), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(
             row.source.ifBlank { " " }, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary,

@@ -14,6 +14,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -61,7 +63,10 @@ fun ContentBackdrop(
         Crossfade(settled, animationSpec = tween(CROSSFADE_MS), label = "backdrop") { src ->
             Box(Modifier.fillMaxSize()) {
                 if (src.imageUrl != null) BlurredImage(src.imageUrl)
-                else if (src.seed != null) Box(Modifier.fillMaxSize().background(src.seed))
+                else {
+                    val (c1, c2) = backdropGradient(src.seed)
+                    Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(c1, c2), start = Offset.Zero, end = Offset.Infinite)))
+                }
                 Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = BACKDROP_DIM)))
             }
         }

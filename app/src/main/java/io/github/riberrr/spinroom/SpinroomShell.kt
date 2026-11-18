@@ -41,6 +41,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.riberrr.spinroom.core.design.SideMenu
 import io.github.riberrr.spinroom.core.design.SideMenuItem
 import io.github.riberrr.spinroom.core.design.SpinroomColors
+import io.github.riberrr.spinroom.core.design.RAIL_WIDTH
+import io.github.riberrr.spinroom.feature.nowplaying.activityNowPlayingViewModel
 import io.github.riberrr.spinroom.core.design.SpinroomIcons
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -87,7 +89,16 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         SideMenuItem(Routes.LIBRARY, stringResource(R.string.menu_library), SpinroomIcons.Library),
         SideMenuItem(Routes.SEARCH, stringResource(R.string.menu_search), SpinroomIcons.Search),
     )
-    val bottom = listOf(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
+    // The player entry exists only while something plays; it jumps focus to the bottom dock (no scrolling down a long list).
+    val hasTrack by activityNowPlayingViewModel().state.collectAsState().let { s -> androidx.compose.runtime.derivedStateOf { s.value.hasTrack } }
+    val fullPlayer = route == Routes.NOW_PLAYING
+    val bottom = buildList {
+        if (hasTrack && !fullPlayer) add(SideMenuItem(MENU_PLAYER, stringResource(R.string.menu_player), SpinroomIcons.Player))
+        add(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
+    }
+    // Full-screen player: the menu slides behind the left edge and is not composed, so it cannot take focus.
+    LaunchedEffect(fullPlayer) { if (fullPlayer) { menuHasFocus = false; menuOpenedByUser = false } }
+    val slot by androidx.compose.animation.core.animateDpAsState(if (fullPlayer) 0.dp else RAIL_WIDTH, label = "menuSlot")
 
     // Composed only while the menu has focus: a handler added on entering the composition is the newest one, so it
     // runs before the NavHost's own (registered earlier), which would otherwise pop the screen.
@@ -97,7 +108,13 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     BackHandler(enabled = route == Routes.HOME && !menuHasFocus) { activity?.finish() }
 
     Row(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
-        Box(Modifier.width(88.dp).fillMaxHeight().zIndex(1f)) {
+        Box(Modifier.width(slot).fillMaxHeight().zIndex(1f)) {
+        androidx.compose.animation.AnimatedVisibility(
+            !fullPlayer,
+            enter = androidx.compose.animation.slideInHorizontally { -it },
+            exit = androidx.compose.animation.slideOutHorizontally { -it },
+        ) {
+        Box {
         SideMenu(
             // → from the menu enters the screen itself (restored/first control). The default focus search would pick the
             // geometrically nearest button instead: the mini player, for the bottom "Ustawienia" item.
@@ -109,6 +126,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             items = items,
             selectedId = route.orEmpty(),
             onSelect = { target ->
+                if (target == MENU_PLAYER) { runCatching { dockFocus.requestFocus() }; return@SideMenu }
                 navController.navigate(target) {
                     popUpTo(Routes.HOME) { saveState = true }
                     launchSingleTop = true
@@ -139,6 +157,8 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         )
             MenuLogo(Modifier.align(Alignment.TopCenter).padding(top = 8.dp))
         }
+        }
+        }
         Column(
             Modifier
                 .weight(1f)
@@ -160,7 +180,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                     if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
                         leftEdgeHit = false
                         focusManager.moveFocus(FocusDirection.Left)
-                        if (leftEdgeHit) {
+                        if (leftEdgeHit && !fullPlayer) {
                             menuOpenedByUser = true
                             menuFocus.requestFocus()
                         }
@@ -197,3 +217,6 @@ private fun MenuLogo(modifier: Modifier = Modifier) {
 
 /** The logo takes a row of the rail: with more pinned entries the expanded rail would push "Ustawienia" off screen. */
 private const val MAX_PINNED = 4
+
+/** Pseudo-route of the rail entry that moves focus to the bottom player. */
+private const val MENU_PLAYER = "player"
