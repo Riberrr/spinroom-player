@@ -96,7 +96,7 @@ class RemoteKeyDispatcher(
             }
             if (pendingPress == code) {
                 pendingPress = null
-                bindings.onPress(code)?.let { run(it) }
+                shortAction(code)?.let { run(it) }
                 return true
             }
             return false
@@ -110,8 +110,8 @@ class RemoteKeyDispatcher(
             }
         }
         if (swallowUpFor == code) return true // further repeats of a hold that already fired
-        if (press.repeatCount > 0) return bindings.onPress(code) != null
-        val action = bindings.onPress(code) ?: return false
+        if (press.repeatCount > 0) return shortAction(code) != null
+        val action = shortAction(code) ?: return false
         if (bindings.onHold(code) != null) {
             pendingPress = code // decide on release: short press or the start of a hold
             return true
@@ -119,6 +119,15 @@ class RemoteKeyDispatcher(
         run(action)
         return true
     }
+
+    /**
+     * The short-press action for [code]. Play/Pause with only a hold shortcut (the default: hold = drawer) still toggles
+     * playback on a short press, but *we* do it on release. Letting the down through would hand it to the system media
+     * session, which pauses at once, so holding the key paused the music before the drawer opened.
+     */
+    private fun shortAction(code: Int): RemoteAction? =
+        bindings.onPress(code)
+            ?: RemoteAction.PLAY_PAUSE.takeIf { code == KeyRules.KEYCODE_MEDIA_PLAY_PAUSE && bindings.onHold(code) != null }
 
     private fun run(action: RemoteAction) {
         action.stationNumber?.let { return handler.playFavoriteStation(it) }

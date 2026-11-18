@@ -104,3 +104,4 @@ SFix04c: Now Playing shows the "pokaż całą kolejkę (n)" link only when `upco
 SFix-UI1: link „Wszystkie …→” w nagłówku sekcji Startu zamiast kafla; kafle stacji 84 dp; chip z nazwą odtwarzacza; ImeAction.Next w polach Ustawień
 - SFix-UI2: search dedupes by name+uri, orders favorites→Polish→rest; only a Polish/all toggle (no genre/country data per station in search).
 - SFix-UI5: wejście z kontrolek do listy/siatki przez `Modifier.focusJump` (jawne żądanie fokusu, podwójne); `focusRestorer` w SpinroomShell przekierowuje zwykłe ↓/focusProperties na pierwszy ulubiony kafel.
+- SFix-UI4: Play/Pause with only a hold shortcut gets an implicit short press (toggle on release) in `RemoteKeyDispatcher`; the down is consumed so the system media session can't pause on hold.

@@ -48,21 +48,29 @@ class RemoteKeyDispatcherTest {
         assertEquals(listOf("nextTrack"), h.calls)
     }
 
-    @Test fun shortPlayPauseIsNotConsumed() {
+    @Test fun shortPlayPauseTogglesOnReleaseAndIsConsumed() {
         val h = Fake(); val d = RemoteKeyDispatcher(h)
-        assertFalse(d.dispatch(KeyPress(playPause, true, 0)))
-        assertFalse(d.dispatch(KeyPress(playPause, false, 0)))
-        assertTrue(h.calls.isEmpty())
+        assertTrue(d.dispatch(KeyPress(playPause, true, 0)))
+        assertTrue(h.calls.isEmpty()) // nothing yet: could still turn into a hold
+        assertTrue(d.dispatch(KeyPress(playPause, false, 0)))
+        assertEquals(listOf("playPause"), h.calls)
     }
 
-    @Test fun holdPlayPauseOpensDrawerOnceAndSwallowsRelease() {
+    @Test fun holdPlayPauseOpensDrawerWithoutTouchingPlayback() {
         val h = Fake(); val d = RemoteKeyDispatcher(h)
-        assertFalse(d.dispatch(KeyPress(playPause, true, 0)))
+        assertTrue(d.dispatch(KeyPress(playPause, true, 0))) // must not reach the system media session
         assertTrue(d.dispatch(KeyPress(playPause, true, 1)))
         assertTrue(d.dispatch(KeyPress(playPause, true, 2)))
         assertTrue(d.dispatch(KeyPress(playPause, false, 0)))
         assertEquals(listOf("drawer"), h.calls)
-        // the next short press passes through again
+        // the next short press works again
+        assertTrue(d.dispatch(KeyPress(playPause, true, 0)))
+        assertTrue(d.dispatch(KeyPress(playPause, false, 0)))
+        assertEquals(listOf("drawer", "playPause"), h.calls)
+    }
+
+    @Test fun playPauseWithoutAnyShortcutPassesToSystem() {
+        val d = RemoteKeyDispatcher(Fake(), AssignedKeyBindings(KeyAssignments(emptyList())))
         assertFalse(d.dispatch(KeyPress(playPause, true, 0)))
         assertFalse(d.dispatch(KeyPress(playPause, false, 0)))
     }
