@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.riberrr.spinroom.core.data.Station
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
+import io.github.riberrr.spinroom.core.maapi.MediaItemImage
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.Player
@@ -297,4 +298,15 @@ internal fun sourceLabel(domain: String): String = when (domain.lowercase()) {
     "radiobrowser" -> "Radio Browser"
     "tunein" -> "TuneIn"
     else -> domain.replaceFirstChar { it.uppercase() }
+}
+
+/**
+ * Which image to show for the playing item. Radio: the queue item's image is the current song's art (MA fills it from the
+ * stream title), so it wins; the station logo is the fallback. Everything else: the media item's own image first.
+ * Music Assistant's own logo is never a cover.
+ */
+internal fun pickCoverImage(media: MediaItem?, queueImage: MediaItemImage?): MediaItemImage? {
+    val own = media?.bestImage
+    val candidates = if (media?.mediaType == "radio") listOf(queueImage, own) else listOf(own, queueImage)
+    return candidates.firstOrNull { it != null && it.provider != "builtin" && it.path != "logo.png" }
 }
