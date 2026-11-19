@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -235,6 +237,8 @@ private fun DockPanel(
                         Text("${labels.openFullScreen} ↗", Modifier.padding(horizontal = 14.dp, vertical = 6.dp), style = MaterialTheme.typography.labelMedium, maxLines = 1, softWrap = false)
                     }
                 }
+                // Scrolls with focus (D-pad Down): the list holds all favorite stations, not just the ones that fit.
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 entries.forEach { entry ->
                     FocusSurface(
                         { onEntryClick(entry.key) }, Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
@@ -249,6 +253,7 @@ private fun DockPanel(
                             if (entry.trailing.isNotBlank()) Text(entry.trailing, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
                         }
                     }
+                }
                 }
             }
         }

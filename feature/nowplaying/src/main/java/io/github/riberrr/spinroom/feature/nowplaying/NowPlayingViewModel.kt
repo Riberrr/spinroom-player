@@ -189,14 +189,17 @@ class NowPlayingViewModel internal constructor(
                 s.mediaName.isBlank() -> -1
                 else -> favoriteStations.indexOfFirst { it.name.equals(s.mediaName, true) }
             }
-            s.copy(stations = favoriteStations.mapIndexed { i, st ->
+            // The queue item often carries no image for a station: fall back to the logo from the favorites list
+            // (song art, when MA provides it, already won in pickCoverImage), so the dock/player never show bare initials.
+            val logo = if (s.isRadio && s.coverUrl == null) favoriteStations.getOrNull(currentIdx)?.imageUrl else null
+            s.copy(coverUrl = s.coverUrl ?: logo, stations = favoriteStations.mapIndexed { i, st ->
                 StationRow(i + 1, st.uri, st.name, st.imageUrl, if (i == currentIdx) nowPlayingText else "", i == currentIdx)
             })
         }
     }
 
     private fun coverUrl(media: MediaItem?, fallback: io.github.riberrr.spinroom.core.maapi.MediaItemImage?, size: Int) =
-        ImageUrls.url(serverAddress, media?.bestImage ?: fallback, size)
+        ImageUrls.url(serverAddress, pickCoverImage(media, fallback), size)
 
     private fun QueueItem.toRow(currentIndex: Int?, position: Int): QueueRow {
         val i = index ?: position
