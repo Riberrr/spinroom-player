@@ -18,6 +18,7 @@
     <string name="pinned_playlist">Playlista</string>
     <string name="dock_now_playing">Teraz gra</string>
     <string name="dock_full_screen">Pełny ekran</string>
+    <string name="dock_now_playing_button">Teraz odtwarzane</string>
     <string name="dock_live">Na żywo</string>
     <string name="dock_previous">Poprzedni</string>
     <string name="dock_next">Następny</string>
