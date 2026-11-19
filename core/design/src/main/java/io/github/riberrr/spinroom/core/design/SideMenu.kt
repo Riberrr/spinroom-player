@@ -65,6 +65,7 @@ fun SideMenu(
     pinned: List<PinnedEntry> = emptyList(),
     pinnedTitle: String = "",
     onSelectPinned: (PinnedEntry) -> Unit = {},
+    topInset: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
     val requesters = remember { mutableMapOf<String, FocusRequester>() }
@@ -79,8 +80,9 @@ fun SideMenu(
                 .fillMaxHeight()
                 .wrapContentWidth(Alignment.Start, unbounded = true)
                 .width(width)
-                .background(SpinroomColors.Bg.copy(alpha = if (hasFocus) 0.94f else 0.88f))
-                .background(SpinroomColors.Glass)
+                // Style A: a glass veil over the shell's backdrop; expanded it gets a darker base so labels stay readable over any cover.
+                .then(if (hasFocus) Modifier.background(SpinroomColors.Bg.copy(alpha = 0.86f)) else Modifier)
+                .background(Color.White.copy(alpha = if (hasFocus) 0.07f else 0.06f))
                 .drawBehind { drawRect(Color.White.copy(alpha = 0.10f), topLeft = Offset(size.width - 1.dp.toPx(), 0f), size = Size(1.dp.toPx(), size.height)) }
                 .onFocusChanged {
                     hasFocus = it.hasFocus
@@ -97,7 +99,7 @@ fun SideMenu(
                     }
                 }
                 .focusGroup()
-                .padding(horizontal = 10.dp, vertical = 16.dp),
+                .padding(start = 10.dp, end = 10.dp, top = topInset, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items.forEach { item ->
