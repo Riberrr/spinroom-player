@@ -65,8 +65,7 @@ fun SideMenu(
     pinned: List<PinnedEntry> = emptyList(),
     pinnedTitle: String = "",
     onSelectPinned: (PinnedEntry) -> Unit = {},
-    /** Space kept free at the top for the app mark the shell draws over the rail (the rail's glass still covers it). */
-    topInset: androidx.compose.ui.unit.Dp = 0.dp,
+    topInset: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
     val requesters = remember { mutableMapOf<String, FocusRequester>() }
@@ -81,9 +80,8 @@ fun SideMenu(
                 .fillMaxHeight()
                 .wrapContentWidth(Alignment.Start, unbounded = true)
                 .width(width)
-                // Style A "pane of glass": a light veil over the screen's own backdrop, so the rail blends in
-                // instead of standing out as a dark column. A bit denser when expanded so labels stay readable.
-                .background(SpinroomColors.Bg.copy(alpha = if (hasFocus) 0.86f else 0.0f))
+                // Style A: a glass veil over the shell's backdrop; expanded it gets a darker base so labels stay readable over any cover.
+                .then(if (hasFocus) Modifier.background(SpinroomColors.Bg.copy(alpha = 0.86f)) else Modifier)
                 .background(Color.White.copy(alpha = if (hasFocus) 0.07f else 0.06f))
                 .drawBehind { drawRect(Color.White.copy(alpha = 0.10f), topLeft = Offset(size.width - 1.dp.toPx(), 0f), size = Size(1.dp.toPx(), size.height)) }
                 .onFocusChanged {
@@ -101,7 +99,7 @@ fun SideMenu(
                     }
                 }
                 .focusGroup()
-                .padding(start = 10.dp, end = 10.dp, top = 16.dp + topInset, bottom = 16.dp),
+                .padding(start = 10.dp, end = 10.dp, top = topInset, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items.forEach { item ->

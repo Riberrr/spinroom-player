@@ -38,6 +38,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.runtime.CompositionLocalProvider
+import io.github.riberrr.spinroom.core.design.BackdropHost
+import io.github.riberrr.spinroom.core.design.HostedBackdrop
+import io.github.riberrr.spinroom.core.design.LocalBackdropHost
 import io.github.riberrr.spinroom.core.design.SideMenu
 import io.github.riberrr.spinroom.core.design.SideMenuItem
 import io.github.riberrr.spinroom.core.design.SpinroomColors
@@ -107,7 +111,12 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val activity = androidx.activity.compose.LocalActivity.current
     BackHandler(enabled = route == Routes.HOME && !menuHasFocus) { activity?.finish() }
 
-    Row(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
+    // One backdrop for the whole window: screens report their cover/seed (ContentBackdrop) and it shows through the glass menu and dock.
+    val backdropHost = remember { BackdropHost() }
+    Box(Modifier.fillMaxSize().background(SpinroomColors.Bg)) {
+    HostedBackdrop(backdropHost)
+    CompositionLocalProvider(LocalBackdropHost provides backdropHost) {
+    Row(Modifier.fillMaxSize()) {
         Box(Modifier.width(slot).fillMaxHeight().zIndex(1f)) {
         androidx.compose.animation.AnimatedVisibility(
             !fullPlayer,
@@ -159,7 +168,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 if (!it) menuOpenedByUser = false
             },
         )
-            MenuLogo(Modifier.align(Alignment.TopCenter).zIndex(2f).padding(top = 8.dp))
+            MenuLogo(Modifier.align(Alignment.TopCenter).padding(top = 8.dp).zIndex(2f))
         }
         }
         }
@@ -218,6 +227,8 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 }
             }
         }
+    }
+    }
     }
 }
 

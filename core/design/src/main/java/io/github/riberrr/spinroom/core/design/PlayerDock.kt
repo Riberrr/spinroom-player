@@ -59,6 +59,7 @@ data class DockEntry(
 data class DockLabels(
     val nowPlaying: String = "Teraz gra",
     val openFullScreen: String = "Pełny ekran",
+    val nowPlayingButton: String = "Teraz odtwarzane",
     val live: String = "Na żywo",
     val previous: String = "Poprzedni",
     val next: String = "Następny",
@@ -166,6 +167,12 @@ private fun DockBar(state: MiniPlayerState, coverUrl: String?, isRadio: Boolean,
                 ProgressBar(state.positionMs, state.durationMs, Modifier.padding(horizontal = 12.dp).weight(1f))
                 Text(formatTime(state.durationMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
             }
+            // Not a separate focus target: the whole bar is (OK opens the full player); this just names what OK does (mockup 09A).
+            Text(
+                labels.nowPlayingButton,
+                Modifier.padding(start = 16.dp).background(SpinroomColors.Glass, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 7.dp),
+                style = MaterialTheme.typography.labelLarge, maxLines = 1, softWrap = false,
+            )
         }
     }
 }
@@ -188,7 +195,10 @@ private fun DockPanel(
     playFocus: FocusRequester,
 ) {
     Box(Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))) {
-        ContentBackdrop(imageUrl = coverUrl, seedColor = if (isRadio) stationColor(state.title) else null)
+        // The panel has its own backdrop (the cover); it must not replace the screen's one in the shell.
+        androidx.compose.runtime.CompositionLocalProvider(LocalBackdropHost provides null) {
+            ContentBackdrop(imageUrl = coverUrl, seedColor = if (isRadio) stationColor(state.title) else null)
+        }
         Box(Modifier.fillMaxWidth().height(1.dp).background(SpinroomColors.GlassBorder))
         Row(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 24.dp), verticalAlignment = Alignment.CenterVertically) {
             EntryThumb(state.title, coverUrl, isRadio, Modifier.size(150.dp))

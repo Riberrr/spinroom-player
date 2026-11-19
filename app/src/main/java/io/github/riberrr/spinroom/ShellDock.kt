@@ -36,6 +36,7 @@ fun ShellDock(
     val labels = DockLabels(
         nowPlaying = stringResource(R.string.dock_now_playing),
         openFullScreen = stringResource(R.string.dock_full_screen),
+        nowPlayingButton = stringResource(R.string.dock_now_playing_button),
         live = stringResource(R.string.dock_live),
         previous = stringResource(R.string.dock_previous),
         next = stringResource(R.string.dock_next),

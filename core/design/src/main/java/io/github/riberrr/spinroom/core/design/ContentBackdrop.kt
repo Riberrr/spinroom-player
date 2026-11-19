@@ -8,6 +8,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -30,8 +33,29 @@ import coil3.transform.Transformation
 private const val CROSSFADE_MS = 300
 private const val SETTLE_MS = 250L
 
-/** What the backdrop shows: a cover/logo URL, or just a seed color (e.g. station without logo). */
-private data class BackdropSource(val imageUrl: String?, val seed: Color?)
+/** What the backdrop shows: a cover/logo URL, or just a seed color (e.g. station without logo); [solid] = plain theme background. */
+data class BackdropSource(val imageUrl: String?, val seed: Color?, val solid: Boolean = false)
+
+/**
+ * Lets the shell draw one backdrop under the side menu, the screen and the dock. While a host is provided, every
+ * [ContentBackdrop] in the screen only reports its source here (and draws nothing); without a host (previews, the
+ * dock panel) it draws itself.
+ */
+class BackdropHost {
+    private val source = mutableStateOf(BackdropSource(null, null))
+    val current: State<BackdropSource> get() = source
+    internal fun report(value: BackdropSource) { source.value = value }
+    internal fun release(value: BackdropSource) { if (source.value === value) source.value = BackdropSource(null, null) }
+}
+
+val LocalBackdropHost = compositionLocalOf<BackdropHost?> { null }
+
+/** Draws the host's current backdrop; the shell puts it behind everything. */
+@Composable
+fun HostedBackdrop(host: BackdropHost, modifier: Modifier = Modifier) {
+    val src by host.current
+    ContentBackdrop(src.imageUrl, modifier, src.seed, src.solid, ignoreHost = true)
+}
 
 /**
  * Full-screen blurred, ~60 % dimmed version of the focused item's cover (or a seed color), crossfaded in ~300 ms.
@@ -48,7 +72,17 @@ fun ContentBackdrop(
     modifier: Modifier = Modifier,
     seedColor: Color? = null,
     solidBackground: Boolean = LocalSolidBackground.current,
+    ignoreHost: Boolean = false,
 ) {
+    val host = LocalBackdropHost.current
+    if (host != null && !ignoreHost) {
+        val mine = remember(imageUrl, seedColor, solidBackground) { BackdropSource(imageUrl, seedColor, solidBackground) }
+        DisposableEffect(mine) {
+            host.report(mine)
+            onDispose { host.release(mine) }
+        }
+        return
+    }
     val bg = SpinroomColors.Bg
     if (solidBackground) {
         Box(modifier.fillMaxSize().background(bg))
