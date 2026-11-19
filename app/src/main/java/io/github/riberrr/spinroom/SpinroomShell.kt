@@ -118,7 +118,8 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         SideMenu(
             // → from the menu enters the screen itself (restored/first control). The default focus search would pick the
             // geometrically nearest button instead: the mini player, for the bottom "Ustawienia" item.
-            modifier = Modifier.padding(top = 44.dp).onPreviewKeyEvent { event ->
+            topInset = 44.dp,
+            modifier = Modifier.onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight && menuHasFocus) {
                     if (menuItemId == MENU_PLAYER) { shell.requestDrawer(); return@onPreviewKeyEvent true }
                     runCatching { screenFocus.requestFocus() }.isSuccess
@@ -158,7 +159,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 if (!it) menuOpenedByUser = false
             },
         )
-            MenuLogo(Modifier.align(Alignment.TopCenter).padding(top = 8.dp))
+            MenuLogo(Modifier.align(Alignment.TopCenter).zIndex(2f).padding(top = 8.dp))
         }
         }
         }
@@ -197,7 +198,17 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             // item, geometrically closest to the mini player) focus must land in the content, not the mini player.
             Column(Modifier.fillMaxSize()) {
                 // Only the screen is restored; the mini player sits outside so it is never the restore target.
-                Column(Modifier.weight(1f).focusRequester(screenFocus).focusRestorer()) { content() }
+                // Down never leaves the screen for the dock: when the next row is still off screen (not composed, or below the
+                // viewport) the dock bar is geometrically the nearest target and would steal focus instead of the list scrolling.
+                // The dock stays reachable with hold ⏯ and from the menu's "Odtwarzacz" entry. A separate group, because the
+                // restorer below sets its own onExit.
+                Column(
+                    Modifier.weight(1f)
+                        .focusProperties { onExit = { if (requestedFocusDirection == FocusDirection.Down) cancelFocusChange() } }
+                        .focusGroup(),
+                ) {
+                    Column(Modifier.fillMaxSize().focusRequester(screenFocus).focusRestorer()) { content() }
+                }
                 if (route != Routes.NOW_PLAYING) {
                     ShellDock(
                         barFocus = dockFocus,

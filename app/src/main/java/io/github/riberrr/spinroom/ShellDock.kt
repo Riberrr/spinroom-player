@@ -14,8 +14,8 @@ import io.github.riberrr.spinroom.core.design.PlayerDock
 import io.github.riberrr.spinroom.feature.nowplaying.QueueRow
 import io.github.riberrr.spinroom.feature.nowplaying.activityNowPlayingViewModel
 
-private const val DOCK_ENTRIES = 3
-private const val DOCK_STATIONS = 4
+private const val DOCK_ENTRIES = 10
+private const val DOCK_STATIONS = 30
 
 /**
  * [PlayerDock] bound to the shared now-playing state. Right-hand list: next queue items, or favorite stations while radio plays.

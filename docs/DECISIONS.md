@@ -108,3 +108,4 @@ SFix-UI1: link „Wszystkie …→” w nagłówku sekcji Startu zamiast kafla; 
 - SFix-UI8: radio cover = queue item image (song art) before station logo, never MA logo; load failure → station initials.
 - SFix-UI6: pasek ulubionych w Radiu zwija się animacją rozmiaru tych samych kafli (fokus stabilny); przycisk Odtwórz w Szukaj to sama ikona.
 - SFix-UI7: style A — glass rail 72 dp with accent selection, hidden in full-screen player; "Odtwarzacz" rail item only while playing; hash-based gradient backdrop and AcronymFill tiles.
+- SFix-UI10: Down from a screen never enters the dock (the bar stole focus when the next row was off screen); dock favorites list scrolls (30 stations); `pickCoverImage` finally wired in the ViewModel, radio falls back to the favorites logo; rail is a light glass veil (6 %) collapsed, 86 % Bg expanded.
