@@ -150,6 +150,7 @@ class SettingsViewModel @Inject constructor(
 
     fun addKey(a: KeyAssignment) { viewModelScope.launch { keyBindings.update { it.with(a) } } }
     fun removeKey(a: KeyAssignment) { viewModelScope.launch { keyBindings.update { it.without(a) } } }
+    fun replaceKey(old: KeyAssignment, new: KeyAssignment) { viewModelScope.launch { keyBindings.update { it.without(old).with(new) } } }
     fun toggleKeyScope(a: KeyAssignment) { viewModelScope.launch { keyBindings.update { it.with(a.copy(global = !a.global)) } } }
     fun setKeysGlobal(on: Boolean) { viewModelScope.launch { keyBindings.setGlobalEnabled(on) } }
     fun resetKeys() { viewModelScope.launch { keyBindings.reset() } }

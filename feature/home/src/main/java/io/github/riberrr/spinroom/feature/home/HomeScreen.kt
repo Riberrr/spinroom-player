@@ -63,8 +63,8 @@ import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 
 private val TILE_SIZE = 100.dp
 
-/** Station tiles: 8 per row on a 960 dp TV screen (mockup 03B). */
-private val STATION_SIZE = 84.dp
+/** Favorite station tiles: small, so about 11 fit on screen; the row scrolls sideways for the rest. */
+private val STATION_SIZE = 68.dp
 
 /** Actions the screen can trigger; previews pass no-ops. Navigation targets come from `:app`. */
 data class HomeActions(

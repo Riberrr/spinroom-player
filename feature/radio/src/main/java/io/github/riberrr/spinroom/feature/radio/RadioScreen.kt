@@ -301,11 +301,11 @@ private fun Favorites(
     LazyRow(
         Modifier.fillMaxWidth().focusRequester(rowRequester).focusRestorer(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = (14 - 8 * t).dp),
-        horizontalArrangement = Arrangement.spacedBy((20 - 12 * t).dp),
+        horizontalArrangement = Arrangement.spacedBy((14 - 8 * t).dp),
     ) {
         itemsIndexed(state.favorites, key = { _, s -> s.uri }) { index, station ->
             val moving = state.movingUri == station.uri
-            val size = (148 - 96 * t).dp
+            val size = (112 - 66 * t).dp
             // Captions (below the square) are clipped away as the bar shrinks; the tile stays the same focusable node.
             Box(Modifier.height(size + (44 * (1 - t)).dp).clip(FocusRoomClip)) {
                 StationTile(

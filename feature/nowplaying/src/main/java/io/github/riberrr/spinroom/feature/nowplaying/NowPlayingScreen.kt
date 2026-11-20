@@ -54,6 +54,8 @@ import io.github.riberrr.spinroom.core.data.Appearance
 import io.github.riberrr.spinroom.core.data.isLive
 import io.github.riberrr.spinroom.core.design.ContentBackdrop
 import io.github.riberrr.spinroom.core.design.EntryThumb
+import io.github.riberrr.spinroom.core.design.LoadingLabel
+import io.github.riberrr.spinroom.core.design.LoadingSpinner
 import io.github.riberrr.spinroom.core.design.stationColor
 import io.github.riberrr.spinroom.core.design.stationInitials
 import io.github.riberrr.spinroom.core.design.CoverPlaceholder
@@ -247,7 +249,9 @@ private fun Details(state: NowPlayingUiState, actions: NowPlayingActions) {
         Text(subtitle, style = MaterialTheme.typography.titleLarge, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
     Spacer(Modifier.height(18.dp))
-    if (state.isRadio) {
+    if (state.loading) {
+        LoadingLabel(stringResource(R.string.nowplaying_loading))
+    } else if (state.isRadio) {
         Text(
             listOf(stringResource(R.string.nowplaying_live), state.radioMeta).filter { it.isNotBlank() }.joinToString(" · "),
             style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -279,7 +283,7 @@ private fun Controls(state: NowPlayingUiState, actions: NowPlayingActions, playF
             ControlButton(
                 if (state.isPlaying) SpinroomIcons.Pause else SpinroomIcons.Play,
                 stringResource(if (state.isPlaying) R.string.nowplaying_pause else R.string.nowplaying_play),
-                actions.onPlayPause, d(80), filled = true, modifier = Modifier.focusRequester(playFocus),
+                actions.onPlayPause, d(80), filled = true, modifier = Modifier.focusRequester(playFocus), loading = state.loading,
             )
             ControlButton(SpinroomIcons.Next, stringResource(R.string.nowplaying_next), { if (state.isRadio) actions.onStepStation(true) else actions.onNext() }, d(60))
             if (!state.isRadio) ControlButton(
@@ -303,6 +307,7 @@ private fun ControlButton(
     modifier: Modifier = Modifier,
     filled: Boolean = false,
     active: Boolean = false,
+    loading: Boolean = false,
 ) {
     FocusSurface(
         onClick, modifier.size(size), shape = CircleShape,
@@ -312,7 +317,7 @@ private fun ControlButton(
     ) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             val tint = when { filled -> SpinroomColors.Bg; active -> SpinroomColors.Accent; else -> SpinroomColors.TextPrimary }
-            Icon(icon, description, Modifier.size(size / 2), tint = tint)
+            if (loading) LoadingSpinner(size = size / 2, color = tint) else Icon(icon, description, Modifier.size(size / 2), tint = tint)
         }
     }
 }

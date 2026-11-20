@@ -74,9 +74,11 @@ data class NowPlayingUiState(
     val queueExpanded: Boolean = false,
     val players: List<PlayerChoice> = emptyList(),
     val pickerOpen: Boolean = false,
+    /** A track/station was requested but audio has not started yet (drives the loading animation). */
+    val loading: Boolean = false,
 ) {
     val hasPlayer: Boolean get() = playerId.isNotBlank()
     val isConnected: Boolean get() = connection is MaConnectionState.Connected
 
-    fun toMiniPlayerState() = MiniPlayerState(title, artist, isPlaying, positionMs, durationMs)
+    fun toMiniPlayerState() = MiniPlayerState(title, artist, isPlaying, positionMs, durationMs, loading)
 }

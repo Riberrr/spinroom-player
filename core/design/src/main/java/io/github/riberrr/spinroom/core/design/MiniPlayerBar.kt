@@ -36,6 +36,8 @@ data class MiniPlayerState(
     val isPlaying: Boolean,
     val positionMs: Long,
     val durationMs: Long,
+    /** Music was requested but is not playing yet: bars show a loading animation instead of progress. */
+    val loading: Boolean = false,
 )
 
 internal fun formatTime(ms: Long): String {
@@ -76,7 +78,10 @@ fun MiniPlayerBar(
             )
             RoundIconButton(SpinroomIcons.Next, "Następny", onNext, 40.dp)
         }
-        if (isLive(state.durationMs)) {
+        if (state.loading) {
+            Spacer(Modifier.weight(1f))
+            LoadingLabel("Ładowanie…")
+        } else if (isLive(state.durationMs)) {
             Spacer(Modifier.weight(1f))
             Text("Na żywo", style = MaterialTheme.typography.labelLarge, color = SpinroomColors.Accent, maxLines = 1, softWrap = false)
         } else {

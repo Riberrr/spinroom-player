@@ -16,6 +16,7 @@
     <string name="nowplaying_shuffle">Losowo</string>
     <string name="nowplaying_previous">Poprzedni</string>
     <string name="nowplaying_play">Odtwarzaj</string>
+    <string name="nowplaying_loading">Ładowanie…</string>
     <string name="nowplaying_pause">Pauza</string>
     <string name="nowplaying_next">Następny</string>
     <string name="nowplaying_repeat">Powtarzanie</string>
