@@ -24,7 +24,7 @@ private fun Player.isChromecast(): Boolean = deviceInfo?.isChromecast == true
  * built-in Chromecast (same model) carries a `cast_uuid`/`ip_address`. Ties go to the chosen player, then the
  * available one, then the lowest id. Null when nothing matches.
  */
-internal fun resolveOwnPlayerId(players: List<Player>, ownId: String, ownModel: String, selectedId: String): String? {
+fun resolveOwnPlayerId(players: List<Player>, ownId: String, ownModel: String, selectedId: String): String? {
     players.firstOrNull { isOwnPlayerId(it.playerId, ownId) }?.let { return it.playerId }
     if (ownModel.isBlank()) return null
     val candidates = players.filter {
