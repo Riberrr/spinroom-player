@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.3
+- Naprawa: gdy wybrany odtwarzacz jest offline (MA nadało telewizorowi nowe id po aktualizacji), aplikacja sama przełącza się na własny odtwarzacz TV, więc stacje znów grają.
+
 ## 1.1.2
 - Dolny odtwarzacz: ulubione stacje przewijają się w dół; animacja ładowania w pasku, panelu i pełnym ekranie.
 - Ustawienia: przypisywanie przycisków nie zamyka już ekranu, można zmienić przycisk istniejącego skrótu; Wstecz z podekranu wraca na właściwą pozycję.

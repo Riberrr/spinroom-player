@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.FavoriteStationsRepository
+import io.github.riberrr.spinroom.core.data.PlayerRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.maapi.ImageUrls
 import io.github.riberrr.spinroom.core.maapi.LibraryApi
@@ -12,6 +13,14 @@ import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.MediaTypes
 import io.github.riberrr.spinroom.core.maapi.PlayerQueueApi
+import io.github.riberrr.spinroom.core.maapi.Player
+import io.github.riberrr.spinroom.feature.settings.resolveOwnPlayerId
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,12 +40,14 @@ const val PINNED_COUNT = 5
  * (play a station, step through stations for CH+/CH-). Favorites are read from `library_items(favorite = true)`;
  * order = order MA returns (stations first, then playlists), which is also the CH+/CH- order.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ShellViewModel @Inject constructor(
     private val library: LibraryApi,
     private val queues: PlayerQueueApi,
     private val settings: SettingsStore,
     private val stationFavorites: FavoriteStationsRepository,
+    private val playerRepository: PlayerRepository,
     connection: ConnectionManager,
 ) : ViewModel() {
     private val _stations = MutableStateFlow<List<Favorite>>(emptyList())
@@ -54,10 +65,26 @@ class ShellViewModel @Inject constructor(
         viewModelScope.launch {
             connection.state.collect { if (it is MaConnectionState.Connected) refresh() }
         }
+        // MA gives this TV a new player id when its Sendspin identity changes (reinstall, new signature): when the chosen
+        // player is gone or offline, follow the TV's own available player instead of sending music nowhere.
+        viewModelScope.launch {
+            connection.state.map { it is MaConnectionState.Connected && it.authenticated }.distinctUntilChanged()
+                .flatMapLatest { ready -> if (ready) playerRepository.players().catch { emit(emptyList()) } else emptyFlow() }
+                .collect { players -> followOwnPlayer(players) }
+        }
         // Stations come from the SUI4 repository, so the dock and CH+/CH- follow the user's order.
         viewModelScope.launch {
             stationFavorites.favorites.collect { list -> _stations.value = list.map { Favorite(it.uri, it.name, it.imageUrl, true) } }
         }
+    }
+
+    private suspend fun followOwnPlayer(players: List<Player>) {
+        val selected = settings.settings.first().playerId
+        if (players.firstOrNull { it.playerId == selected }?.available == true) return
+        val own = resolveOwnPlayerId(players.filter { it.available }, "", android.os.Build.MODEL, selected) ?: return
+        if (own == selected) return
+        settings.setPlayerId(own)
+        android.util.Log.i("Spinroom", "playback: selected player offline, switched to this TV")
     }
 
     /** Pinned = first [PINNED_COUNT] of stations followed by playlists. */
