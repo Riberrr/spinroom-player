@@ -149,7 +149,8 @@ fun NowPlayingContent(
     BackHandler(enabled = state.pickerOpen) { actions.onClosePicker() }
     BackHandler(enabled = state.queueExpanded && !state.pickerOpen) { actions.onCollapseQueue() }
 
-    Box(modifier.fillMaxSize().background(SpinroomColors.Bg)) {
+    // No own background: the shell draws the shared backdrop behind the screen (an opaque fill here would hide it).
+    Box(modifier.fillMaxSize()) {
         Backdrop(state)
         when {
             !state.hasPlayer -> EmptyState(

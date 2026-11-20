@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.4
+- Naprawa: pełnoekranowy odtwarzacz znów pokazuje rozmyte tło z okładki (lub kolor) zgodnie z ustawieniem, zamiast czarnego.
+
 ## 1.1.3
 - Naprawa: gdy wybrany odtwarzacz jest offline (MA nadało telewizorowi nowe id po aktualizacji), aplikacja sama przełącza się na własny odtwarzacz TV, więc stacje znów grają.
 
