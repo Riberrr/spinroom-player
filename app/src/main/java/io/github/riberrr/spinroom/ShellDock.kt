@@ -43,6 +43,7 @@ fun ShellDock(
         play = stringResource(R.string.dock_play),
         pause = stringResource(R.string.dock_pause),
         favorite = stringResource(R.string.dock_favorite),
+        loading = stringResource(R.string.dock_loading),
     )
     val entries = remember(ui.isRadio, ui.upcoming, stations) {
         if (ui.isRadio) stations.take(DOCK_STATIONS).map { DockEntry(it.uri, it.name, "", "", it.imageUrl, true) }

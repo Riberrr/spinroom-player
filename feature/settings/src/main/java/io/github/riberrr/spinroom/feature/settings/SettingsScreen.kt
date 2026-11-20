@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -48,6 +49,21 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
     var category by rememberSaveable { mutableStateOf(SettingsCategory.Connection) }
     var showName by rememberSaveable { mutableStateOf(false) }
     val logoutFocus = remember { FocusRequester() }
+    val latencyFocus = remember { FocusRequester() }
+    val aboutFocus = remember { FocusRequester() }
+    // Back from a sub-screen must land on the button that opened it, not on the first category.
+    var returnTo by remember { mutableStateOf<FocusRequester?>(null) }
+    var returnCategory by remember { mutableStateOf(category) }
+    LaunchedEffect(showLatency, showAbout) {
+        val r = returnTo
+        if (!showLatency && !showAbout && r != null) {
+            returnTo = null
+            category = returnCategory
+            withFrameNanos { }
+            withFrameNanos { }
+            runCatching { r.requestFocus() }
+        }
+    }
     var prevLoggedIn by remember { mutableStateOf(ui.loggedIn) }
     LaunchedEffect(ui.loggedIn) {
         // Only on the transition (login just succeeded), not when the screen opens while logged in.
@@ -66,7 +82,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
         modifier.fillMaxSize().background(SpinroomColors.Bg).padding(horizontal = 56.dp, vertical = 40.dp),
         horizontalArrangement = Arrangement.spacedBy(40.dp),
     ) {
-        Column(Modifier.width(300.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.width(300.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium, color = SpinroomColors.TextPrimary)
             Spacer(Modifier.height(8.dp))
             SettingsCategory.entries.forEach { c ->
@@ -86,12 +102,12 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel =
                         onClick = viewModel::onAutostart,
                     )
                     Text(stringResource(R.string.settings_autostart_hint), color = SpinroomColors.TextSecondary)
-                    Button(stringResource(R.string.latency_entry), onClick = { showLatency = true })
+                    Button(stringResource(R.string.latency_entry), onClick = { returnTo = latencyFocus; returnCategory = category; showLatency = true }, focusRequester = latencyFocus)
                 }
                 SettingsCategory.Appearance -> AppearanceSection(ui, viewModel)
                 SettingsCategory.Remote -> RemoteKeysSection(ui, viewModel)
                 SettingsCategory.Home -> HomeRowsSection(ui.homeLayout, viewModel)
-                SettingsCategory.About -> Button(stringResource(R.string.about_open), onClick = { showAbout = true })
+                SettingsCategory.About -> Button(stringResource(R.string.about_open), onClick = { returnTo = aboutFocus; returnCategory = category; showAbout = true }, focusRequester = aboutFocus)
             }
         }
     }

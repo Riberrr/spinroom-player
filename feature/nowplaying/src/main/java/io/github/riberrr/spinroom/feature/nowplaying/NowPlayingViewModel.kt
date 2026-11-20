@@ -63,6 +63,43 @@ class NowPlayingViewModel internal constructor(
     private var favoriteStations: List<Station> = emptyList()
     private var nowPlayingText = ""
 
+    // Loading animation: from a play request / item change until audio is really running (elapsed >= 1 s, or a timeout).
+    private var awaiting = false
+    private var loadStart = 0L
+    private var requestedFrom: String? = null
+    private var lastItemId: String? = null
+
+    private var loadingCheck: kotlinx.coroutines.Job? = null
+
+    /** The ticker only runs while playing: re-check on a timer so the animation can never get stuck. */
+    private fun scheduleLoadingCheck() {
+        loadingCheck?.cancel()
+        loadingCheck = viewModelScope.launch {
+            repeat(10) { delay(1_000); refreshLoading() }
+            awaiting = false
+            _state.update { it.copy(loading = false) }
+        }
+    }
+
+    private fun markLoading() {
+        awaiting = true
+        loadStart = nowMs()
+        requestedFrom = queue?.currentItem?.queueItemId
+        _state.update { it.copy(loading = true) }
+        scheduleLoadingCheck()
+    }
+
+    private fun refreshLoading() {
+        if (!awaiting) return
+        val s = _state.value
+        val id = queue?.currentItem?.queueItemId
+        val timeout = nowMs() - loadStart > (if (s.isRadio) 3_000 else 8_000)
+        val started = s.isPlaying && baseMs >= 1_000 && id != requestedFrom
+        val idle = !s.isPlaying && !s.loading
+        if (started || timeout || idle) awaiting = false
+        _state.update { it.copy(loading = awaiting) }
+    }
+
     init {
         viewModelScope.launch {
             backend.connection.collect { c ->
@@ -98,6 +135,7 @@ class NowPlayingViewModel internal constructor(
                 if (playing) while (true) {
                     delay(tickMs)
                     _state.update { it.copy(positionMs = position(it.durationMs)) }
+                    refreshLoading()
                 }
             }
         }
@@ -145,6 +183,11 @@ class NowPlayingViewModel internal constructor(
         val playing = q.state == "playing"
         baseMs = (q.elapsedTime * 1000).toLong()
         baseAt = nowMs()
+        val itemId = current?.queueItemId
+        if (itemId != lastItemId) {
+            lastItemId = itemId
+            if (current != null && playing) { awaiting = true; loadStart = nowMs(); requestedFrom = null; scheduleLoadingCheck() }
+        }
         val isRadio = media?.mediaType == "radio"
         // Radio: the song comes from the ICY stream metadata (queue item name/image are the station's).
         val song = if (isRadio) current?.streamdetails?.streamMetadata else null
@@ -173,6 +216,7 @@ class NowPlayingViewModel internal constructor(
             )
         }
         // The stream's "now playing" text: the queue item name when it differs from the station name.
+        refreshLoading()
         nowPlayingText = radioSongText(song, current?.name, media)
         publishStations()
     }
@@ -240,8 +284,8 @@ class NowPlayingViewModel internal constructor(
         command { backend.playPause(it) }
     }
 
-    fun onNext() = command { backend.next(it) }
-    fun onPrevious() = command { backend.previous(it) }
+    fun onNext() { markLoading(); command { backend.next(it) } }
+    fun onPrevious() { markLoading(); command { backend.previous(it) } }
 
     fun onShuffle() {
         val enabled = !_state.value.shuffle
@@ -269,9 +313,9 @@ class NowPlayingViewModel internal constructor(
         }
     }
 
-    fun onPlayIndex(index: Int) = command { backend.playIndex(it, index) }
+    fun onPlayIndex(index: Int) { markLoading(); command { backend.playIndex(it, index) } }
 
-    fun onPlayStation(uri: String) = command { backend.playStation(it, uri) }
+    fun onPlayStation(uri: String) { markLoading(); command { backend.playStation(it, uri) } }
 
     /** Radio ⏮/⏭: previous/next favorite station (wraps). Without favorites falls back to the queue. */
     fun onStepStation(forward: Boolean) {

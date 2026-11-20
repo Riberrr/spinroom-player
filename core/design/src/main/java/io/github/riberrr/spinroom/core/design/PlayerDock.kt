@@ -33,6 +33,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -66,6 +67,7 @@ data class DockLabels(
     val play: String = "Odtwórz",
     val pause: String = "Pauza",
     val favorite: String = "Ulubione",
+    val loading: String = "Ładowanie…",
 )
 
 /** The panel collapses by itself after this long without a key press. */
@@ -105,6 +107,9 @@ fun PlayerDock(
     var expanded by remember { mutableStateOf(false) }
     var keyTick by remember { mutableIntStateOf(0) }
     val playFocus = remember { FocusRequester() }
+    // While the panel is open the covered bar must not take focus (Down from the last entry), but Down must still move
+    // between the entries, so keys are not swallowed: the bar is simply not focusable.
+    var barLocked by remember { mutableStateOf(false) }
 
     BackHandler(enabled = expanded) { onCollapse() }
     LaunchedEffect(expanded, keyTick) {
@@ -114,7 +119,12 @@ fun PlayerDock(
         }
     }
     LaunchedEffect(expanded) {
-        if (expanded) runCatching { playFocus.requestFocus() }
+        if (expanded) {
+            runCatching { playFocus.requestFocus() }
+            barLocked = true
+        } else {
+            barLocked = false
+        }
     }
 
     Box(
@@ -131,13 +141,9 @@ fun PlayerDock(
             }
             .focusGroup(),
     ) {
-        DockBar(state, coverUrl, isRadio, labels, onOpenNowPlaying, Modifier.focusRequester(barFocus))
+        DockBar(state, coverUrl, isRadio, labels, onOpenNowPlaying, Modifier.focusProperties { canFocus = !barLocked }.focusRequester(barFocus))
         if (expanded) {
-            // Down must not reach the (covered) bar below the panel.
-            Box(
-                Modifier.fillMaxWidth().wrapContentHeight(Alignment.Bottom, unbounded = true).height(PANEL_HEIGHT)
-                    .onPreviewKeyEvent { it.type == KeyEventType.KeyDown && it.key == Key.DirectionDown },
-            ) {
+            Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Bottom, unbounded = true).height(PANEL_HEIGHT)) {
                 DockPanel(
                     state, coverUrl, isRadio, favorite, entries, entriesTitle, labels,
                     onPrevious, onPlayPause, onNext, onFavorite, onOpenNowPlaying, onEntryClick, playFocus,
@@ -159,7 +165,10 @@ private fun DockBar(state: MiniPlayerState, coverUrl: String?, isRadio: Boolean,
                 Text(state.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(state.artist, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            if (isLive(state.durationMs)) {
+            if (state.loading) {
+                Spacer(Modifier.weight(1f))
+                LoadingLabel(labels.loading)
+            } else if (isLive(state.durationMs)) {
                 Spacer(Modifier.weight(1f))
                 Text(labels.live, style = MaterialTheme.typography.labelLarge, color = SpinroomColors.Accent, maxLines = 1, softWrap = false)
             } else {
@@ -207,7 +216,9 @@ private fun DockPanel(
                 Text(state.title, style = MaterialTheme.typography.headlineSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(state.artist, style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(Modifier.padding(top = 6.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    if (isLive(state.durationMs)) {
+                    if (state.loading) {
+                        LoadingLabel(labels.loading)
+                    } else if (isLive(state.durationMs)) {
                         Text(labels.live, style = MaterialTheme.typography.labelLarge, color = SpinroomColors.Accent, maxLines = 1)
                     } else {
                         Text(formatTime(state.positionMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)

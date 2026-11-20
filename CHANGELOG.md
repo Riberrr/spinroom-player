@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+- Dolny odtwarzacz: ulubione stacje przewijają się w dół; animacja ładowania w pasku, panelu i pełnym ekranie.
+- Ustawienia: przypisywanie przycisków nie zamyka już ekranu, można zmienić przycisk istniejącego skrótu; Wstecz z podekranu wraca na właściwą pozycję.
+- Ulubione stacje: mniejsze kafelki (więcej naraz) na Starcie i w Radiu, przewijane w poziomie.
+
 ## 1.1.1
 - Radio: wykonawca i tytuł granego utworu oraz jego okładka (z metadanych stacji); okładki stacji z własnych źródeł nie są już pomijane.
 

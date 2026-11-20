@@ -60,10 +60,10 @@ import io.github.riberrr.spinroom.core.design.SpinroomColors
 /** Where "Dodaj skrót" is: not started, choosing the action, or waiting for a remote key. */
 private sealed interface AddStep {
     data object Pick : AddStep
-    data class Capture(val action: KeyAction, val arg: Int) : AddStep
+    data class Capture(val action: KeyAction, val arg: Int, val replacing: KeyAssignment? = null) : AddStep
 
     /** A key was caught but needs a decision: a warning and/or a shortcut it would replace. */
-    data class Confirm(val candidate: KeyAssignment, val warn: Boolean, val replaces: KeyAssignment?) : AddStep
+    data class Confirm(val candidate: KeyAssignment, val warn: Boolean, val replaces: KeyAssignment?, val replacing: KeyAssignment? = null) : AddStep
 }
 
 private val ActionLabels = mapOf(
@@ -112,40 +112,45 @@ internal fun RemoteKeysSection(ui: SettingsUiState, vm: SettingsViewModel) {
         vm.setKeyCapture(capturing)
         onDispose { vm.setKeyCapture(false) }
     }
-    when (val s = step) {
-        is AddStep.Capture -> CaptureStep(
-            onGesture = { code, long ->
-                val candidate = KeyAssignment(code, long, s.action, s.arg)
-                step = AddStep.Confirm(candidate, KeyRules.classify(code, long) == KeyRules.Verdict.Warn, ui.keys.collidingWith(candidate))
-                    .takeIf { it.warn || it.replaces != null }
-                    ?: run { vm.addKey(candidate); null }
-            },
-            onCancel = { step = null },
-            blockedCheck = { code, long -> KeyRules.classify(code, long) == KeyRules.Verdict.Blocked },
-        )
-        else -> {
-            Column(Modifier.widthIn(max = 760.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    // The list stays composed under the dialogs: replacing it while a key is learned dropped focus onto the first category.
+    Column(Modifier.widthIn(max = 760.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 GlobalSwitchRow(ui, vm)
                 ui.keys.items.forEach { a -> KeyRow(a, onClick = { edited = a }) }
                 AddRow(onClick = { step = AddStep.Pick })
                 if (ui.keys.items != io.github.riberrr.spinroom.core.data.KeyAssignments.DEFAULTS) {
                     Chip(stringResource(R.string.keys_reset), false, vm::resetKeys)
                 }
-            }
-        }
     }
     edited?.let { a ->
-        EditDialog(a, onToggleScope = { vm.toggleKeyScope(a); edited = null }, onRemove = { vm.removeKey(a); edited = null }, onDismiss = { edited = null })
+        EditDialog(
+            a, onToggleScope = { vm.toggleKeyScope(a); edited = null },
+            onChangeKey = { step = AddStep.Capture(a.action, a.arg, replacing = a); edited = null },
+            onRemove = { vm.removeKey(a); edited = null }, onDismiss = { edited = null })
+    }
+    // Commits [c]; when it replaces an existing shortcut's key, that shortcut is dropped first (scope is kept).
+    fun commit(c: KeyAssignment, replacing: KeyAssignment?) {
+        if (replacing != null) vm.replaceKey(replacing, c) else vm.addKey(c)
+        step = null
     }
     when (val s = step) {
+        is AddStep.Capture -> CaptureStep(
+            onGesture = { code, long ->
+                val candidate = KeyAssignment(code, long, s.action, s.arg, global = s.replacing?.global ?: false)
+                val clash = ui.keys.collidingWith(candidate)?.takeIf { it != s.replacing }
+                val warn = KeyRules.classify(code, long) == KeyRules.Verdict.Warn
+                if (warn || clash != null) step = AddStep.Confirm(candidate, warn, clash, s.replacing) else commit(candidate, s.replacing)
+            },
+            onCancel = { step = null },
+            blockedCheck = { code, long -> KeyRules.classify(code, long) == KeyRules.Verdict.Blocked },
+        )
         AddStep.Pick -> PickActionDialog(
             onPick = { action, arg -> step = AddStep.Capture(action, arg) },
             onDismiss = { step = null },
         )
         is AddStep.Confirm -> ConfirmDialog(
             s,
-            onUse = { vm.addKey(s.candidate); step = null },
-            onOther = { step = AddStep.Capture(s.candidate.action, s.candidate.arg) },
+            onUse = { commit(s.candidate, s.replacing) },
+            onOther = { step = AddStep.Capture(s.candidate.action, s.candidate.arg, s.replacing) },
             onDismiss = { step = null },
         )
         else -> Unit
@@ -262,9 +267,10 @@ private fun CaptureStep(onGesture: (Int, Boolean) -> Unit, onCancel: () -> Unit,
     val detector = remember { KeyGestureDetector() }
     var blocked by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
-    GlassSurface(
+    DialogFrame(onCancel) {
+      GlassSurface(
         Modifier
-            .widthIn(max = 760.dp).fillMaxWidth().heightIn(min = 240.dp)
+            .fillMaxWidth().heightIn(min = 240.dp)
             .focusRequester(focus)
             .focusable()
             .onPreviewKeyEvent { event ->
@@ -289,6 +295,7 @@ private fun CaptureStep(onGesture: (Int, Boolean) -> Unit, onCancel: () -> Unit,
             }
             Text(stringResource(R.string.keys_press_cancel), color = SpinroomColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
         }
+    }
     }
 }
 
@@ -328,7 +335,7 @@ private fun PickActionDialog(onPick: (KeyAction, Int) -> Unit, onDismiss: () -> 
 }
 
 @Composable
-private fun EditDialog(a: KeyAssignment, onToggleScope: () -> Unit, onRemove: () -> Unit, onDismiss: () -> Unit) {
+private fun EditDialog(a: KeyAssignment, onToggleScope: () -> Unit, onChangeKey: () -> Unit, onRemove: () -> Unit, onDismiss: () -> Unit) {
     val first = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
     DialogFrame(onDismiss) {
@@ -339,6 +346,7 @@ private fun EditDialog(a: KeyAssignment, onToggleScope: () -> Unit, onRemove: ()
                 onClick = onToggleScope,
                 focusRequester = first,
             )
+            Button(stringResource(R.string.keys_change_key), onClick = onChangeKey)
             Button(stringResource(R.string.keys_remove), onClick = onRemove)
             Button(stringResource(R.string.keys_cancel), onClick = onDismiss)
         }

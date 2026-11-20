@@ -95,6 +95,7 @@
     <string name="keys_scope_make_global">Zasięg: wszędzie</string>
     <string name="keys_add">Dodaj skrót: wybierz akcję, potem naciśnij przycisk</string>
     <string name="keys_reset">Przywróć domyślne</string>
+    <string name="keys_change_key">Zmień przycisk</string>
     <string name="keys_remove">Usuń skrót</string>
     <string name="keys_cancel">Anuluj</string>
     <string name="keys_pick_title">Co ma robić skrót?</string>
