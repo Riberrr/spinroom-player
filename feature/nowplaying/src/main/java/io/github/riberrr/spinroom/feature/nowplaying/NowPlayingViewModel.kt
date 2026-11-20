@@ -145,6 +145,9 @@ class NowPlayingViewModel internal constructor(
         val playing = q.state == "playing"
         baseMs = (q.elapsedTime * 1000).toLong()
         baseAt = nowMs()
+        val isRadio = media?.mediaType == "radio"
+        // Radio: the song comes from the ICY stream metadata (queue item name/image are the station's).
+        val song = if (isRadio) current?.streamdetails?.streamMetadata else null
         val rows = queueItems.mapIndexed { i, item -> item.toRow(q.currentIndex, i) }
         val currentIndex = q.currentIndex ?: -1
         val favorite = favoriteOverride?.takeIf { it.first == current?.queueItemId }?.second ?: (media?.favorite ?: false)
@@ -152,9 +155,9 @@ class NowPlayingViewModel internal constructor(
             it.copy(
                 hasTrack = current != null,
                 title = media?.name?.ifBlank { null } ?: current?.name.orEmpty(),
-                artist = media?.artistLine.orEmpty(),
+                artist = song?.cleanArtist ?: media?.artistLine.orEmpty(),
                 album = media?.album?.name.orEmpty(),
-                coverUrl = coverUrl(media, current?.image, COVER_PX),
+                coverUrl = song?.cleanImageUrl ?: coverUrl(media, current?.image, COVER_PX),
                 isPlaying = playing,
                 positionMs = baseMs.coerceIn(0, durationMs.takeIf { d -> d > 0 } ?: Long.MAX_VALUE),
                 durationMs = durationMs,
@@ -170,8 +173,14 @@ class NowPlayingViewModel internal constructor(
             )
         }
         // The stream's "now playing" text: the queue item name when it differs from the station name.
-        nowPlayingText = current?.name.orEmpty().takeIf { n -> media?.mediaType == "radio" && !n.equals(media.name, true) }.orEmpty()
+        nowPlayingText = radioSongText(song, current?.name, media)
         publishStations()
+    }
+
+    private fun radioSongText(song: io.github.riberrr.spinroom.core.maapi.StreamMetadata?, itemName: String?, media: MediaItem?): String {
+        if (media?.mediaType != "radio") return ""
+        val fromStream = listOf(song?.cleanArtist.orEmpty(), song?.cleanTitle.orEmpty()).filter { it.isNotBlank() }.joinToString(" – ")
+        return fromStream.ifBlank { itemName.orEmpty().takeIf { n -> !n.equals(media.name, true) }.orEmpty() }
     }
 
     private fun radioMeta(media: MediaItem): String {
@@ -311,5 +320,5 @@ internal fun sourceLabel(domain: String): String = when (domain.lowercase()) {
 internal fun pickCoverImage(media: MediaItem?, queueImage: MediaItemImage?): MediaItemImage? {
     val own = media?.bestImage
     val candidates = if (media?.mediaType == "radio") listOf(queueImage, own) else listOf(own, queueImage)
-    return candidates.firstOrNull { it != null && it.provider != "builtin" && it.path != "logo.png" }
+    return candidates.firstOrNull { it != null && it.path != "logo.png" }
 }

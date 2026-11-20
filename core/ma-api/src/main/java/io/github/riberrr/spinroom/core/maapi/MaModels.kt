@@ -137,6 +137,8 @@ data class QueueItem(
     @SerialName("media_item") val mediaItem: MediaItem? = null,
     val image: MediaItemImage? = null,
     val available: Boolean = true,
+    /** Radio: the ICY song MA parsed from the stream (the queue item's name and image are the station's). */
+    val streamdetails: StreamDetails? = null,
 )
 
 @Serializable
@@ -199,4 +201,23 @@ class MaException(val code: Int, message: String) : Exception(message) {
         const val INVALID_TOKEN = 23
         const val LOCAL = -1
     }
+}
+
+@Serializable
+data class StreamDetails(
+    @SerialName("stream_metadata") val streamMetadata: StreamMetadata? = null,
+)
+
+/** Current song of a radio stream (ICY title parsed by MA). Strings may carry a BOM / stray spaces. */
+@Serializable
+data class StreamMetadata(
+    val title: String? = null,
+    val artist: String? = null,
+    val album: String? = null,
+    @SerialName("image_url") val imageUrl: String? = null,
+) {
+    val cleanTitle: String get() = title.clean()
+    val cleanArtist: String get() = artist.clean()
+    val cleanImageUrl: String? get() = imageUrl?.trim()?.takeIf { it.startsWith("http") }
+    private fun String?.clean() = orEmpty().replace("\uFEFF", "").trim()
 }

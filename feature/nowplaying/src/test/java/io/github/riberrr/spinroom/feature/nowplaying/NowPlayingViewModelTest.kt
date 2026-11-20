@@ -283,6 +283,26 @@ class NowPlayingViewModelTest {
         assertEquals("Artysta - Piosenka", s.stations[1].nowPlaying)
     }
 
+    @Test fun radioSongComesFromStreamMetadata() = vmTest {
+        backend.selected.value = "tv"
+        backend.stationsState.value = listOf(io.github.riberrr.spinroom.core.data.Station("library://radio/1", "Radio ZET", null))
+        val logo = MediaItemImage(type = "thumb", path = "https://i.postimg.cc/logo.jpg", provider = "builtin", remotelyAccessible = true, proxyId = "abc")
+        val item = QueueItem(
+            queueId = "tv", queueItemId = "r1", name = "Radio ZET", index = 0, image = logo,
+            mediaItem = MediaItem(itemId = "1", provider = "library", mediaType = "radio", name = "Radio ZET", uri = "library://radio/1"),
+            streamdetails = io.github.riberrr.spinroom.core.maapi.StreamDetails(
+                io.github.riberrr.spinroom.core.maapi.StreamMetadata(title = "NOBODY TO LOVE", artist = "﻿Sigma", imageUrl = "https://assets.fanart.tv/x.jpg"),
+            ),
+        )
+        backend.itemsState.value = listOf(item)
+        backend.queueState.value = PlayerQueue(queueId = "tv", state = "playing", currentIndex = 0, items = 1, currentItem = item)
+        val s = viewModel().also { runCurrent() }.state.value
+        assertEquals("Radio ZET", s.title)
+        assertEquals("Sigma", s.artist)
+        assertEquals("https://assets.fanart.tv/x.jpg", s.coverUrl)
+        assertEquals("Sigma – NOBODY TO LOVE", s.stations.firstOrNull { it.isCurrent }?.nowPlaying ?: "")
+    }
+
     @Test fun radioNextFromLastStationWrapsToFirst() = vmTest {
         val vm = radio(3)
         vm.onStepStation(forward = true)

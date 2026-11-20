@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1
+- Radio: wykonawca i tytuł granego utworu oraz jego okładka (z metadanych stacji); okładki stacji z własnych źródeł nie są już pomijane.
+
 ## 1.1.0
 - Nowy wygląd: motywy Grafit/Granat/OLED i akcenty, szklane panele, rozmyte tło z okładki.
 - Nowa powłoka: menu boczne z przypiętymi, wysuwany odtwarzacz na dole (przytrzymaj Play/Pause), CH+/CH− przełączają utwór lub ulubioną stację.
