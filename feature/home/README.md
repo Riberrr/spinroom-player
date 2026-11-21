@@ -11,7 +11,7 @@ Depends on `:core:design`, `:core:data` (+ Coil 3 for covers).
 - `HomeRow` / `DEFAULT_ROW_ORDER` / `HomeUiState.visibleRows` — row order (TODO(SUI8a): read it from the appearance preferences).
 
 ## Behaviour
-- Header "Dzień dobry" (MA gives no user name) + glass connection chip.
+- No header: the "Dzień dobry" greeting and connection chip were removed (SFix-UI19); connection state lives in the side-menu player pill.
 - Rows in `rowOrder`: favorite stations (square `StationTile`, name only), favorite playlists (`PlaylistMosaic` + name), recently played (only when non-empty).
   Stations and playlists end with a "Wszystkie … →" tile. An empty favorites row shows a hint ("Dodaj stację do ulubionych").
 - Stations and playlists are sorted by name (case-insensitive). Playlists are favorites only (`favorite=true`).
