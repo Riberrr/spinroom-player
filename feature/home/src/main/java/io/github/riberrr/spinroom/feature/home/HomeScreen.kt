@@ -161,8 +161,7 @@ private fun Rows(state: HomeUiState, actions: HomeActions, onBackdrop: (Backdrop
             ?: memory.requesters["all:stations"]
         runCatching { target?.requestFocus() }
     }
-    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        item { Header(state) }
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (row in state.visibleRows) when (row) {
             HomeRow.Stations -> stationsRow(state, actions, memory)
             HomeRow.Playlists -> playlistsRow(state, actions, memory)
@@ -222,35 +221,6 @@ private fun LazyListScope.recentRow(state: HomeUiState, actions: HomeActions, me
     HomeSection(stringResource(R.string.home_recent)) {
         items(state.recent, key = { it.key }) { t ->
             with(memory) { Tile(t, actions, Modifier.track("recent:${t.key}", BackdropTarget(t.coverUrl, null))) }
-        }
-    }
-}
-
-@Composable
-private fun Header(state: HomeUiState) {
-    Row(
-        Modifier.fillMaxWidth().padding(start = 48.dp, end = 48.dp, top = 32.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // MA gives no user name, so nothing follows the greeting.
-        Text(stringResource(R.string.home_greeting), Modifier.weight(1f), style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-        GlassSurface(shape = RoundedCornerShape(50)) {
-            Row(
-                Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                val dot = if (state.isConnected) SpinroomColors.Success else SpinroomColors.TextSecondary
-                Box(Modifier.size(10.dp).background(dot, CircleShape))
-                Text(
-                    when {
-                        !state.isConnected -> stringResource(R.string.home_offline)
-                        state.playerName != null -> stringResource(R.string.home_connected_named, state.playerName)
-                        else -> stringResource(R.string.home_connected)
-                    },
-                    style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary,
-                )
-            }
         }
     }
 }
