@@ -16,3 +16,6 @@ Screen "Radio" (SUI4). Package `io.github.riberrr.spinroom.feature.radio`. Depen
 
 ## Not available from the API
 - The track playing now per station and the station's genre/city (Radio Browser items carry neither through MA) — rows show the active filter value instead.
+
+## Zmiana numeru (SFix-UI20)
+Przytrzymanie cyfry przypisanej do STATION n na fokusie kafla ulubionej nadaje jej numer n (zamiana miejsc z dotychczasowym posiadaczem). Kafel publikuje fokus w `StationNumberHub`; `RadioViewModel.assignNumber` zapisuje kolejność i pokazuje toast.

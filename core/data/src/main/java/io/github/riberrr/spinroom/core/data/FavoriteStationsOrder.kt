@@ -28,6 +28,17 @@ object StationOrder {
         return order.toMutableList().apply { add(to, removeAt(from)) }
     }
 
+    /**
+     * Gives [key] the number [number] (1-based). Numbers are positions, so the station that held [number] swaps places with
+     * [key] and takes its old number (nobody is left without one). Unknown key or a number past the end: unchanged.
+     */
+    fun assign(order: List<String>, key: String, number: Int): List<String> {
+        val from = order.indexOf(key)
+        val to = number - 1
+        if (from < 0 || to !in order.indices || to == from) return order
+        return order.toMutableList().apply { this[from] = this[to]; this[to] = key }
+    }
+
     fun remove(order: List<String>, key: String): List<String> = order.filter { it != key }
 
     fun add(order: List<String>, key: String): List<String> = if (key in order) order else order + key

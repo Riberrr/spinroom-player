@@ -8,6 +8,7 @@ import io.github.riberrr.spinroom.core.data.FavoriteStationsRepository
 import io.github.riberrr.spinroom.core.data.RadioLibraryRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.data.Station
+import io.github.riberrr.spinroom.core.data.StationNumberHub
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
 import io.github.riberrr.spinroom.core.maapi.MediaItem
 import io.github.riberrr.spinroom.core.maapi.PlayerQueueApi
@@ -47,6 +48,7 @@ class RadioViewModel @Inject constructor(
     private var browseJob: Job? = null
 
     init {
+        StationNumberHub.onAssign = ::assignNumber
         viewModelScope.launch {
             repo.favorites.collect { favs ->
                 _state.update { it.copy(favorites = favs, favoriteKeys = favs.flatMap { s -> listOf(s.uri, s.sourceId) }.filter { k -> k.isNotBlank() }.toSet()) }
@@ -176,7 +178,26 @@ class RadioViewModel @Inject constructor(
     fun onNoticeShown() = _state.update { it.copy(notice = null) }
     private fun notice(n: RadioNotice) = _state.update { it.copy(notice = n) }
 
-    // ---- favorite tiles: menu, move, remove ----
+    // ---- favorite tiles: menu, move, remove, number ----
+
+    /** Held digit on a focused favorite: the station takes that number, the holder takes its old one. */
+    private fun assignNumber(station: Station, number: Int) {
+        if (_state.value.menuStation != null || _state.value.movingUri != null) return
+        viewModelScope.launch {
+            val changed = runCatchingCancellable { repo.assignNumber(station, number) }.getOrElse { return@launch notice(RadioNotice.FAILED) }
+            _state.update {
+                it.copy(numberNotice = if (changed) NumberNotice(station.name, number) else null, notice = if (changed) null else it.notice)
+            }
+            if (!changed && number > _state.value.favorites.size) _state.update { it.copy(numberNotice = NumberNotice("", number)) }
+        }
+    }
+
+    fun onNumberNoticeShown() = _state.update { it.copy(numberNotice = null) }
+
+    override fun onCleared() {
+        StationNumberHub.onAssign = null
+        StationNumberHub.focused = null
+    }
 
     fun openMenu(station: Station) = _state.update { it.copy(menuStation = station) }
     fun closeMenu() = _state.update { it.copy(menuStation = null) }

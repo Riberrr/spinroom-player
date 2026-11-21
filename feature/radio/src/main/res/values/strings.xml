@@ -37,6 +37,8 @@
     <string name="radio_menu_remove">Usuń z ulubionych</string>
     <string name="radio_moving">Przesuwanie</string>
     <string name="radio_move_hint">Strzałkami ← → zmień miejsce, OK kończy</string>
+    <string name="radio_notice_number">Stacja %1$s: numer %2$d</string>
+    <string name="radio_notice_number_none">Nie ma stacji z numerem %1$d</string>
     <string name="radio_notice_added">Dodano do ulubionych</string>
     <string name="radio_notice_removed">Usunięto z ulubionych</string>
     <string name="radio_notice_no_player">Odtwarzacz telewizora jeszcze się nie zgłosił</string>

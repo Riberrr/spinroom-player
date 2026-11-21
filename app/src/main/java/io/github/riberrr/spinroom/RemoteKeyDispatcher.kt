@@ -72,6 +72,12 @@ interface RemoteHandler {
 
     /** Plays favorite station number [n] (1-9); nothing when there is no such favorite. */
     fun playFavoriteStation(n: Int)
+
+    /** True while a held digit key would reassign the focused favorite's number (Radio screen); then a short digit waits for release. */
+    fun canAssignStationNumber(): Boolean = false
+
+    /** Gives the focused favorite station the number [n]; true when taken. */
+    fun assignStationNumber(n: Int): Boolean = false
 }
 
 /**
@@ -108,11 +114,17 @@ class RemoteKeyDispatcher(
                 run(action)
                 return true
             }
+            val number = shortAction(code)?.stationNumber
+            if (pendingPress == code && number != null && handler.assignStationNumber(number)) {
+                pendingPress = null
+                swallowUpFor = code
+                return true
+            }
         }
         if (swallowUpFor == code) return true // further repeats of a hold that already fired
         if (press.repeatCount > 0) return shortAction(code) != null
         val action = shortAction(code) ?: return false
-        if (bindings.onHold(code) != null) {
+        if (bindings.onHold(code) != null || (action.stationNumber != null && handler.canAssignStationNumber())) {
             pendingPress = code // decide on release: short press or the start of a hold
             return true
         }
