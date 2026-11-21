@@ -80,11 +80,11 @@ const val DOCK_IDLE_MS = 8_000L
 private val PANEL_HEIGHT = 240.dp
 
 /** Collapsed bar height; the shell reserves the same slot at the top of every screen. */
-val DOCK_BAR_HEIGHT = 56.dp
+val DOCK_BAR_HEIGHT = 76.dp
 private val BAR_HEIGHT = DOCK_BAR_HEIGHT
 
 /**
- * Bottom player of every screen. Collapsed: an 80 dp glass bar (one focus target; OK opens the full player).
+ * Bottom player of every screen. Collapsed: a 76 dp glass bar (one focus target; OK opens the full player).
  * When focus enters it, it unfolds into a ~320 dp panel drawn over the content (the layout slot stays 80 dp):
  * cover, ⏮ ⏯ ⏭, ♡ and progress on the left, [entries] (queue or favorite stations) on the right, blurred cover as backdrop.
  *
@@ -112,6 +112,7 @@ fun PlayerDock(
     labels: DockLabels = DockLabels(),
     onExpandedChange: (Boolean) -> Unit = {},
     keyHint: String? = null,
+    focusLocked: Boolean = false,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var keyTick by remember { mutableIntStateOf(0) }
@@ -152,12 +153,12 @@ fun PlayerDock(
             }
             .focusGroup(),
     ) {
-        DockBar(state, coverUrl, isRadio, labels, keyHint, onOpenNowPlaying, Modifier.focusProperties { canFocus = !barLocked }.focusRequester(barFocus))
+        DockBar(state, coverUrl, isRadio, labels, keyHint, onOpenNowPlaying, Modifier.focusProperties { canFocus = !barLocked && !focusLocked }.focusRequester(barFocus))
         if (expanded) {
             Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Top, unbounded = true).height(PANEL_HEIGHT)) {
                 DockPanel(
                     state, coverUrl, isRadio, favorite, entries, entriesTitle, labels,
-                    onPrevious, onPlayPause, onNext, onFavorite, onOpenNowPlaying, onEntryClick, playFocus,
+                    onPrevious, onPlayPause, onNext, onFavorite, onOpenNowPlaying, onEntryClick, playFocus, onCollapse,
                 )
             }
         }
@@ -170,15 +171,15 @@ private fun DockBar(
     onClick: () -> Unit, modifier: Modifier,
 ) {
     FocusSurface(
-        onClick, modifier.fillMaxWidth().height(BAR_HEIGHT).padding(horizontal = 16.dp, vertical = 4.dp), shape = RoundedCornerShape(14.dp),
+        onClick, modifier.fillMaxWidth().height(BAR_HEIGHT).padding(horizontal = 16.dp, vertical = 6.dp), shape = RoundedCornerShape(16.dp),
         containerColor = SpinroomColors.GlassHigh, focusedContainerColor = SpinroomColors.Accent.copy(alpha = 0.20f), focusedScale = 1f,
     ) {
         Row(Modifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            EntryThumb(state.title, coverUrl, isRadio, Modifier.size(36.dp))
-            Column(Modifier.padding(start = 14.dp).weight(1f)) {
-                Text(state.title, style = MaterialTheme.typography.titleSmall, color = SpinroomColors.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            EntryThumb(state.title, coverUrl, isRadio, Modifier.size(56.dp))
+            Column(Modifier.padding(start = 16.dp).weight(1f)) {
+                Text(state.title, style = MaterialTheme.typography.titleMedium, color = SpinroomColors.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (state.artist.isNotBlank()) {
-                    Text(state.artist, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(state.artist, style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
             Row(Modifier.padding(horizontal = 16.dp).width(260.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -195,13 +196,13 @@ private fun DockBar(
                 }
             }
             // Dimmed but readable controls: not separate focus targets (focus opens the panel, where they work).
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(SpinroomIcons.Previous, labels.previous, Modifier.size(24.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.55f))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Icon(SpinroomIcons.Previous, labels.previous, Modifier.size(32.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.7f))
                 Icon(
                     if (state.isPlaying) SpinroomIcons.Pause else SpinroomIcons.Play,
-                    if (state.isPlaying) labels.pause else labels.play, Modifier.size(30.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.75f),
+                    if (state.isPlaying) labels.pause else labels.play, Modifier.size(40.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.9f),
                 )
-                Icon(SpinroomIcons.Next, labels.next, Modifier.size(24.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.55f))
+                Icon(SpinroomIcons.Next, labels.next, Modifier.size(32.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.7f))
             }
             if (keyHint != null) KeyHint(keyHint, Modifier.padding(start = 20.dp))
         }
@@ -238,6 +239,7 @@ private fun DockPanel(
     onOpenNowPlaying: () -> Unit,
     onEntryClick: (String) -> Unit,
     playFocus: FocusRequester,
+    onCollapse: () -> Unit,
 ) {
     Box(Modifier.fillMaxSize().clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))) {
         // The panel has its own backdrop (the cover); it must not replace the screen's one in the shell.
@@ -247,7 +249,10 @@ private fun DockPanel(
         Box(Modifier.fillMaxWidth().height(1.dp).align(Alignment.BottomCenter).background(SpinroomColors.GlassBorder))
         Row(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 24.dp), verticalAlignment = Alignment.CenterVertically) {
             EntryThumb(state.title, coverUrl, isRadio, Modifier.size(150.dp))
-            Column(Modifier.padding(start = 24.dp).weight(1.15f)) {
+            // Nothing lies below these controls: Down hands focus back to the screen (the focus search alone left it stuck here).
+            Column(Modifier.padding(start = 24.dp).weight(1.15f).onPreviewKeyEvent { e ->
+                if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionDown) { onCollapse(); true } else false
+            }) {
                 Text(labels.nowPlaying.uppercase(), style = MaterialTheme.typography.labelMedium, color = SpinroomColors.Accent, maxLines = 1)
                 Text(state.title, style = MaterialTheme.typography.headlineSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(state.artist, style = MaterialTheme.typography.bodyMedium, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -293,7 +298,7 @@ private fun DockPanel(
                     ) {
                         Row(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                             EntryThumb(entry.title, entry.imageUrl, entry.isStation, Modifier.size(38.dp))
-                            Column(Modifier.padding(start = 14.dp).weight(1f)) {
+                            Column(Modifier.padding(start = 16.dp).weight(1f)) {
                                 Text(entry.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text(entry.subtitle, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }

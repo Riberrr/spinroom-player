@@ -85,6 +85,10 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     var menuOpenedByUser by remember { mutableStateOf(false) }
     var leftEdgeHit by remember { mutableStateOf(false) }
     var menuItemId by remember { mutableStateOf("") }
+    // Set by a menu pick: once the target screen is up, focus moves into it and the menu folds.
+    var focusScreenTick by remember { mutableStateOf(0) }
+    var pickPending by remember { mutableStateOf(false) }
+    var screenHasFocus by remember { mutableStateOf(false) }
 
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
     val baseItems = listOf(
@@ -111,6 +115,20 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         wasFull = fullPlayer
     }
     val slot by androidx.compose.animation.core.animateDpAsState(if (fullPlayer) 0.dp else RAIL_WIDTH, label = "menuSlot")
+
+    // A menu pick collapses the menu and puts focus on the new screen. The screen loads asynchronously (its focused control may
+    // vanish once or twice), so keep asking until focus has stayed there; the player bar is not focusable meanwhile and cannot catch it.
+    LaunchedEffect(focusScreenTick) {
+        if (focusScreenTick == 0) return@LaunchedEffect
+        try {
+            var stable = 0
+            repeat(40) {
+                kotlinx.coroutines.delay(150)
+                if (screenHasFocus && !menuHasFocus) stable++ else { stable = 0; runCatching { screenFocus.requestFocus() } }
+                if (stable >= 6) return@LaunchedEffect
+            }
+        } finally { pickPending = false }
+    }
 
     // Composed only while the menu has focus: a handler added on entering the composition is the newest one, so it
     // runs before the NavHost's own (registered earlier), which would otherwise pop the screen.
@@ -152,6 +170,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             selectedId = route.orEmpty(),
             onSelect = { target ->
                 android.util.Log.i("Spinroom", "menu select: $target")
+                pickPending = true; focusScreenTick++
                 if (target == MENU_PLAYER) { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true }; return@SideMenu }
                 // Always the entry's main view, even from a screen deeper in it.
                 navController.openTopLevel(target)
@@ -206,12 +225,13 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             // Fallback is the screen itself: with nothing to restore (e.g. → from the bottom "Ustawienia" menu
             // item, geometrically closest to the mini player) focus must land in the content, not the mini player.
             Column(Modifier.fillMaxSize()) {
-                // The player bar is a fixed 56 dp strip at the top of every screen (drawn over the content when it unfolds).
+                // The player bar is a fixed 76 dp strip at the top of every screen (drawn over the content when it unfolds).
                 if (route != Routes.NOW_PLAYING) {
                     ShellDock(
                         barFocus = dockFocus,
                         onOpenNowPlaying = { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true } },
                         onCollapse = { runCatching { screenFocus.requestFocus() } },
+                        focusLocked = pickPending,
                     )
                 }
                 // Only the screen is restored; the bar sits outside so it is never the restore target.
@@ -230,7 +250,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                         }
                         .focusGroup(),
                 ) {
-                    Column(Modifier.fillMaxSize().focusRequester(screenFocus).focusRestorer()) { content() }
+                    Column(Modifier.fillMaxSize().onFocusChanged { screenHasFocus = it.hasFocus }.focusRequester(screenFocus).focusRestorer()) { content() }
                 }
             }
         }
