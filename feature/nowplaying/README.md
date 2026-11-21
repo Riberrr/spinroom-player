@@ -38,3 +38,4 @@ Tests build models by hand; replace with recorded fixtures once they exist.
 
 ## SUI7 (40:60, radio)
 Cover 40% / details 60%. Radio (`state.isRadio`): "źródło · opis" line instead of the progress bar, `StationsPanel` (number, square thumb, name, now-playing text; current highlighted) instead of the queue, ⏮⏭ = `onStepStation(forward)` (wraps; falls back to the queue without favorites), OK on a row = `onPlayStation(uri)`. Music: 4 upcoming rows, OK jumps (`onPlayIndex`). Backdrop = `ContentBackdrop` per `Appearance.playerBackground`. `keepScreenOn` while the screen is shown. `PlayerBackend` gained `favoriteStations`, `refreshStations`, `playStation`, `playerBackground`.
+`Cover(url, ...)` remembers the last loaded url and renders it in its loading/error slots, so changing track/station fades straight from cover A to B with no placeholder in between (initials only when nothing was ever loaded).

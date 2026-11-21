@@ -17,4 +17,4 @@ Punkt 8: przy zmianie utworu (zwł. radio) między okładką A i B pojawia się 
 Testy zielone (`bash scripts/check.sh`), PR otwarty, zachowanie sprawdzone na emulatorze.
 
 ## Wynik
-_(uzupełnia sesja)_
+Zrobione: `Cover` (`NowPlayingScreen.kt`) zapamiętuje ostatnio załadowaną okładkę i pokazuje ją w slocie loading/error, dopóki nowa się nie załaduje — brak placeholdera z inicjałami między A i B (dotyczy też paska, listy kolejki i wygaszacza). Inicjały tylko gdy nigdy nic nie załadowano (stacja bez logo). Bez timera. Test: emulator-5554 (density 480), przełączenie Eska→RMF — pasek bez klatki z inicjałami; zbudowano i przeszły testy `:feature:nowplaying`. Pułapki: `scripts/check.sh` lokalnie padał na lint `PropertyEscape` z mojego `local.properties` (artefakt środowiska, nie kodu); pełny ekran odtwarzacza nie był osobno klikany, ale używa tego samego `Cover`. Brak testu jednostkowego (logika w Compose).
