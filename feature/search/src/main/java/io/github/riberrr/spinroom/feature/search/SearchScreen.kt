@@ -30,6 +30,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -190,7 +193,10 @@ fun SearchContent(
     val firstResult = remember { FocusRequester() }
     var selected by remember { mutableStateOf<SearchRow?>(null) }
     var panelWasOpen by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { runCatching { firstKey.requestFocus() } }
+    // Back from a result's details screen: the cursor returns to the row that was open (survives the route being left).
+    var lastKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val restore = remember { RestoreFocus(lastKey) { lastKey = it } }
+    LaunchedEffect(Unit) { if (restore.pending == null || !state.hasShown) runCatching { firstKey.requestFocus() } }
     LaunchedEffect(state.panelOpen) {
         if (panelWasOpen && !state.panelOpen) runCatching { filtersChip.requestFocus() }
         panelWasOpen = state.panelOpen
@@ -248,7 +254,7 @@ fun SearchContent(
                 // No results (idle, empty, loading, offline): nothing here may take focus, so ← from the keyboard
                 // reaches the menu instead of an invisible target on the right.
                 Box(Modifier.weight(1f).fillMaxWidth().padding(top = 12.dp).focusProperties { canFocus = state.hasShown }) {
-                    Results(state, actions, firstResult) { selected = it; actions.onSelect(it) }
+                    Results(state, actions, firstResult, restore) { selected = it; actions.onSelect(it) }
                 }
             }
         }
@@ -391,34 +397,68 @@ private fun SearchFilter.labelRes() = when (this) {
 }
 
 @Composable
-private fun Results(state: SearchUiState, actions: SearchActions, firstResult: FocusRequester, onSelect: (SearchRow) -> Unit) {
+private fun Results(state: SearchUiState, actions: SearchActions, firstResult: FocusRequester, restore: RestoreFocus, onSelect: (SearchRow) -> Unit) {
     when {
         state.isIdle -> EmptyState(stringResource(R.string.search_idle_title), message = stringResource(R.string.search_idle_message))
         state.failed -> ErrorState(stringResource(R.string.search_error), onRetry = actions.onRetry)
         state.loading && !state.hasShown -> EmptyState(stringResource(R.string.search_loading))
         !state.hasShown -> EmptyState(stringResource(R.string.search_empty_title), message = stringResource(R.string.search_empty_message))
-        else -> ResultList(state, actions, firstResult, onSelect)
+        else -> ResultList(state, actions, firstResult, restore, onSelect)
     }
 }
 
 @Composable
-private fun ResultList(state: SearchUiState, actions: SearchActions, firstResult: FocusRequester, onSelect: (SearchRow) -> Unit) {
-    val first = listOf(state.shownRadio, state.shownPlaylists, state.shownAlbums, state.shownArtists, state.shownTracks).firstOrNull { it.isNotEmpty() }?.first()
-    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(bottom = 80.dp)) {
-        group("radio", R.string.search_section_radio, state.shownRadio, state, actions, first, firstResult, onSelect)
-        group("playlists", R.string.search_section_playlists, state.shownPlaylists, state, actions, first, firstResult, onSelect)
-        group("albums", R.string.search_section_albums, state.shownAlbums, state, actions, first, firstResult, onSelect)
-        group("artists", R.string.search_section_artists, state.shownArtists, state, actions, first, firstResult, onSelect)
-        group("tracks", R.string.search_section_tracks, state.shownTracks, state, actions, first, firstResult, onSelect)
+private fun ResultList(state: SearchUiState, actions: SearchActions, firstResult: FocusRequester, restore: RestoreFocus, onSelect: (SearchRow) -> Unit) {
+    val groups = listOf(state.shownRadio, state.shownPlaylists, state.shownAlbums, state.shownArtists, state.shownTracks).filter { it.isNotEmpty() }
+    val first = groups.firstOrNull()?.first()
+    val listState = rememberLazyListState()
+    LaunchedEffect(Unit) {
+        val key = restore.pending ?: return@LaunchedEffect
+        restore.pending = null
+        var index = 0
+        for (rows in groups) {
+            index++ // section header
+            val at = rows.indexOfFirst { rowKey(it) == key }
+            if (at >= 0) {
+                restore.target = key
+                listState.scrollToItem(index + at)
+                withFrameNanos { }
+                withFrameNanos { }
+                runCatching { restore.requester.requestFocus() }
+                return@LaunchedEffect
+            }
+            index += rows.size
+        }
+    }
+    LazyColumn(Modifier.fillMaxSize(), state = listState, verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(bottom = 80.dp)) {
+        group("radio", R.string.search_section_radio, state.shownRadio, state, actions, first, firstResult, restore, onSelect)
+        group("playlists", R.string.search_section_playlists, state.shownPlaylists, state, actions, first, firstResult, restore, onSelect)
+        group("albums", R.string.search_section_albums, state.shownAlbums, state, actions, first, firstResult, restore, onSelect)
+        group("artists", R.string.search_section_artists, state.shownArtists, state, actions, first, firstResult, restore, onSelect)
+        group("tracks", R.string.search_section_tracks, state.shownTracks, state, actions, first, firstResult, restore, onSelect)
     }
 }
 
+/** Remembers which result had focus so it can be refocused after returning from a details screen. */
+private class RestoreFocus(initial: String?, val onFocused: (String) -> Unit) {
+    var pending: String? = initial
+    var target by mutableStateOf<String?>(null)
+    val requester = FocusRequester()
+}
+
+private fun rowKey(row: SearchRow) = "${row.uri}|${row.item.provider}"
+
 private fun LazyListScope.group(
-    id: String, title: Int, rows: List<SearchRow>, state: SearchUiState, actions: SearchActions, first: SearchRow?, firstResult: FocusRequester, onSelect: (SearchRow) -> Unit,
+    id: String, title: Int, rows: List<SearchRow>, state: SearchUiState, actions: SearchActions, first: SearchRow?, firstResult: FocusRequester, restore: RestoreFocus, onSelect: (SearchRow) -> Unit,
 ) {
     if (rows.isEmpty()) return
     item(key = "h-$id") { Header(title) }
-    items(rows, key = { "$id-${it.uri}-${it.item.provider}" }) { row -> ResultItem(row, state.isFavorite(row), actions, onSelect, if (row === first) Modifier.focusRequester(firstResult) else Modifier) }
+    items(rows, key = { "$id-${it.uri}-${it.item.provider}" }) { row -> ResultItem(
+        row, state.isFavorite(row), actions, onSelect,
+        Modifier.then(if (row === first) Modifier.focusRequester(firstResult) else Modifier)
+            .then(if (restore.target == rowKey(row)) Modifier.focusRequester(restore.requester) else Modifier),
+        restore,
+    ) }
 }
 
 @Composable
@@ -467,12 +507,15 @@ private fun kindLabel(row: SearchRow): String = when (row.kind) {
  * OK = open/play, long OK = toggle favorite, → moves to the buttons.
  */
 @Composable
-private fun ResultItem(row: SearchRow, favorite: Boolean, actions: SearchActions, onSelect: (SearchRow) -> Unit, surfaceModifier: Modifier = Modifier) {
+private fun ResultItem(row: SearchRow, favorite: Boolean, actions: SearchActions, onSelect: (SearchRow) -> Unit, surfaceModifier: Modifier = Modifier, restore: RestoreFocus? = null) {
     var selected by remember { mutableStateOf(false) }
     Row(
         Modifier.fillMaxWidth().onFocusChanged {
             selected = it.hasFocus
-            if (it.hasFocus) onSelect(row)
+            if (it.hasFocus) {
+                onSelect(row)
+                restore?.onFocused?.invoke(rowKey(row))
+            }
         },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
