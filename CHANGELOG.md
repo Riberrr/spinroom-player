@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+- Górny pasek odtwarzacza jest większy i czytelniejszy; po zjechaniu z niego kursorem w dół panel się chowa.
+- Menu boczne: wybór pozycji zwija menu i otwiera ekran.
+- Start: usunięto nagłówek „Dzień dobry” i pastylkę połączenia (jest w menu).
+- Radio: przytrzymanie cyfry na pilocie zmienia numer szybkiego wyboru ulubionej stacji (zajęty numer jest zamieniany).
+- „O aplikacji”: aktualna wersja i „Co nowego”.
+
 ## 1.2.0
 - Odtwarzacz przeniesiony na górę ekranu: stały pasek (okładka, tytuł, wykonawca, przyciski poprzedni/play/następny, „Na żywo” dla radia), strzałka w górę daje mu fokus i rozwija go nad treścią; dyskretna podpowiedź przycisku otwierającego odtwarzacz.
 - Menu boczne: przyciski zawsze wracają do głównego widoku funkcji; u góry ikona aplikacji i nazwa podłączonego odtwarzacza (OK otwiera listę odtwarzaczy); usunięto „Przypięte”, „Odtwarzacz” otwiera pełny ekran.
