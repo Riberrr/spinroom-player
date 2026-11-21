@@ -27,7 +27,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -416,12 +418,26 @@ private fun PlayerPicker(state: NowPlayingUiState, actions: NowPlayingActions) {
 
 @Composable
 internal fun Cover(url: String?, modifier: Modifier, error: @Composable () -> Unit = { CoverPlaceholder(Modifier.fillMaxSize()) }) {
+    // The last cover that finished loading stays visible while the next one loads (no placeholder flash between A and B).
+    var lastLoaded by remember { mutableStateOf<String?>(null) }
     if (url == null) {
         CoverPlaceholder(modifier)
     } else {
         SubcomposeAsyncImage(
             model = url, contentDescription = null, contentScale = ContentScale.Crop, modifier = modifier,
-            loading = { CoverPlaceholder(Modifier.fillMaxSize()) }, error = { CoverPlaceholder(Modifier.fillMaxSize()) },
+            onSuccess = { lastLoaded = url },
+            loading = {
+                val prev = lastLoaded
+                if (prev != null && prev != url) {
+                    SubcomposeAsyncImage(model = prev, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                } else CoverPlaceholder(Modifier.fillMaxSize())
+            },
+            error = {
+                val prev = lastLoaded
+                if (prev != null && prev != url) {
+                    SubcomposeAsyncImage(model = prev, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                } else error()
+            },
         )
     }
 }
