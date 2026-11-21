@@ -12,5 +12,7 @@ Screen "Radio" (SUI4). Package `io.github.riberrr.spinroom.feature.radio`. Depen
 - Search stations (field "Szukaj stacji…"): favorites hide, `OnScreenKeyboard` slides in from the left, results on the right; a physical keyboard types immediately; Back closes. Name search only, filters hidden while searching.
 - Search results: deduplicated (name/uri), ordered favorites → Polish → rest; one "Język: wszystkie/polski" toggle chip (other filters impossible: results carry no genre/country).
 
+- Default list = **"Moje stacje"**: every radio station saved in MA (favorites or not), A–Z, loaded 100 at a time (`RadioLibraryRepository`, `:core:data`); next page loads when focus is within 12 rows of the end. Chips / "Popularne" switch to Radio Browser; an empty library falls back to the saved filter.
+
 ## Not available from the API
 - The track playing now per station and the station's genre/city (Radio Browser items carry neither through MA) — rows show the active filter value instead.

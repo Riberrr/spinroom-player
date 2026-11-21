@@ -21,6 +21,7 @@
     <string name="radio_chip_pick_language">Wybierz język</string>
     <string name="radio_chip_pick_genre">Wybierz gatunek</string>
     <string name="radio_chip_pick_country">Wybierz kraj</string>
+    <string name="radio_all_stations">Moje stacje</string>
     <string name="radio_popular">Popularne</string>
     <string name="radio_all_option">Wszystkie (popularne)</string>
     <string name="radio_options_loading">Wczytuję…</string>

@@ -17,4 +17,7 @@ Punkt 5: 'Wszystkie stacje' ma pokazywać wszystkie stacje radiowe zapisane w MA
 Testy zielone (`bash scripts/check.sh`), PR otwarty, zachowanie sprawdzone na emulatorze.
 
 ## Wynik
-_(uzupełnia sesja)_
+**Zrobione:** domyślna lista na ekranie Radio to teraz „Moje stacje" — wszystkie stacje radiowe z biblioteki MA (nie tylko ulubione), A–Z, porcjami po 100 (kolejna porcja gdy fokus jest ≤12 wierszy od końca). Ulubione zostają na górze; chipy Język/Gatunek/Kraj i „Popularne" przełączają na Radio Browser jak dotąd. Pusta biblioteka → zapisany filtr.
+**API:** `RadioLibraryRepository.page(offset)` + `append` (nowy plik w `:core:data`, moduł Hilt `RadioLibraryModule`); `RadioUiState.libraryMode`, `RadioViewModel.onAllStations/onNearEnd`.
+**Test:** `RadioLibraryTest` (dedup). Emulator-5556, density 240 @1080p: lista „Moje stacje" widoczna. Biblioteka testowa ma ~10 stacji, więc dociągania stron nie widać w praktyce (logika sprawdzona tylko kodem).
+**Uwagi:** `scripts/check.sh` padł tylko na lint `PropertyEscape` w lokalnym `local.properties` (środowisko, nie kod); kompilacja i testy OK. Nie zapisuję wyboru trybu między startami (zawsze zaczyna od „Moje stacje").
