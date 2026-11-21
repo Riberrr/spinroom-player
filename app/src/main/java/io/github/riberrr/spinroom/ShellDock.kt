@@ -26,6 +26,7 @@ fun ShellDock(
     barFocus: FocusRequester,
     onOpenNowPlaying: () -> Unit,
     onCollapse: () -> Unit,
+    focusLocked: Boolean = false,
     modifier: Modifier = Modifier,
     shell: ShellViewModel = hiltViewModel(),
 ) {
@@ -73,6 +74,7 @@ fun ShellDock(
         barFocus = barFocus,
         labels = labels,
         onExpandedChange = { if (it) shell.refresh() },
+        focusLocked = focusLocked,
     )
 }
 
