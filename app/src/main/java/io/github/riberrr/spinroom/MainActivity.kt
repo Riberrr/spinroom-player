@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import io.github.riberrr.spinroom.core.data.Appearance
 import io.github.riberrr.spinroom.core.data.AppearanceSettings
+import io.github.riberrr.spinroom.core.data.StationNumberHub
 import javax.inject.Inject
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,8 @@ class MainActivity : ComponentActivity() {
         override fun toggleFavorite() = nowPlaying.onFavorite()
         override fun openRoute(route: String) = shell.requestRoute(route)
         override fun playFavoriteStation(n: Int) { shell.playStationNumber(n) }
+        override fun canAssignStationNumber() = StationNumberHub.canAssign
+        override fun assignStationNumber(n: Int) = StationNumberHub.assign(n)
     })
 
     override fun onCreate(savedInstanceState: Bundle?) {

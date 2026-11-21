@@ -21,7 +21,7 @@ Tests: `bash scripts/check.sh`. SettingsStore test uses an in-memory DataStore (
 ## Radio (SUI4)
 - `FavoriteStationsRepository` (Hilt singleton, `di.RadioModule`) — **source of the favorite-station order** (number on the tile = index + 1, and the CH+/CH- order). `favorites: StateFlow<List<Station>>`, `refresh()` (call after the MA connection is up; re-reads `library_items(radios, favorite)` and merges with the saved order), `move(station, delta)`, `remove(station)`, `add(providerUri)` (new station goes last), `step(current, forward)` (wraps; null when empty), `favoriteFor(browseItem)`. Browsing: `stations(RadioFilter)`, `search(q)`, `options(kind)`, `savedFilter`/`saveFilter` (default language `polish`).
 - `Station(uri, name, imageUrl, sourceId, libraryId)` — `uri` is the library uri, what `play_media` takes.
-- `StationOrder` (pure: `merge`, `move`, `remove`, `add`) + `FavoriteStationsOrder` (DataStore key `favorite_stations_order`).
+- `StationOrder` (pure: `merge`, `move`, `assign`, `remove`, `add`; `assign` = swap places = give a station a number) + `StationNumberHub` (focused favorite + assign callback for the key dispatcher) + `FavoriteStationsOrder` (DataStore key `favorite_stations_order`).
 - SUI2's `ShellViewModel` still builds its own station list in MA order; switch it (and the dispatcher's CH±) to `FavoriteStationsRepository.favorites`/`step` — coordinator/SUI7.
 
 ## Player name (SUI8a)

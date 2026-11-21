@@ -43,6 +43,20 @@ class FavoriteStationsOrderTest {
         assertEquals(o, StationOrder.move(o, "zzz", 1))
     }
 
+    @Test fun assignSwapsWithTheHolderOfTheNumber() {
+        val o = listOf("a", "b", "c", "d")
+        assertEquals(listOf("c", "b", "a", "d"), StationOrder.assign(o, "a", 3))
+        assertEquals(listOf("a", "b", "d", "c"), StationOrder.assign(o, "d", 3))
+    }
+
+    @Test fun assignKeepsOrderWhenNothingToDo() {
+        val o = listOf("a", "b", "c")
+        assertEquals(o, StationOrder.assign(o, "a", 1))
+        assertEquals(o, StationOrder.assign(o, "a", 4))
+        assertEquals(o, StationOrder.assign(o, "a", 0))
+        assertEquals(o, StationOrder.assign(o, "zzz", 2))
+    }
+
     @Test fun removeAndAdd() {
         assertEquals(listOf("a", "c"), StationOrder.remove(listOf("a", "b", "c"), "b"))
         assertEquals(listOf("a", "b"), StationOrder.add(listOf("a"), "b"))

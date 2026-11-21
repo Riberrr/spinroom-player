@@ -60,6 +60,14 @@ class FavoriteStationsRepository(
 
     suspend fun move(station: Station, delta: Int) = reorder { StationOrder.move(it, station.uri, delta) }
 
+    /** Gives [station] the number [number]; the holder of that number takes the old one. False when nothing changed. */
+    suspend fun assignNumber(station: Station, number: Int): Boolean {
+        val before = _favorites.value.map { it.uri }
+        if (StationOrder.assign(before, station.uri, number) == before) return false
+        reorder { StationOrder.assign(it, station.uri, number) }
+        return true
+    }
+
     /** Removes from MA favorites and from the order. */
     suspend fun remove(station: Station) {
         if (station.libraryId.isNotBlank()) library.removeFavorite(RADIO_TYPE, station.libraryId)
