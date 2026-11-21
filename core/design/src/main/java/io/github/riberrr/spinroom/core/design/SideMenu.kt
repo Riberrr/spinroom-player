@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,9 +46,6 @@ val RAIL_WIDTH = 72.dp
 
 data class SideMenuItem(val id: String, val label: String, val icon: ImageVector)
 
-/** A pinned favorite (station or playlist) in the expanded menu. [isStation] picks initials-on-color as the fallback thumbnail. */
-data class PinnedEntry(val id: String, val title: String, val subtitle: String, val imageUrl: String?, val isStation: Boolean)
-
 /**
  * Left navigation rail. Collapsed it shows only icons (72 dp); while any item has focus it expands
  * to show labels. [selectedId] marks the current screen. Pass [enterFocusRequester] to move focus
@@ -62,10 +62,9 @@ fun SideMenu(
     enterFocusRequester: FocusRequester? = null,
     onFocusChange: (Boolean) -> Unit = {},
     onItemFocus: (String) -> Unit = {},
-    pinned: List<PinnedEntry> = emptyList(),
-    pinnedTitle: String = "",
-    onSelectPinned: (PinnedEntry) -> Unit = {},
     topInset: androidx.compose.ui.unit.Dp = 16.dp,
+    /** Top of the rail (app mark + player pill); gets whether the rail is expanded. */
+    header: (@Composable (expanded: Boolean) -> Unit)? = null,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
     val requesters = remember { mutableMapOf<String, FocusRequester>() }
@@ -102,17 +101,9 @@ fun SideMenu(
                 .padding(start = 10.dp, end = 10.dp, top = topInset, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            header?.invoke(hasFocus)
             items.forEach { item ->
                 MenuEntry(item, item.id == selectedId, hasFocus, { onSelect(item.id) }, Modifier.focusRequester(requesters.getOrPut(item.id) { FocusRequester() }).onFocusChanged { if (it.isFocused) onItemFocus(item.id) })
-            }
-            if (hasFocus && pinned.isNotEmpty()) {
-                Text(
-                    pinnedTitle.uppercase(), Modifier.padding(start = 12.dp, top = 8.dp, bottom = 2.dp),
-                    style = MaterialTheme.typography.labelMedium, color = SpinroomColors.TextSecondary, maxLines = 1,
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                    pinned.forEach { entry -> PinnedRow(entry) { onSelectPinned(entry) } }
-                }
             }
             Box(Modifier.weight(1f))
             bottomItems.forEach { item ->
@@ -122,17 +113,36 @@ fun SideMenu(
     }
 }
 
+/**
+ * Top of the rail: the app mark ([icon] slot) and, next to it, a pill with the connected player's name and a connection dot;
+ * OK opens the player list. Collapsed rail: mark + dot only.
+ */
 @Composable
-private fun PinnedRow(entry: PinnedEntry, onClick: () -> Unit) {
+fun PlayerPill(
+    name: String,
+    connected: Boolean,
+    expanded: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: @Composable () -> Unit,
+) {
+    val dot = if (connected) SpinroomColors.Success else SpinroomColors.TextSecondary
     FocusSurface(
-        onClick, Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
+        onClick, modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
         containerColor = Color.Transparent, focusedContainerColor = SpinroomColors.GlassHigh, focusedScale = 1.0f,
     ) {
-        Row(Modifier.padding(horizontal = 10.dp, vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-            EntryThumb(entry.title, entry.imageUrl, entry.isStation, Modifier.size(30.dp))
-            Column(Modifier.padding(start = 12.dp)) {
-                Text(entry.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(entry.subtitle, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) { icon() }
+            if (expanded) {
+                Row(
+                    Modifier.padding(start = 10.dp).background(Color.White.copy(alpha = 0.10f), RoundedCornerShape(14.dp)).padding(horizontal = 10.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(8.dp).background(dot, CircleShape))
+                    Text(name, Modifier.padding(start = 8.dp).width(104.dp), style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            } else {
+                Box(Modifier.padding(start = 4.dp).size(8.dp).background(dot, CircleShape))
             }
         }
     }

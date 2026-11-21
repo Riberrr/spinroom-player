@@ -100,9 +100,9 @@ fun MiniPlayerBar(
 
 /** Thin accent progress line. Stateless; clamps to 0..1. */
 @Composable
-fun ProgressBar(positionMs: Long, durationMs: Long, modifier: Modifier = Modifier) {
+fun ProgressBar(positionMs: Long, durationMs: Long, modifier: Modifier = Modifier, thickness: Dp = 4.dp) {
     val fraction = if (durationMs > 0) (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
-    Box(modifier.height(4.dp).background(SpinroomColors.Outline, CircleShape)) {
+    Box(modifier.height(thickness).background(SpinroomColors.Outline, CircleShape)) {
         Box(Modifier.fillMaxHeight().fillMaxWidth(fraction).background(SpinroomColors.Accent, CircleShape))
     }
 }

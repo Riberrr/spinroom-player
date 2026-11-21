@@ -2,6 +2,7 @@ package io.github.riberrr.spinroom.core.design
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +29,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.tv.material3.Icon
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -75,6 +79,10 @@ const val DOCK_IDLE_MS = 8_000L
 
 private val PANEL_HEIGHT = 240.dp
 
+/** Collapsed bar height; the shell reserves the same slot at the top of every screen. */
+val DOCK_BAR_HEIGHT = 56.dp
+private val BAR_HEIGHT = DOCK_BAR_HEIGHT
+
 /**
  * Bottom player of every screen. Collapsed: an 80 dp glass bar (one focus target; OK opens the full player).
  * When focus enters it, it unfolds into a ~320 dp panel drawn over the content (the layout slot stays 80 dp):
@@ -103,6 +111,7 @@ fun PlayerDock(
     barFocus: FocusRequester = remember { FocusRequester() },
     labels: DockLabels = DockLabels(),
     onExpandedChange: (Boolean) -> Unit = {},
+    keyHint: String? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var keyTick by remember { mutableIntStateOf(0) }
@@ -130,9 +139,11 @@ fun PlayerDock(
     Box(
         modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(BAR_HEIGHT)
             .zIndex(2f)
             .onPreviewKeyEvent { keyTick++; false }
+            // Down off the panel's last control returns to the screen under it instead of jumping into the covered content.
+            .focusProperties { onExit = { if (requestedFocusDirection == FocusDirection.Down) { cancelFocusChange(); onCollapse() } } }
             .onFocusChanged {
                 if (it.hasFocus != expanded) {
                     expanded = it.hasFocus
@@ -141,9 +152,9 @@ fun PlayerDock(
             }
             .focusGroup(),
     ) {
-        DockBar(state, coverUrl, isRadio, labels, onOpenNowPlaying, Modifier.focusProperties { canFocus = !barLocked }.focusRequester(barFocus))
+        DockBar(state, coverUrl, isRadio, labels, keyHint, onOpenNowPlaying, Modifier.focusProperties { canFocus = !barLocked }.focusRequester(barFocus))
         if (expanded) {
-            Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Bottom, unbounded = true).height(PANEL_HEIGHT)) {
+            Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Top, unbounded = true).height(PANEL_HEIGHT)) {
                 DockPanel(
                     state, coverUrl, isRadio, favorite, entries, entriesTitle, labels,
                     onPrevious, onPlayPause, onNext, onFavorite, onOpenNowPlaying, onEntryClick, playFocus,
@@ -154,35 +165,60 @@ fun PlayerDock(
 }
 
 @Composable
-private fun DockBar(state: MiniPlayerState, coverUrl: String?, isRadio: Boolean, labels: DockLabels, onClick: () -> Unit, modifier: Modifier) {
+private fun DockBar(
+    state: MiniPlayerState, coverUrl: String?, isRadio: Boolean, labels: DockLabels, keyHint: String?,
+    onClick: () -> Unit, modifier: Modifier,
+) {
     FocusSurface(
-        onClick, modifier.fillMaxWidth().height(80.dp).padding(horizontal = 24.dp, vertical = 8.dp), shape = RoundedCornerShape(18.dp),
+        onClick, modifier.fillMaxWidth().height(BAR_HEIGHT).padding(horizontal = 16.dp, vertical = 4.dp), shape = RoundedCornerShape(14.dp),
         containerColor = SpinroomColors.GlassHigh, focusedContainerColor = SpinroomColors.Accent.copy(alpha = 0.20f), focusedScale = 1f,
     ) {
-        Row(Modifier.fillMaxSize().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            EntryThumb(state.title, coverUrl, isRadio, Modifier.size(46.dp))
-            Column(Modifier.padding(start = 20.dp).width(300.dp)) {
-                Text(state.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(state.artist, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Row(Modifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            EntryThumb(state.title, coverUrl, isRadio, Modifier.size(36.dp))
+            Column(Modifier.padding(start = 14.dp).weight(1f)) {
+                Text(state.title, style = MaterialTheme.typography.titleSmall, color = SpinroomColors.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (state.artist.isNotBlank()) {
+                    Text(state.artist, style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
-            if (state.loading) {
-                Spacer(Modifier.weight(1f))
-                LoadingLabel(labels.loading)
-            } else if (isLive(state.durationMs)) {
-                Spacer(Modifier.weight(1f))
-                Text(labels.live, style = MaterialTheme.typography.labelLarge, color = SpinroomColors.Accent, maxLines = 1, softWrap = false)
-            } else {
-                Text(formatTime(state.positionMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
-                ProgressBar(state.positionMs, state.durationMs, Modifier.padding(horizontal = 12.dp).weight(1f))
-                Text(formatTime(state.durationMs), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
+            Row(Modifier.padding(horizontal = 16.dp).width(260.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (state.loading) {
+                    Spacer(Modifier.weight(1f))
+                    LoadingLabel(labels.loading)
+                } else if (isLive(state.durationMs)) {
+                    Spacer(Modifier.weight(1f))
+                    Text(labels.live, style = MaterialTheme.typography.labelLarge, color = SpinroomColors.Accent, maxLines = 1, softWrap = false)
+                } else {
+                    Text(formatTime(state.positionMs), style = MaterialTheme.typography.labelSmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
+                    ProgressBar(state.positionMs, state.durationMs, Modifier.padding(horizontal = 8.dp).weight(1f), thickness = 2.dp)
+                    Text(formatTime(state.durationMs), style = MaterialTheme.typography.labelSmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false)
+                }
             }
-            // Not a separate focus target: the whole bar is (OK opens the full player); this just names what OK does (mockup 09A).
-            Text(
-                labels.nowPlayingButton,
-                Modifier.padding(start = 16.dp).background(SpinroomColors.Glass, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 7.dp),
-                style = MaterialTheme.typography.labelLarge, maxLines = 1, softWrap = false,
-            )
+            // Dimmed but readable controls: not separate focus targets (focus opens the panel, where they work).
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Icon(SpinroomIcons.Previous, labels.previous, Modifier.size(24.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.55f))
+                Icon(
+                    if (state.isPlaying) SpinroomIcons.Pause else SpinroomIcons.Play,
+                    if (state.isPlaying) labels.pause else labels.play, Modifier.size(30.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.75f),
+                )
+                Icon(SpinroomIcons.Next, labels.next, Modifier.size(24.dp), tint = SpinroomColors.TextPrimary.copy(alpha = 0.55f))
+            }
+            if (keyHint != null) KeyHint(keyHint, Modifier.padding(start = 20.dp))
         }
+    }
+}
+
+/** Very discreet hint: a small grey remote-button pill with the assigned key's name and a pointing hand. */
+@Composable
+internal fun KeyHint(label: String, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            label,
+            Modifier.background(Color.White.copy(alpha = 0.10f), RoundedCornerShape(6.dp)).border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(6.dp))
+                .padding(horizontal = 8.dp, vertical = 2.dp),
+            style = MaterialTheme.typography.labelSmall, color = SpinroomColors.TextSecondary, maxLines = 1, softWrap = false,
+        )
+        Icon(SpinroomIcons.Touch, null, Modifier.padding(start = 4.dp).size(18.dp), tint = SpinroomColors.TextSecondary.copy(alpha = 0.7f))
     }
 }
 
@@ -203,12 +239,12 @@ private fun DockPanel(
     onEntryClick: (String) -> Unit,
     playFocus: FocusRequester,
 ) {
-    Box(Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))) {
+    Box(Modifier.fillMaxSize().clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))) {
         // The panel has its own backdrop (the cover); it must not replace the screen's one in the shell.
         androidx.compose.runtime.CompositionLocalProvider(LocalBackdropHost provides null) {
             ContentBackdrop(imageUrl = coverUrl, seedColor = if (isRadio) stationColor(state.title) else null)
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(SpinroomColors.GlassBorder))
+        Box(Modifier.fillMaxWidth().height(1.dp).align(Alignment.BottomCenter).background(SpinroomColors.GlassBorder))
         Row(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 24.dp), verticalAlignment = Alignment.CenterVertically) {
             EntryThumb(state.title, coverUrl, isRadio, Modifier.size(150.dp))
             Column(Modifier.padding(start = 24.dp).weight(1.15f)) {
@@ -279,7 +315,7 @@ private fun PlayerDockPreview() {
             PlayerDock(
                 MiniPlayerState("Latarnie nad rzeką", "Lena Wiatr", true, 84_000, 221_000), null, false, false,
                 listOf(DockEntry("1", "Głęboka woda", "Lena Wiatr", "4:18", null, false)), "Dalej w kolejce",
-                {}, {}, {}, {}, {}, {}, {}, Modifier.align(Alignment.BottomCenter),
+                {}, {}, {}, {}, {}, {}, {}, Modifier.align(Alignment.TopCenter),
             )
         }
     }
