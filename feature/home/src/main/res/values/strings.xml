@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_greeting">Dzień dobry</string>
     <string name="home_connecting">Łączę z serwerem…</string>
     <string name="home_connect_title">Połącz się z serwerem</string>
     <string name="home_connect_message">Podaj adres serwera Music Assistant w Ustawieniach.</string>
@@ -13,9 +12,6 @@
     <string name="home_stations_empty">Dodaj stację do ulubionych</string>
     <string name="home_playlists_empty">Dodaj playlistę do ulubionych</string>
     <string name="home_playlist_label">Playlista</string>
-    <string name="home_connected">Połączono</string>
-    <string name="home_connected_named">%1$s · połączono</string>
-    <string name="home_offline">Brak połączenia z serwerem</string>
     <string name="home_error_title">Nie udało się wczytać ekranu</string>
     <string name="home_error_message">Sprawdź, czy serwer Music Assistant jest włączony, i spróbuj ponownie.</string>
     <string name="home_retry">Spróbuj ponownie</string>
