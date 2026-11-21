@@ -1,6 +1,6 @@
 # Status
 
-_Prowadzi koordynator po każdym scaleniu. Przebudowa UI SUI0–SUI9, SFix-UI1–17 scalone. Ostatni tag: v1.1.0; v1.2.0 w przygotowaniu (CHANGELOG gotowy, tag po smoke teście na emulatorach 5554 i 5556). Plan: `docs/plans/PLAN-1.2.0.md`._
+_Prowadzi koordynator po każdym scaleniu. Przebudowa UI SUI0–SUI9, SFix-UI1–17 scalone. Ostatni tag: v1.1.0; v1.3.0 w przygotowaniu (SFix-UI18–20 scalone, tag po smoke teście). Poprzedni: v1.2.0. Plan: `docs/plans/PLAN-1.2.0.md`._
 
 ## Działa
 - `:core:sendspin`: protokół (Noise `KKpsk2`, parowanie, zegar) + transport (serwer, mDNS, klient).
