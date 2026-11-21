@@ -76,6 +76,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
 import io.github.riberrr.spinroom.core.data.Station
+import io.github.riberrr.spinroom.core.data.StationNumberHub
 import io.github.riberrr.spinroom.core.design.ContentBackdrop
 import io.github.riberrr.spinroom.core.design.EmptyState
 import io.github.riberrr.spinroom.core.design.EntryThumb
@@ -123,13 +124,14 @@ data class RadioActions(
     val onTogglePolishOnly: () -> Unit = {},
     val onAllStations: () -> Unit = {},
     val onNearEnd: () -> Unit = {},
+    val onNumberNoticeShown: () -> Unit = {},
 ) {
     companion object {
         fun of(vm: RadioViewModel) = RadioActions(
             vm::play, vm::toggleFavorite, vm::openMenu, vm::closeMenu, vm::startMove, vm::stopMove, vm::moveBy, vm::removeMenuStation,
             vm::openPicker, vm::closePicker, vm::pickOption, vm::onPopular, vm::openSearch, vm::closeSearch,
             vm::onType, vm::onBackspace, vm::onToggleSymbols, vm::onRetry, vm::onRetrySearch, vm::onNoticeShown, vm::onTogglePolishOnly,
-            vm::onAllStations, vm::onNearEnd,
+            vm::onAllStations, vm::onNearEnd, vm::onNumberNoticeShown,
         )
     }
 }
@@ -265,6 +267,7 @@ fun RadioContent(state: RadioUiState, actions: RadioActions, modifier: Modifier 
         state.picker?.let { Picker(state, it, actions, pickerFirst, Modifier.align(Alignment.Center)) }
         state.menuStation?.let { TileMenu(actions, menuFirst, Modifier.align(Alignment.Center)) }
         state.notice?.let { Notice(it, actions.onNoticeShown, Modifier.align(Alignment.BottomCenter).padding(bottom = 28.dp)) }
+        state.numberNotice?.let { NumberNoticeBar(it, actions.onNumberNoticeShown, Modifier.align(Alignment.BottomCenter).padding(bottom = 28.dp)) }
     }
 }
 
@@ -316,7 +319,12 @@ private fun Favorites(
                     subtitle = if (moving) stringResource(R.string.radio_moving) else "",
                     onClick = { if (state.movingUri == null) actions.onPlay(station.uri) },
                     modifier = Modifier.wrapContentHeight(Alignment.Top, unbounded = true)
-                        .onFocusChanged { if (it.isFocused) onFocus(station.name, station.imageUrl) },
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                onFocus(station.name, station.imageUrl)
+                                StationNumberHub.focused = station
+                            } else if (StationNumberHub.focused?.uri == station.uri) StationNumberHub.focused = null
+                        },
                     size = size,
                     onLongClick = { if (state.movingUri == null) actions.onOpenMenu(station) },
                     logo = { NumberedLogo(index + 1, station.name, station.imageUrl) },
@@ -582,4 +590,17 @@ private fun RadioPreview() = SpinroomTheme { RadioContent(previewState, RadioAct
 @Composable
 private fun RadioSearchPreview() = SpinroomTheme {
     RadioContent(previewState.copy(searching = true, query = "jaz", searchRows = previewState.rows), RadioActions())
+}
+
+@Composable
+private fun NumberNoticeBar(notice: NumberNotice, onShown: () -> Unit, modifier: Modifier) {
+    LaunchedEffect(notice) {
+        delay(NOTICE_MS)
+        onShown()
+    }
+    val text = if (notice.name.isEmpty()) stringResource(R.string.radio_notice_number_none, notice.number)
+    else stringResource(R.string.radio_notice_number, notice.name, notice.number)
+    GlassSurface(modifier, shape = RoundedCornerShape(12.dp), high = true) {
+        Text(text, Modifier.padding(horizontal = 24.dp, vertical = 14.dp), color = SpinroomColors.TextPrimary, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+    }
 }

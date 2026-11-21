@@ -13,6 +13,9 @@ data class RadioRow(val item: MediaItem, val name: String, val imageUrl: String?
 
 enum class RadioNotice { ADDED, REMOVED, NO_PLAYER, FAILED }
 
+/** A favorite got a new number (shown as "Stacja X: numer N"). */
+data class NumberNotice(val name: String, val number: Int)
+
 data class RadioUiState(
     val favorites: List<Station> = emptyList(),
     /** Ids (provider uuid and library uri) of favorites, to paint hearts on browse rows. */
@@ -41,6 +44,7 @@ data class RadioUiState(
     /** Favorite being moved with the arrows (its uri). */
     val movingUri: String? = null,
     val notice: RadioNotice? = null,
+    val numberNotice: NumberNotice? = null,
 ) {
     fun isFavorite(row: RadioRow) = row.item.itemId in favoriteKeys || row.uri in favoriteKeys
 }

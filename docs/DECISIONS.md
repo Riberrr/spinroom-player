@@ -119,4 +119,5 @@ SFix-cover: radio song/artist/art come from `current_item.streamdetails.stream_m
 - SFix-UI16: Search remembers the focused result (rememberSaveable uri|provider key) and, after Back from details, scrolls to it and refocuses it; falls back to the first keyboard key.
 - SFix-UI17: `Cover` keeps the last successfully loaded image visible while the next URL loads (and on load error), so A→B never flashes the initials placeholder; initials only when there is no previous cover / no logo.
 - SFix-UI18: dock bar 56→76 dp (56 dp cover, larger text/icons); Down on the unfolded panel's left controls collapses it explicitly (focus search alone left focus stuck); menu pick re-requests screen focus until stable while the bar is `focusLocked`.
+- SFix-UI20: numer ulubionej stacji = pozycja w `FavoriteStationsOrder`; przytrzymanie cyfry (STATION n) na fokusie kafla robi zamianę miejsc (`StationOrder.assign`); most dispatcher↔Radio to `StationNumberHub`, krótka cyfra na kaflu gra po puszczeniu.
 - SFix-UI19: Start bez nagłówka i plakietki połączenia (stan w pastylce menu); „O aplikacji” ma sekcję „Co nowego” na sztywno w strings_about.xml.

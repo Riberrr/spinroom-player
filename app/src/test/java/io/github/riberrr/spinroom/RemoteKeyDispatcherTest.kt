@@ -20,6 +20,9 @@ class RemoteKeyDispatcherTest {
         override fun toggleFavorite() { calls += "favorite" }
         override fun openRoute(route: String) { calls += "open:$route" }
         override fun playFavoriteStation(n: Int) { calls += "station$n" }
+        var assignable = false
+        override fun canAssignStationNumber() = assignable
+        override fun assignStationNumber(n: Int): Boolean { if (assignable) calls += "assign$n"; return assignable }
     }
 
     private val playPause = DefaultKeyBindings.KEYCODE_MEDIA_PLAY_PAUSE
@@ -126,6 +129,22 @@ class RemoteKeyDispatcherTest {
         assertTrue(d.dispatch(KeyPress(23, true, 1)))
         assertTrue(d.dispatch(KeyPress(23, false, 0)))
         assertEquals(listOf("favorite"), h.calls)
+    }
+
+    @Test fun digitHeldOnFocusedFavoriteAssignsNumberInsteadOfDialling() {
+        val h = Fake().apply { assignable = true }; val d = RemoteKeyDispatcher(h, AssignedKeyBindings(KeyAssignments(listOf(KeyAssignment(10, false, KeyAction.STATION, arg = 3)))))
+        val key3 = 10 // KEYCODE_3
+        assertTrue(d.dispatch(KeyPress(key3, true, 0)))
+        assertTrue(d.dispatch(KeyPress(key3, true, 1)))
+        assertTrue(d.dispatch(KeyPress(key3, false, 0)))
+        assertEquals(listOf("assign3"), h.calls)
+    }
+
+    @Test fun digitShortPressStillDialsOnReleaseWhenAssignable() {
+        val h = Fake().apply { assignable = true }; val d = RemoteKeyDispatcher(h, AssignedKeyBindings(KeyAssignments(listOf(KeyAssignment(10, false, KeyAction.STATION, arg = 3)))))
+        assertTrue(d.dispatch(KeyPress(10, true, 0)))
+        assertTrue(d.dispatch(KeyPress(10, false, 0)))
+        assertEquals(listOf("station3"), h.calls)
     }
 
     @Test fun redKeyOpensRadioByDefault() {
