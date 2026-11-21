@@ -10,8 +10,8 @@ Entry point. `MainActivity` starts `SpinroomPlaybackService` (S05) and hosts Com
 - `SpinroomShell`: Up/Down never leave the screen content for the side menu (SFix02); Left opens the menu.
 
 ## Shell (SUI2)
-- `SpinroomShell`: menu Start/Radio/Playlisty/Biblioteka/Szukaj + Ustawienia, "Przypięte" = first 5 favorite stations then playlists (`ShellViewModel`; station click plays, playlist opens details). Routes `radio`, `playlists` (stubs from SUI0). Sources reachable from Start only.
-- `ShellDock` = `PlayerDock` bound to the activity-scoped `NowPlayingViewModel` (right list: next 3 queue items, or 4 favorite stations while radio plays).
+- `SpinroomShell`: menu Start/Radio/Playlisty/Biblioteka/Szukaj + "Odtwarzacz" (only while something plays; opens the full-screen player, Back returns) + Ustawienia. Menu entries and remote shortcuts go through `NavHostController.openTopLevel` (always the entry's main view; Start pops to root). Top of the menu: app icon + `PlayerPill` (player name + connection dot) opening a player list (picks via `NowPlayingViewModel.onSelectPlayer`). "Przypięte" was removed (SFix-UI14).
+- `ShellDock` = `PlayerDock` bound to the activity-scoped `NowPlayingViewModel`, a fixed 56 dp bar at the TOP of every screen (Up off the screen's top edge focuses it; unfolds over the content). Lines: radio = song (stream metadata) over station, else title over artist (`barLines`). Right side: hint pill with the key assigned to "otwórz odtwarzacz" (`drawerKeyCode`) + pointing hand. Right list: next queue items, or favorite stations while radio plays.
 - `RemoteKeyDispatcher(handler, bindings)` — keys → `RemoteAction` via `KeyBindings`; `MainActivity` feeds it `AssignedKeyBindings(KeyBindingsRepository.assignments)` (settings → "Przyciski pilota", SUI8b; defaults in `KeyAssignments.DEFAULTS`). Key with only a hold shortcut still passes its short press; key with both runs the short one on release. Shortcuts are paused while `KeyCaptureGate` is active. Screens opened by shortcuts go through `ShellViewModel.requestRoute`.
 
 ## Klawisze poza aplikacją (SUI9)

@@ -49,8 +49,14 @@ fun ShellDock(
         if (ui.isRadio) stations.take(DOCK_STATIONS).map { DockEntry(it.uri, it.name, "", "", it.imageUrl, true) }
         else ui.upcoming.take(DOCK_ENTRIES).map { it.toDockEntry() }
     }
+    // Radio: the song on top and the station under it; otherwise title and artist (both lines, never the artist alone).
+    val songText = ui.stations.firstOrNull { it.isCurrent }?.nowPlaying.orEmpty()
+    val (line1, line2) = barLines(ui.isRadio, ui.title.ifBlank { ui.mediaName }, ui.artist, songText)
+    val drawerKey by shell.drawerKey.collectAsStateWithLifecycle()
+    val hint = drawerKey?.let { keyHintLabel(it) }
     PlayerDock(
-        state = ui.toMiniPlayerState(),
+        state = ui.toMiniPlayerState().copy(title = line1, artist = line2),
+        keyHint = hint,
         coverUrl = ui.coverUrl,
         isRadio = ui.isRadio,
         favorite = ui.favorite,
@@ -69,6 +75,21 @@ fun ShellDock(
         onExpandedChange = { if (it) shell.refresh() },
     )
 }
+
+/** Short remote-button caption for the hint next to the bar (digits, colours and the common media/TV keys). */
+@Composable
+private fun keyHintLabel(code: Int): String = when {
+    code in 7..16 -> (code - 7).toString()
+    else -> KeyHintNames[code]?.let { stringResource(it) } ?: stringResource(R.string.key_hint_other)
+}
+
+private val KeyHintNames = mapOf(
+    23 to R.string.key_hint_ok, 66 to R.string.key_hint_ok, 160 to R.string.key_hint_ok,
+    85 to R.string.key_hint_play_pause, 126 to R.string.key_hint_play, 127 to R.string.key_hint_pause, 86 to R.string.key_hint_stop,
+    166 to R.string.key_hint_ch_up, 167 to R.string.key_hint_ch_down,
+    183 to R.string.key_hint_red, 184 to R.string.key_hint_green, 185 to R.string.key_hint_yellow, 186 to R.string.key_hint_blue,
+    82 to R.string.key_hint_menu, 84 to R.string.key_hint_search, 165 to R.string.key_hint_info, 172 to R.string.key_hint_guide,
+)
 
 private fun QueueRow.toDockEntry(): DockEntry {
     val s = (durationMs / 1000).coerceAtLeast(0)
