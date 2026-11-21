@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+- Odtwarzacz przeniesiony na górę ekranu: stały pasek (okładka, tytuł, wykonawca, przyciski poprzedni/play/następny, „Na żywo” dla radia), strzałka w górę daje mu fokus i rozwija go nad treścią; dyskretna podpowiedź przycisku otwierającego odtwarzacz.
+- Menu boczne: przyciski zawsze wracają do głównego widoku funkcji; u góry ikona aplikacji i nazwa podłączonego odtwarzacza (OK otwiera listę odtwarzaczy); usunięto „Przypięte”, „Odtwarzacz” otwiera pełny ekran.
+- Radio: „Moje stacje” pokazują wszystkie stacje radiowe z Music Assistant (A–Z, ładowane porcjami), ulubione na górze.
+- Szukaj: po powrocie z playlisty kursor wraca na wybraną pozycję.
+- Okładki: przy zmianie utworu poprzednia okładka zostaje, aż nowa się załaduje (bez okładki z inicjałami).
+
 ## 1.1.4
 - Naprawa: pełnoekranowy odtwarzacz znów pokazuje rozmyte tło z okładki (lub kolor) zgodnie z ustawieniem, zamiast czarnego.
 
