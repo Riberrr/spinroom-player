@@ -20,6 +20,9 @@ data class RadioUiState(
     val filter: RadioFilter = RadioFilter.Language("polish"),
     val filterLabel: String = "",
     val rows: List<RadioRow> = emptyList(),
+    /** Browse list shows the whole MA radio library (A–Z, paged) instead of a Radio Browser filter. */
+    val libraryMode: Boolean = true,
+    val loadingMore: Boolean = false,
     val loading: Boolean = true,
     val failed: Boolean = false,
     /** Picker of one chip is open. */

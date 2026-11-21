@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.FavoriteStationsRepository
+import io.github.riberrr.spinroom.core.data.RadioLibraryRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
 import io.github.riberrr.spinroom.core.data.Station
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
@@ -33,6 +34,7 @@ private const val SEARCH_DEBOUNCE_MS = 350L
 @HiltViewModel
 class RadioViewModel @Inject constructor(
     private val repo: FavoriteStationsRepository,
+    private val libraryRepo: RadioLibraryRepository,
     private val queues: PlayerQueueApi,
     private val settings: SettingsStore,
     connection: ConnectionManager,
@@ -58,16 +60,58 @@ class RadioViewModel @Inject constructor(
             val filter = repo.savedFilter.first()
             _state.update { it.copy(filter = filter, filterLabel = filterValueLabel(filter)) }
             launch { runCatchingCancellable { repo.refresh() } }
-            loadStations(filter)
+            loadLibrary()
         }
     }
 
     // ---- browse ----
 
+    private var libraryOffset = 0
+    private var libraryEnd = false
+    private var libraryItems: List<MediaItem> = emptyList()
+
+    /** First page of the MA radio library; when it is empty falls back to the saved Radio Browser filter. */
+    private fun loadLibrary() {
+        browseJob?.cancel()
+        libraryOffset = 0
+        libraryEnd = false
+        libraryItems = emptyList()
+        browseJob = viewModelScope.launch {
+            _state.update { it.copy(libraryMode = true, rows = emptyList(), loading = true, loadingMore = false, failed = false) }
+            runCatchingCancellable { libraryRepo.page(0) }.onSuccess { page ->
+                if (page.items.isEmpty()) {
+                    loadStations(_state.value.filter)
+                } else {
+                    libraryOffset = page.nextOffset
+                    libraryEnd = page.end
+                    libraryItems = page.items
+                    _state.update { it.copy(rows = toRows(libraryItems, ""), loading = false) }
+                }
+            }.onFailure { _state.update { it.copy(loading = false, failed = true) } }
+        }
+    }
+
+    /** Called when focus nears the end of the list: appends the next library page. */
+    fun onNearEnd() {
+        val s = _state.value
+        if (!s.libraryMode || s.searching || s.loading || s.loadingMore || libraryEnd) return
+        _state.update { it.copy(loadingMore = true) }
+        viewModelScope.launch {
+            runCatchingCancellable { libraryRepo.page(libraryOffset) }.onSuccess { page ->
+                libraryOffset = page.nextOffset
+                libraryEnd = page.end
+                libraryItems = RadioLibraryRepository.append(libraryItems, page.items)
+                _state.update { it.copy(rows = toRows(libraryItems, ""), loadingMore = false) }
+            }.onFailure { _state.update { it.copy(loadingMore = false) } }
+        }
+    }
+
+    fun onAllStations() = loadLibrary()
+
     private fun loadStations(filter: RadioFilter) {
         browseJob?.cancel()
         browseJob = viewModelScope.launch {
-            _state.update { it.copy(loading = true, failed = false) }
+            _state.update { it.copy(libraryMode = false, loading = true, failed = false) }
             val result = runCatchingCancellable { repo.stations(filter) }
             result.onSuccess { items ->
                 val label = _state.value.filterLabel
@@ -79,7 +123,7 @@ class RadioViewModel @Inject constructor(
     private suspend fun toRows(items: List<MediaItem>, subtitle: String): List<RadioRow> =
         items.map { RadioRow(it, it.name, repo.imageUrl(it), subtitle) }
 
-    fun onRetry() = loadStations(_state.value.filter)
+    fun onRetry() = if (_state.value.libraryMode) loadLibrary() else loadStations(_state.value.filter)
 
     fun openPicker(kind: RadioFilterKind) {
         _state.update { it.copy(picker = kind) }

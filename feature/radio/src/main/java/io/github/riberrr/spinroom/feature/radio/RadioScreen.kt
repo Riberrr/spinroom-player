@@ -121,12 +121,15 @@ data class RadioActions(
     val onRetrySearch: () -> Unit = {},
     val onNoticeShown: () -> Unit = {},
     val onTogglePolishOnly: () -> Unit = {},
+    val onAllStations: () -> Unit = {},
+    val onNearEnd: () -> Unit = {},
 ) {
     companion object {
         fun of(vm: RadioViewModel) = RadioActions(
             vm::play, vm::toggleFavorite, vm::openMenu, vm::closeMenu, vm::startMove, vm::stopMove, vm::moveBy, vm::removeMenuStation,
             vm::openPicker, vm::closePicker, vm::pickOption, vm::onPopular, vm::openSearch, vm::closeSearch,
             vm::onType, vm::onBackspace, vm::onToggleSymbols, vm::onRetry, vm::onRetrySearch, vm::onNoticeShown, vm::onTogglePolishOnly,
+            vm::onAllStations, vm::onNearEnd,
         )
     }
 }
@@ -323,6 +326,8 @@ private fun Favorites(
     }
 }
 
+private const val NEAR_END = 12
+
 /** Clip that leaves room around a tile for its focus scale and border (captions start 10 dp below the tile). */
 private val FocusRoomClip = object : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
@@ -368,7 +373,19 @@ private fun Controls(state: RadioUiState, actions: RadioActions, searchField: Fo
         Chip(RadioFilterKind.TAG, stringResource(R.string.radio_chip_genre), state, all, actions)
         Chip(RadioFilterKind.COUNTRY, stringResource(R.string.radio_chip_country), state, all, actions)
         Box(Modifier.weight(1f))
-        val popular = state.filter == RadioFilter.Popular
+        val mine = state.libraryMode
+        FocusSurface(
+            onClick = actions.onAllStations, shape = CircleShape, focusedScale = 1.06f,
+            containerColor = if (mine) SpinroomColors.TextPrimary else SpinroomColors.Glass,
+            focusedContainerColor = if (mine) SpinroomColors.TextPrimary else SpinroomColors.GlassHigh,
+        ) {
+            Text(
+                stringResource(R.string.radio_all_stations), Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+                color = if (mine) SpinroomColors.Bg else SpinroomColors.TextPrimary, style = MaterialTheme.typography.labelLarge,
+                maxLines = 1, softWrap = false,
+            )
+        }
+        val popular = !state.libraryMode && state.filter == RadioFilter.Popular
         FocusSurface(
             onClick = actions.onPopular, shape = CircleShape, focusedScale = 1.06f,
             containerColor = if (popular) SpinroomColors.TextPrimary else SpinroomColors.Glass,
@@ -387,9 +404,9 @@ private fun Controls(state: RadioUiState, actions: RadioActions, searchField: Fo
 @Composable
 private fun Chip(kind: RadioFilterKind, label: String, state: RadioUiState, all: String, actions: RadioActions) {
     val active = when (kind) {
-        RadioFilterKind.LANGUAGE -> state.filter is RadioFilter.Language
-        RadioFilterKind.COUNTRY -> state.filter is RadioFilter.Country
-        RadioFilterKind.TAG -> state.filter is RadioFilter.Tag
+        RadioFilterKind.LANGUAGE -> !state.libraryMode && state.filter is RadioFilter.Language
+        RadioFilterKind.COUNTRY -> !state.libraryMode && state.filter is RadioFilter.Country
+        RadioFilterKind.TAG -> !state.libraryMode && state.filter is RadioFilter.Tag
     }
     FocusSurface(
         onClick = { actions.onOpenPicker(kind) }, shape = CircleShape, focusedScale = 1.06f,
@@ -436,7 +453,12 @@ private fun StationList(
                     subtitle = row.subtitle.ifBlank { stringResource(R.string.radio_provider) },
                     onClick = { actions.onPlay(row.uri) },
                     modifier = (if (index == 0) Modifier.focusRequester(gridFirst) else Modifier)
-                        .onFocusChanged { if (it.isFocused) onFocus(row.name, row.imageUrl) },
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                onFocus(row.name, row.imageUrl)
+                                if (index >= rows.size - NEAR_END) actions.onNearEnd()
+                            }
+                        },
                     favorite = state.isFavorite(row),
                     onLongClick = { actions.onToggleFavorite(row) },
                     thumbnail = { EntryThumb(row.name, row.imageUrl, isStation = true, modifier = Modifier.fillMaxSize()) },
