@@ -17,4 +17,10 @@ Punkty 1–4, 6, 7 z sekcji SESJA B planu (tytuł w dolnym panelu, przyciski pre
 Testy zielone (`bash scripts/check.sh`), PR otwarty, zachowanie sprawdzone na emulatorze.
 
 ## Wynik
-_(uzupełnia sesja)_
+- Punkty 1–4, 6, 7 zrobione. Pasek odtwarzacza stały 56 dp u góry każdego ekranu (nie w pełnoekranowym), rozwija się w dół nakładką; Strzałka w górę z górnej krawędzi ekranu daje mu fokus; Dół z panelu zwija go z powrotem. Zwinięty: okładka, tytuł/podtytuł, cienki postęp lub „Na żywo”, przygaszone ⏮ ⏯ ⏭ (wizualne), pastylka z klawiszem „otwórz odtwarzacz” + łapka (`drawerKeyCode` z `KeyBindingsRepository`).
+- Tytuł: pasek dostaje jawnie dwie linie (`barLines`): radio = piosenka (z `stations[current].nowPlaying`) nad stacją, reszta = tytuł nad wykonawcą. Zmiany w `:feature:nowplaying` nie były potrzebne.
+- Menu: `NavHostController.openTopLevel` (Start = popBackStack do korzenia, reszta = popUpTo Start, bez saveState) — też dla skrótów pilota. „Odtwarzacz” otwiera pełny ekran; „Przypięte” usunięte (wraz z `PinnedEntry`, `pinnedOf`, playlistami w `ShellViewModel`). Góra menu: ikona aplikacji + `PlayerPill` (nazwa + zielona kropka), OK otwiera listę odtwarzaczy (`PlayerPicker` w powłoce → `NowPlayingViewModel.onSelectPlayer`).
+- Po powrocie z pełnego ekranu fokus trafiał na pasek (jest pierwszy w drzewie): `LaunchedEffect` oddaje go ekranowi po 500 ms (krótki błysk panelu możliwy).
+- Emulator-5554 (API 31): `wm density` = 480 przy 4K, jak w planie. Sprawdzone: start, pasek (radio i utwór), Góra → rozwinięcie, menu z pastylką, lista odtwarzaczy, „Odtwarzacz”, Start z Radia. Testy: `bash scripts/check.sh` zielone (lint wymaga `sdk.dir=C\:/...` w local.properties).
+- Do innych sesji: chip „Emuloator · połączono” w `HomeScreen` (`:feature:home`) nadal istnieje — do usunięcia tam (poza zakresem). Pełny ekran odtwarzacza ma własny wybór odtwarzacza (`NowPlayingScreen`) — może zostać.
+- Pułapka: kod w menu zakłada, że pastylka jest pierwszą pozycją fokusu; z ekranu bez pozycji menu (np. details) wejście w menu ląduje na pastylce.

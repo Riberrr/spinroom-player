@@ -6,6 +6,7 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -51,7 +52,16 @@ import io.github.riberrr.spinroom.core.design.SpinroomIcons
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
-import io.github.riberrr.spinroom.core.design.PinnedEntry
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
+import io.github.riberrr.spinroom.core.design.FocusSurface
+import io.github.riberrr.spinroom.core.design.PlayerPill
+import io.github.riberrr.spinroom.feature.nowplaying.PlayerChoice
 
 /**
  * App chrome: side menu on the left, [content] (the nav host) in the middle, mini player at the bottom.
@@ -65,22 +75,12 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
     val contentFocus = remember { FocusRequester() }
     val screenFocus = remember { FocusRequester() }
     val dockFocus = remember { FocusRequester() }
+    val pillFocus = remember { FocusRequester() }
     val shell: ShellViewModel = hiltViewModel()
-    val stations by shell.stations.collectAsState()
-    val playlists by shell.playlists.collectAsState()
-    val pinned = remember(stations, playlists) { pinnedOf(stations, playlists) }
-    val radioLabel = stringResource(R.string.pinned_radio)
-    val playlistLabel = stringResource(R.string.pinned_playlist)
+    val nowPlaying = activityNowPlayingViewModel()
+    var pickerOpen by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { shell.openDrawer.collect { android.util.Log.i("Spinroom", "drawer request"); android.util.Log.i("Spinroom", "dock requestFocus=" + runCatching { dockFocus.requestFocus() }) } }
-    LaunchedEffect(Unit) {
-        shell.navigate.collect { target ->
-            navController.navigate(target) {
-                popUpTo(Routes.HOME) { saveState = true }
-                launchSingleTop = true
-                restoreState = true
-            }
-        }
-    }
+    LaunchedEffect(Unit) { shell.navigate.collect { target -> navController.openTopLevel(target) } }
     var menuHasFocus by remember { mutableStateOf(false) }
     var menuOpenedByUser by remember { mutableStateOf(false) }
     var leftEdgeHit by remember { mutableStateOf(false) }
@@ -94,14 +94,22 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         SideMenuItem(Routes.LIBRARY, stringResource(R.string.menu_library), SpinroomIcons.Library),
         SideMenuItem(Routes.SEARCH, stringResource(R.string.menu_search), SpinroomIcons.Search),
     )
-    // The player entry exists only while something plays; it jumps focus to the bottom dock (no scrolling down a long list).
-    val hasTrack by activityNowPlayingViewModel().state.collectAsState().let { s -> androidx.compose.runtime.derivedStateOf { s.value.hasTrack } }
+    // The player entry exists only while something plays; it opens the full-screen player (Back returns).
+    val npState by nowPlaying.state.collectAsState()
+    val hasTrack = npState.hasTrack
     val fullPlayer = route == Routes.NOW_PLAYING
-    // Right under the main entries (not at the bottom): reachable with a few Down presses even with favorites pinned in between.
     val items = if (hasTrack && !fullPlayer) baseItems + SideMenuItem(MENU_PLAYER, stringResource(R.string.menu_player), SpinroomIcons.Player) else baseItems
+    val pillName = npState.playerName.ifBlank { stringResource(R.string.player_pill_none) }
+    val pillConnected = npState.isConnected && npState.players.firstOrNull { it.selected }?.available != false
     val bottom = listOf(SideMenuItem(Routes.SETTINGS, stringResource(R.string.menu_settings), SpinroomIcons.Settings))
     // Full-screen player: the menu slides behind the left edge and is not composed, so it cannot take focus.
     LaunchedEffect(fullPlayer) { if (fullPlayer) { menuHasFocus = false; menuOpenedByUser = false } }
+    // Coming back from the full-screen player nothing is focused, and the bar (first in the tree) would take focus: give it to the screen.
+    var wasFull by remember { mutableStateOf(false) }
+    LaunchedEffect(fullPlayer) {
+        if (wasFull && !fullPlayer) { kotlinx.coroutines.delay(500); runCatching { screenFocus.requestFocus() } }
+        wasFull = fullPlayer
+    }
     val slot by androidx.compose.animation.core.animateDpAsState(if (fullPlayer) 0.dp else RAIL_WIDTH, label = "menuSlot")
 
     // Composed only while the menu has focus: a handler added on entering the composition is the newest one, so it
@@ -127,10 +135,16 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
         SideMenu(
             // → from the menu enters the screen itself (restored/first control). The default focus search would pick the
             // geometrically nearest button instead: the mini player, for the bottom "Ustawienia" item.
-            topInset = 44.dp,
+            topInset = 12.dp,
+            header = { expanded ->
+                PlayerPill(
+                    pillName, pillConnected, expanded, onClick = { pickerOpen = true },
+                    icon = { Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size(32.dp).scale(1.35f)) },
+                    modifier = Modifier.focusRequester(pillFocus).onFocusChanged { if (it.isFocused) menuItemId = "pill" },
+                )
+            },
             modifier = Modifier.onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight && menuHasFocus) {
-                    if (menuItemId == MENU_PLAYER) { shell.requestDrawer(); return@onPreviewKeyEvent true }
                     runCatching { screenFocus.requestFocus() }.isSuccess
                 } else false
             },
@@ -138,24 +152,11 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             selectedId = route.orEmpty(),
             onSelect = { target ->
                 android.util.Log.i("Spinroom", "menu select: $target")
-                if (target == MENU_PLAYER) { shell.requestDrawer(); return@SideMenu }
-                navController.navigate(target) {
-                    popUpTo(Routes.HOME) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
+                if (target == MENU_PLAYER) { navController.navigate(Routes.NOW_PLAYING) { launchSingleTop = true }; return@SideMenu }
+                // Always the entry's main view, even from a screen deeper in it.
+                navController.openTopLevel(target)
             },
             bottomItems = bottom,
-            pinned = pinned.take(MAX_PINNED).map { PinnedEntry(it.uri, it.name, if (it.isStation) radioLabel else playlistLabel, it.imageUrl, it.isStation) },
-            pinnedTitle = stringResource(R.string.menu_pinned),
-            onSelectPinned = { entry ->
-                val fav = pinned.firstOrNull { it.uri == entry.id } ?: return@SideMenu
-                runCatching { screenFocus.requestFocus() }
-                if (fav.isStation) shell.playStation(fav.uri) else navController.navigate(Routes.details(fav.uri)) {
-                    // Opening another item from the menu replaces the details on screen, so Back returns to where we came from.
-                    if (route == Routes.DETAILS) popUpTo(Routes.DETAILS) { inclusive = true }
-                }
-            },
             onItemFocus = { menuItemId = it; android.util.Log.i("Spinroom", "menu focus: $it") },
             enterFocusRequester = menuFocus,
             onFocusChange = {
@@ -168,7 +169,6 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                 if (!it) menuOpenedByUser = false
             },
         )
-            MenuLogo(Modifier.align(Alignment.TopCenter).padding(top = 8.dp).zIndex(2f))
         }
         }
         }
@@ -206,18 +206,7 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
             // Fallback is the screen itself: with nothing to restore (e.g. → from the bottom "Ustawienia" menu
             // item, geometrically closest to the mini player) focus must land in the content, not the mini player.
             Column(Modifier.fillMaxSize()) {
-                // Only the screen is restored; the mini player sits outside so it is never the restore target.
-                // Down never leaves the screen for the dock: when the next row is still off screen (not composed, or below the
-                // viewport) the dock bar is geometrically the nearest target and would steal focus instead of the list scrolling.
-                // The dock stays reachable with hold ⏯ and from the menu's "Odtwarzacz" entry. A separate group, because the
-                // restorer below sets its own onExit.
-                Column(
-                    Modifier.weight(1f)
-                        .focusProperties { onExit = { if (requestedFocusDirection == FocusDirection.Down) cancelFocusChange() } }
-                        .focusGroup(),
-                ) {
-                    Column(Modifier.fillMaxSize().focusRequester(screenFocus).focusRestorer()) { content() }
-                }
+                // The player bar is a fixed 56 dp strip at the top of every screen (drawn over the content when it unfolds).
                 if (route != Routes.NOW_PLAYING) {
                     ShellDock(
                         barFocus = dockFocus,
@@ -225,23 +214,82 @@ fun SpinroomShell(navController: NavHostController, content: @Composable () -> U
                         onCollapse = { runCatching { screenFocus.requestFocus() } },
                     )
                 }
+                // Only the screen is restored; the bar sits outside so it is never the restore target.
+                // Up with nowhere left to go inside the screen jumps to the player bar; Down never leaves the screen
+                // (it would land on the bar's geometry or nothing). A separate group, because the restorer below sets its own onExit.
+                Column(
+                    Modifier.weight(1f)
+                        .focusProperties {
+                            onExit = {
+                                when (requestedFocusDirection) {
+                                    FocusDirection.Down -> cancelFocusChange()
+                                    FocusDirection.Up -> { cancelFocusChange(); if (route != Routes.NOW_PLAYING && hasTrack) runCatching { dockFocus.requestFocus() } }
+                                    else -> Unit
+                                }
+                            }
+                        }
+                        .focusGroup(),
+                ) {
+                    Column(Modifier.fillMaxSize().focusRequester(screenFocus).focusRestorer()) { content() }
+                }
             }
         }
     }
+    if (pickerOpen) {
+        PlayerPicker(
+            players = npState.players,
+            onPick = { id -> pickerOpen = false; nowPlaying.onSelectPlayer(id); runCatching { screenFocus.requestFocus() } },
+            onClose = { pickerOpen = false },
+        )
+    }
     }
     }
 }
 
-/** App mark above the menu rail (mockup 03B): accent square with a note; no text, so the rail's width does not matter. */
+/** The list of MA players (opened from the pill at the top of the menu); picking one makes it the one this app controls. */
 @Composable
-private fun MenuLogo(modifier: Modifier = Modifier) {
-    Box(modifier.size(32.dp).background(SpinroomColors.Accent, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-        Text("♪", color = SpinroomColors.Bg, style = MaterialTheme.typography.titleLarge)
+private fun PlayerPicker(players: List<PlayerChoice>, onPick: (String) -> Unit, onClose: () -> Unit) {
+    val first = remember { FocusRequester() }
+    BackHandler { onClose() }
+    LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
+    Box(Modifier.fillMaxSize().zIndex(10f).background(SpinroomColors.Bg.copy(alpha = 0.78f)), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier.width(420.dp).background(SpinroomColors.Surface, RoundedCornerShape(20.dp)).padding(24.dp).focusGroup(),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+        ) {
+            Text(stringResource(R.string.player_picker_title), style = MaterialTheme.typography.titleLarge, color = SpinroomColors.TextPrimary)
+            val start = players.indexOfFirst { it.selected }.coerceAtLeast(0)
+            players.forEachIndexed { i, p ->
+                FocusSurface(
+                    { onPick(p.id) }, Modifier.fillMaxWidth().then(if (i == start) Modifier.focusRequester(first) else Modifier),
+                    containerColor = if (p.selected) SpinroomColors.Accent.copy(alpha = 0.16f) else SpinroomColors.SurfaceHigh,
+                    focusedContainerColor = SpinroomColors.GlassHigh, focusedScale = 1f,
+                ) {
+                    Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(10.dp).background(if (p.available) SpinroomColors.Success else SpinroomColors.TextSecondary, CircleShape))
+                        Text(p.name, Modifier.padding(start = 12.dp).weight(1f), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (!p.available) Text(stringResource(R.string.player_picker_offline), style = MaterialTheme.typography.bodySmall, color = SpinroomColors.TextSecondary)
+                    }
+                }
+            }
+        }
     }
 }
 
-/** The logo takes a row of the rail: with more pinned entries the expanded rail would push "Ustawienia" off screen. */
-private const val MAX_PINNED = 3
+/**
+ * Menu / remote shortcut target: always the main view of [target], whatever is on top of it now.
+ * Start pops back to the root; the others replace everything above Start, so Back from them returns to Start.
+ */
+internal fun NavHostController.openTopLevel(target: String) {
+    if (target == Routes.HOME) {
+        popBackStack(Routes.HOME, inclusive = false)
+        return
+    }
+    navigate(target) {
+        popUpTo(Routes.HOME) { inclusive = false }
+        launchSingleTop = true
+    }
+}
 
-/** Pseudo-route of the rail entry that moves focus to the bottom player. */
+/** Pseudo-route of the rail entry that opens the full-screen player. */
 private const val MENU_PLAYER = "player"

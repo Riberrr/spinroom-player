@@ -17,4 +17,4 @@ Punkt 9: wyszukuję playlisty, wchodzę w playlistę i wracam Wstecz do wyników
 Testy zielone (`bash scripts/check.sh`), PR otwarty, zachowanie sprawdzone na emulatorze.
 
 ## Wynik
-_(uzupełnia sesja)_
+Działa: po wejściu w wynik (playlista/album/artysta) i Wstecz kursor wraca na ten sam wiersz (klucz `uri|provider` w `rememberSaveable`, `LazyListState.scrollToItem` + `FocusRequester`). Tylko `SearchScreen.kt`. Sprawdzone na emulator-5556 (density 240): wyszukanie "hity", otwarcie 4. playlisty, Wstecz → kursor na tej playliście. Testy: `check.sh` kompiluje i testy modułu zielone; lint padł tylko na moim lokalnym `local.properties` (nieśledzony). Bez nowych testów jednostkowych (logika w Compose). Pułapka: przywrócenie działa raz na wejście na ekran (pending), potem zwykły fokus.

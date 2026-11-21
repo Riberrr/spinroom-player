@@ -27,8 +27,8 @@ Layout assumes a 1280×720 dp screen; components use weights so they also hold a
 - `PlaylistMosaic(imageUrls)` 2×2 (<4 URLs → first one, none → placeholder). `ResultRow(title, subtitle, onClick, favorite: Boolean?, thumbnail)` on glass. `FavoriteHeart(filled)`; icons `SpinroomIcons.HeartFilled/HeartOutline`.
 
 ## Shell (SUI2)
-- `SideMenu(…, pinned: List<PinnedEntry>, pinnedTitle, onSelectPinned)` — expanded menu shows a "Przypięte" list (thumb + title + subtitle); more compact rows so 5 pinned + 5 items + settings fit 540 dp. Icons `SpinroomIcons.Radio`, `Playlists`.
-- `PlayerDock(state, coverUrl, isRadio, favorite, entries, entriesTitle, onPrevious/onPlayPause/onNext/onFavorite/onOpenNowPlaying/onEntryClick, onCollapse, barFocus, labels, onExpandedChange)` — 80 dp glass bar; focus entering it unfolds a 240 dp panel over the content (blurred cover backdrop, controls left, `DockEntry` list right). Owns "expanded" = focus inside; `onCollapse` (Back, `DOCK_IDLE_MS` = 8 s idle) must move focus out. `DockEntry`, `DockLabels`.
+- `SideMenu(…, header: (expanded)->Unit)` — slot at the top of the rail (the shell puts app icon + `PlayerPill(name, connected, expanded, onClick, icon)` there). "Przypięte" removed. Icons `SpinroomIcons.Radio`, `Playlists`, `Touch`.
+- `PlayerDock(state, coverUrl, isRadio, favorite, entries, entriesTitle, onPrevious/onPlayPause/onNext/onFavorite/onOpenNowPlaying/onEntryClick, onCollapse, barFocus, labels, onExpandedChange, keyHint)` — 56 dp glass bar at the top (`DOCK_BAR_HEIGHT`; cover, title/subtitle, thin progress or "Na żywo", dimmed prev/play/next as visuals, discreet `keyHint` pill); focus entering it unfolds a 240 dp panel downwards over the content (blurred cover backdrop, controls left, `DockEntry` list right). Down off the panel calls `onCollapse`. Owns "expanded" = focus inside; `onCollapse` (Back, `DOCK_IDLE_MS` = 8 s idle) must move focus out.
 - `EntryThumb(name, imageUrl, isStation)` — small square thumbnail with station initials / cover placeholder fallback.
 
 ## SUI4

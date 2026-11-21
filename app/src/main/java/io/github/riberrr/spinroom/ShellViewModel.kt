@@ -6,12 +6,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.riberrr.spinroom.core.data.ConnectionManager
 import io.github.riberrr.spinroom.core.data.FavoriteStationsRepository
 import io.github.riberrr.spinroom.core.data.PlayerRepository
+import io.github.riberrr.spinroom.core.data.KeyAction
+import io.github.riberrr.spinroom.core.data.KeyAssignments
+import io.github.riberrr.spinroom.core.data.KeyBindingsRepository
 import io.github.riberrr.spinroom.core.data.SettingsStore
-import io.github.riberrr.spinroom.core.maapi.ImageUrls
-import io.github.riberrr.spinroom.core.maapi.LibraryApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import io.github.riberrr.spinroom.core.maapi.MaConnectionState
-import io.github.riberrr.spinroom.core.maapi.MediaItem
-import io.github.riberrr.spinroom.core.maapi.MediaTypes
 import io.github.riberrr.spinroom.core.maapi.PlayerQueueApi
 import io.github.riberrr.spinroom.core.maapi.Player
 import io.github.riberrr.spinroom.feature.settings.resolveOwnPlayerId
@@ -29,11 +30,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/** A favorite station or playlist as the shell shows it (menu "Przypięte", dock station list). */
+/** A favorite station or playlist as the shell shows it (top player bar station list). */
 data class Favorite(val uri: String, val name: String, val imageUrl: String?, val isStation: Boolean)
 
-/** Max pinned entries in the menu. */
-const val PINNED_COUNT = 5
 
 /**
  * Shell-level state: favorite stations/playlists (menu + dock) and the actions that need them
@@ -43,18 +42,19 @@ const val PINNED_COUNT = 5
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ShellViewModel @Inject constructor(
-    private val library: LibraryApi,
     private val queues: PlayerQueueApi,
     private val settings: SettingsStore,
     private val stationFavorites: FavoriteStationsRepository,
     private val playerRepository: PlayerRepository,
+    keyBindings: KeyBindingsRepository,
     connection: ConnectionManager,
 ) : ViewModel() {
     private val _stations = MutableStateFlow<List<Favorite>>(emptyList())
     val stations: StateFlow<List<Favorite>> = _stations
 
-    private val _playlists = MutableStateFlow<List<Favorite>>(emptyList())
-    val playlists: StateFlow<List<Favorite>> = _playlists
+    /** Key code that opens the player panel (hint at the top bar); null when the shortcut was removed. */
+    val drawerKey: StateFlow<Int?> = keyBindings.assignments.map { drawerKeyCode(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, drawerKeyCode(KeyAssignments()))
 
     private val _openDrawer = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
@@ -87,16 +87,8 @@ class ShellViewModel @Inject constructor(
         android.util.Log.i("Spinroom", "playback: selected player offline, switched to this TV")
     }
 
-    /** Pinned = first [PINNED_COUNT] of stations followed by playlists. */
-    fun pinned(): List<Favorite> = pinnedOf(_stations.value, _playlists.value)
-
     fun refresh() {
-        viewModelScope.launch {
-            val address = settings.settings.first().serverAddress
-            runCatching { stationFavorites.refresh() }
-            runCatching { library.items(MediaTypes.PLAYLISTS, limit = 30, favorite = true) }
-                .onSuccess { items -> _playlists.value = items.mapNotNull { it.toFavorite(address, false) } }
-        }
+        viewModelScope.launch { runCatching { stationFavorites.refresh() } }
     }
 
     private val _navigate = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -135,13 +127,18 @@ class ShellViewModel @Inject constructor(
         return true
     }
 
-    private fun MediaItem.toFavorite(address: String, station: Boolean): Favorite? {
-        val u = uri ?: return null
-        return Favorite(u, name, ImageUrls.url(address, bestImage, 256), station)
-    }
 }
 
-internal fun pinnedOf(stations: List<Favorite>, playlists: List<Favorite>): List<Favorite> = (stations + playlists).take(PINNED_COUNT)
+/** The key that opens the player panel: the first assignment of [KeyAction.OPEN_DRAWER] (a short press wins over a hold). */
+internal fun drawerKeyCode(a: KeyAssignments): Int? =
+    a.items.filter { it.action == KeyAction.OPEN_DRAWER }.let { l -> l.firstOrNull { !it.long } ?: l.firstOrNull() }?.keyCode
+
+/**
+ * What the bar shows: song (radio: from the stream, else the station) / title on top, below it the station (radio) or artist.
+ * [songText] is the "artist – title" line of the playing station; the station name goes underneath so the title is never missing.
+ */
+internal fun barLines(isRadio: Boolean, title: String, artist: String, songText: String): Pair<String, String> =
+    if (isRadio && songText.isNotBlank()) songText to title else title to artist
 
 /** Index of the playing station among [stations]: by uri, else by name (the queue may carry another provider's uri); -1 if absent. */
 internal fun stationIndex(stations: List<Favorite>, mediaUri: String, mediaName: String): Int {

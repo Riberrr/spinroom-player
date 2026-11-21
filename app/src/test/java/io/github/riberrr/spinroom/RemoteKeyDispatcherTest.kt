@@ -147,10 +147,17 @@ class RemoteKeyDispatcherTest {
 class ShellLogicTest {
     private fun fav(uri: String, name: String, station: Boolean = true) = Favorite(uri, name, null, station)
 
-    @Test fun pinnedIsStationsThenPlaylistsCappedAtFive() {
-        val s = listOf(fav("r1", "A"), fav("r2", "B"), fav("r3", "C"))
-        val p = listOf(fav("p1", "X", false), fav("p2", "Y", false), fav("p3", "Z", false))
-        assertEquals(listOf("r1", "r2", "r3", "p1", "p2"), pinnedOf(s, p).map { it.uri })
+    @Test fun barShowsSongOverStationForRadioAndTitleOverArtistOtherwise() {
+        assertEquals("Artysta – Piosenka" to "Jazz Jeden", barLines(true, "Jazz Jeden", "", "Artysta – Piosenka"))
+        assertEquals("Jazz Jeden" to "", barLines(true, "Jazz Jeden", "", ""))
+        assertEquals("Utwór" to "Wykonawca", barLines(false, "Utwór", "Wykonawca", ""))
+    }
+
+    @Test fun drawerKeyIsTheAssignedKeyOrNull() {
+        assertEquals(85, drawerKeyCode(KeyAssignments()))
+        val moved = KeyAssignments().without(KeyAssignments.DEFAULTS[2]).with(KeyAssignment(165, false, KeyAction.OPEN_DRAWER))
+        assertEquals(165, drawerKeyCode(moved))
+        assertEquals(null, drawerKeyCode(KeyAssignments(emptyList())))
     }
 
     @Test fun stationIndexMatchesUriThenName() {
