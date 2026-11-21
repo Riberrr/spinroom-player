@@ -19,3 +19,4 @@ Offline: a timeout from `MaClient` (no connection) ends in the failed state "Bra
 - Favorites: selected row shows "Odtwórz" + heart; long OK toggles too; 5 s undo toast (`FavoriteToast`). `SearchBackend.setFavorite` uses `FavoritesApi`; `isFavorite` is looked up lazily on selection because provider hits arrive with `favorite=false`. Radio order from SUI4 is not wired yet.
 - Right-most keyboard keys have `focusProperties.right = first result` (the geometric search would stop on the list container).
 - Backdrop: `ContentBackdrop` from the selected row's image (stations without logo: seed color).
+- Back from a result's details screen: the focused row's key is saved with `rememberSaveable`; on return the list scrolls to it and refocuses it (first key if the row is gone).
