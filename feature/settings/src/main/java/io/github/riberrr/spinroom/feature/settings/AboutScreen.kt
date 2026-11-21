@@ -34,8 +34,11 @@ fun AboutScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(stringResource(R.string.about_title), style = MaterialTheme.typography.headlineMedium, color = SpinroomColors.TextPrimary)
+        Text(stringResource(R.string.about_subtitle), style = MaterialTheme.typography.titleMedium, color = SpinroomColors.TextPrimary)
         Text(stringResource(R.string.about_version, version), color = SpinroomColors.TextPrimary)
         Text(stringResource(R.string.about_unofficial), color = SpinroomColors.TextSecondary, modifier = Modifier.widthIn(max = 760.dp))
+        Text(stringResource(R.string.about_whats_new_title), style = MaterialTheme.typography.titleMedium, color = SpinroomColors.TextPrimary)
+        Text(stringResource(R.string.about_whats_new), color = SpinroomColors.TextSecondary, modifier = Modifier.widthIn(max = 760.dp))
         Text(stringResource(R.string.about_licenses_title), style = MaterialTheme.typography.titleMedium, color = SpinroomColors.TextPrimary)
         Text(stringResource(R.string.about_licenses), color = SpinroomColors.TextSecondary, modifier = Modifier.widthIn(max = 760.dp))
         FocusSurface(onClick = onBack, modifier = Modifier.widthIn(min = 240.dp)) {
